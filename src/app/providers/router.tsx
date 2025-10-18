@@ -2,14 +2,14 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 
 // Páginas principais
-import Home from "../../features/home/pages/Home";
-import Login from "../../features/auth/pages/Login";
+import Home from "@/features/home/pages/Home";
+import Login from "@/features/auth/pages/Login";
 
 // Laudos (organizados dentro de Doctor)
-import LaudosPage from "../../features/doctor/pages/laudos/LaudosPage";
-import NovoLaudoPage from "../../features/doctor/pages/laudos/NovoLaudoPage";
-import RevisarLaudoPage from "../../features/doctor/pages/laudos/RevisarLaudoPage";
-import DoctorDashboard from "../../features/doctor/pages/Dashboard";
+import LaudosPage from "@/features/doctor/pages/laudos/LaudosPage";
+import NovoLaudoPage from "@/features/doctor/pages/laudos/NovoLaudoPage";
+import RevisarLaudoPage from "@/features/doctor/pages/laudos/RevisarLaudoPage";
+import DoctorDashboard from "@/features/doctor/pages/Dashboard";
 
 const Root = () => <Outlet />;
 
