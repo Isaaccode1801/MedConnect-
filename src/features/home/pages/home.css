@@ -37,7 +37,7 @@ body,
   color: var(--ink);
   background-image: 
     radial-gradient(80% 60% at 50% 30%, rgba(10, 22, 26, 0.35) 0%, rgba(5, 12, 15, 0.75) 60%, rgba(4, 10, 12, 0.92) 100%),
-    url('/src/assets/hero.jpg');
+    url('/hero.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -192,7 +192,7 @@ body,
   width: 72px;
   height: 54px;
   border-radius: 12px;
-  background: url('/src/assets/hero.jpg') center/cover no-repeat;
+  background: url('/hero.jpg') center/cover no-repeat;
   filter: saturate(1.2) contrast(1.1);
 }
 
@@ -248,20 +248,12 @@ body,
 
 .heart-img {
   width: 100px;              /* ajuste o tamanho */
+  animation: beat 1.6s ease-in-out infinite;
   
   vertical-align: middle;   /* centraliza na linha */
   margin: 0 6px;            /* espaço lateral */
   display: inline-block;
   transform: translateY(-2px); /* opcional: ajuste fino */
-}
-
-@keyframes beat {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
 }
 
 /* Canvas fallback sizing and layering */
