@@ -40,3 +40,8 @@ body {
   50% { opacity: .45; }
 }
 .animate-spotlight { animation: spotlightPulse 6s ease-in-out infinite; }
+
+/* dentro de src/styles/global.css */
+.hero {
+  background-image: url('../assets/hero.jpg'); /* relativo ao CSS */
+}
