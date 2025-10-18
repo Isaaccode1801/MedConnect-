@@ -1,5 +1,17 @@
-/* src/styles/global.css */
+@import "tailwindcss";
 
+/* Root sizing to allow full-bleed sections (hero 100vh etc.) */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+#root {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ... seus estilos abaixo ... */
 * {
   margin: 0;
   padding: 0;
@@ -11,3 +23,20 @@ body {
   background-color: #f8fafc;
   color: #0f172a;
 }
+/* Loader do fallback do Spline */
+.loader {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.25);
+  border-top-color: #fff;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Pulso suave do spotlight */
+@keyframes spotlightPulse {
+  0%, 100% { opacity: .15; }
+  50% { opacity: .45; }
+}
+.animate-spotlight { animation: spotlightPulse 6s ease-in-out infinite; }

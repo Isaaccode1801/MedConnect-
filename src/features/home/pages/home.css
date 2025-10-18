@@ -1,0 +1,276 @@
+/* src/features/home/pages/home.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+:root {
+  --brand: #1db7ae; /* acento MedConnect */
+  --ink: #e6f0f3;
+  --ink-dim: #c8d3d9;
+  --glass1: rgba(255, 255, 255, 0.08);
+  --glass2: rgba(255, 255, 255, 0.12);
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+/* Reset global */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #000;
+}
+
+/* ====== HERO ====== */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+  background-image: 
+    radial-gradient(80% 60% at 50% 30%, rgba(10, 22, 26, 0.35) 0%, rgba(5, 12, 15, 0.75) 60%, rgba(4, 10, 12, 0.92) 100%),
+    url('/src/assets/hero.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  overflow: hidden;
+}
+
+/* ====== NAVBAR ====== */
+.nav {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  width: 100px;
+}
+
+.menu {
+  list-style: none;
+  display: flex;
+  gap: 28px;
+}
+
+.menu a {
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.menu a:hover {
+  opacity: 1;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.icon-btn {
+  height: 34px;
+  width: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: var(--glass1);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease;
+}
+
+.icon-btn:hover {
+  transform: scale(1.05);
+}
+
+/* ====== CONTEÚDO ====== */
+.hero-content {
+  max-width: 1100px;
+  width: 100%;
+  margin: auto;
+  padding: 0 24px 80px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 1;
+}
+
+.title {
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: 0.5px;
+  font-size: clamp(38px, 6.5vw, 96px);
+  color: #f3fbff;
+}
+
+.title .pulse {
+  display: inline-block;
+  filter: drop-shadow(0 6px 20px rgba(255, 99, 132, 0.35));
+  animation: beat 1.6s ease-in-out infinite;
+}
+
+@keyframes beat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.06);
+  }
+  55% {
+    transform: scale(0.98);
+  }
+}
+
+.subtitle {
+  max-width: 680px;
+  margin: 20px auto 28px;
+  font-size: clamp(14px, 1.7vw, 16px);
+  color: var(--ink-dim);
+  line-height: 1.6;
+}
+
+.cta-row {
+  display: flex;
+  justify-content: center;
+}
+
+.cta {
+  padding: 14px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: linear-gradient(180deg, var(--glass2), rgba(255, 255, 255, 0.06));
+  color: #eef7fa;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.cta:hover {
+  transform: translateY(-1px);
+  background: var(--brand);
+  color: #06221f;
+}
+
+/* ====== CARD DOWNLOAD (GLASS) ====== */
+.download-card {
+  position: absolute;
+  right: clamp(16px, 6vw, 48px);
+  bottom: clamp(16px, 6vw, 48px);
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--glass2), rgba(0, 0, 0, 0.25));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+
+.card-media {
+  width: 72px;
+  height: 54px;
+  border-radius: 12px;
+  background: url('/src/assets/hero.jpg') center/cover no-repeat;
+  filter: saturate(1.2) contrast(1.1);
+}
+
+.card-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.card-text {
+  margin: 0;
+  font-size: 12px;
+  color: #e9f5f9;
+  line-height: 1.3;
+}
+
+.card-cta {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--brand);
+  color: #082a27;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.card-cta:hover {
+  transform: scale(1.05);
+}
+
+/* vinheta */
+.vignette {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -30%;
+  height: 60%;
+  pointer-events: none;
+  background: radial-gradient(60% 80% at 50% 100%, rgba(0, 0, 0, 0.55), transparent 70%);
+}
+
+/* responsivo */
+@media (max-width: 860px) {
+  .menu {
+    display: none;
+  }
+  .download-card {
+    position: static;
+    margin: 26px auto 0;
+  }
+}
+
+.heart-img {
+  width: 100px;              /* ajuste o tamanho */
+  
+  vertical-align: middle;   /* centraliza na linha */
+  margin: 0 6px;            /* espaço lateral */
+  display: inline-block;
+  transform: translateY(-2px); /* opcional: ajuste fino */
+}
+
+@keyframes beat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Canvas fallback sizing and layering */
+#fluid {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  position: fixed;
+  inset: 0;
+  pointer-events: none; /* keep UI clickable; events handled on window */
+  z-index: 0;
+}
