@@ -2,6 +2,7 @@
 import './home.css'
 import { SplashCursor } from '../../../components/ui/splash-cursor'
 import medLogo from '../../../assets/Medconnect.logo.png';
+import heartPng from '../../../assets/heart.png';
 import { Link } from "react-router-dom";
 
 
@@ -38,10 +39,10 @@ export default function Home() {
       <div className="hero-content">
         <h1 className="title">
           Seu coração esta em <br/>boas <img
-  src="/src/assets/heart.png"
-  alt="MedConnect Heart"
-  className="heart-img"
-/>
+    src={heartPng}
+    alt="MedConnect Heart"
+    className="heart-img pulse"
+  />
 mãos
         </h1>
 

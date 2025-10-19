@@ -116,7 +116,7 @@ body,
 
 .title {
   font-weight: 700;
-  line-height: 0.95;
+  line-height: 1;
   letter-spacing: 0.5px;
   font-size: clamp(38px, 6.5vw, 96px);
   color: #f3fbff;
@@ -247,13 +247,11 @@ body,
 }
 
 .heart-img {
-  width: 100px;              /* ajuste o tamanho */
-  animation: beat 1.6s ease-in-out infinite;
-  
-  vertical-align: middle;   /* centraliza na linha */
-  margin: 0 6px;            /* espaço lateral */
+  height: 0.9em;      /* escala com o tamanho do título */
+  width: auto;
+  vertical-align: -0.12em; /* ajuste fino de baseline */
+  margin: 0 0.18em;   /* respiro lateral */
   display: inline-block;
-  transform: translateY(-2px); /* opcional: ajuste fino */
 }
 
 /* Canvas fallback sizing and layering */
