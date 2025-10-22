@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getLaudo } from "../../../../services/api/laudos";
+import { getLaudo } from "@/lib/pacientesService";
 
 type LaudoDetalhe = {
   id: string;
@@ -23,26 +23,36 @@ export default function RevisarLaudoPage() {
   const nav = useNavigate();
   const [loading, setLoading] = useState(true);
   const [laudo, setLaudo] = useState<LaudoDetalhe | null>(null);
-
+  const [error, setError] = useState<string | null>(null); // Add error state
   useEffect(() => {
     async function run() {
-      if (!id) return;
+      if (!id) {
+        setError("ID do laudo não encontrado na URL.");
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
+        setError(null); 
         const data = await getLaudo(id);
-        setLaudo(data);
-      } catch (e) {
-        console.error(e);
-        alert("Falha ao carregar o laudo.");
-      } finally {
-        setLoading(false);
-      }
-    }
+        if (data) {
+           setLaudo(data);
+        } else {
+           setError(`Laudo com ID ${id} não encontrado.`);
+        }
+      } catch (e: any) { // Type the error
+        console.error(e);
+        setError(`Falha ao carregar o laudo: ${e.message}`);
+        alert(`Falha ao carregar o laudo: ${e.message}`);
+      } finally {
+        setLoading(false);
+      }
+    }
     run();
   }, [id]);
 
   return (
-    <div className="mx-auto max-w-[900px] p-6">
+    <div className="min-h-screen grid place-items-center p-6 bg-gray-100">
       {loading && <p className="text-center text-slate-500 py-10">Carregando dados do laudo…</p>}
       {!loading && laudo && (
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">

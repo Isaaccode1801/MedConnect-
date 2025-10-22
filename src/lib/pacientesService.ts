@@ -99,23 +99,31 @@ export interface Report {
 }
 
 // Pequeno helper para montar URL com querystring
+// Em: pacientesService.ts
+
+// ...
+
+// Pequeno helper para montar URL com querystring
 function buildUrl(path: string, query?: Record<string, string | number | boolean | undefined>) {
-  const url = new URL(`${API_BASE_URL}${path}`);
-  if (query) {
-    Object.entries(query).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v));
-    });
-  }
-  return url.toString();
+  const url = new URL(`${API_BASE_URL}${path}`);
+  if (query) {
+    Object.entries(query).forEach(([k, v]) => {
+      // VOLTAR A IGNORAR STRINGS VAZIAS (Correto para Supabase)
+      if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v));
+    });
+  }
+  return url.toString();
 }
 
+// ...
+
 async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const res = await fetch(input, init);
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Erro ${res.status}: ${text}`);
-  }
-  return res.json() as Promise<T>;
+  const res = await fetch(input, init);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Erro ${res.status}: ${text}`);
+  }
+  return res.json() as Promise<T>;
 }
 
 // ======================= PACIENTES =======================
@@ -146,69 +154,77 @@ export async function deletePaciente(id: string | number): Promise<void> {
 }
 
 // ========================= LAUDOS =========================
+// MUDANÇA 2: Interface deve ter os campos do CURL
 export interface ListarLaudosParams {
-  limit?: number;
-  status?: string;
-  patient_id?: string;
+  status?: string;       // Como na Spec
+  patient_id?: string;   // Como na Spec
+  created_by?: string;   // Como na Spec
+  order?: string;        // Como na Spec
+  // 'limit' não está na Spec, então não o colocamos aqui
 }
 
+// MUDANÇA 3: Reescrever listarLaudos para BATER COM O CURL
 export async function listarLaudos(params: ListarLaudosParams = {}): Promise<Report[]> {
-  const { limit = 100, status, patient_id } = params;
+  const {
+    status,
+    patient_id,
+    created_by,
+    order = 'created_at.desc' // Usar um padrão razoável
+  } = params;
 
-  // 1) Tenta com relacionamento (se houver FK configurada)
-  const query1: Record<string, any> = {
-    select: '*,patients(id,full_name)',
-    order: 'created_at.desc',
-    limit,
-  };
-  if (status) query1['status'] = `eq.${status}`;
-  if (patient_id) query1['patient_id'] = `eq.${patient_id}`;
+  // Monta a query APENAS com os parâmetros da Spec
+  const query: Record<string, any> = {};
+  // Adiciona os parâmetros SÓ SE tiverem valor (buildUrl vai ignorar os vazios/undefined)
+  if (status) query['status'] = status;
+  if (patient_id) query['patient_id'] = patient_id;
+  if (created_by) query['created_by'] = created_by;
+  if (order) query['order'] = order; // Usa o padrão ou o que for passado
 
-  const url1 = buildUrl('/reports', query1);
-  const headers = getAuthHeaders();
-  let data: Report[] = [];
+  // Usa a função buildUrl ORIGINAL (que ignora parâmetros vazios)
+  const url = buildUrl('/reports', query);
+  const headers = getAuthHeaders();
+  let data: Report[] = [];
 
-  try {
-    data = await fetchJson<Report[]>(url1, { headers });
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn('[laudos] Falha no join com patients(full_name). Vai hidratar manualmente.', e);
-  }
+  try {
+    // Busca os dados - AGORA SEM 'select' ou 'eq.'
+    data = await fetchJson<Report[]>(url, { headers });
+  } catch (e) {
+    console.error('[laudos] Falha ao buscar laudos. Verifique a URL, Auth e RLS.', e);
+    return []; // Retorna array vazio se a API falhar
+  }
 
-  // Se não retornou nomes, hidrata manualmente buscando patients pelo IN
-  const precisaHidratar = !Array.isArray(data) || data.length === 0 || data.some(r => !r.patients?.full_name);
-  if (precisaHidratar) {
-    // Busca "seco"
-    const query2: Record<string, any> = { select: '*', order: 'created_at.desc', limit };
-    if (status) query2['status'] = `eq.${status}`;
-    if (patient_id) query2['patient_id'] = `eq.${patient_id}`;
-    const url2 = buildUrl('/reports', query2);
-    const base = await fetchJson<Report[]>(url2, { headers });
+  // IMPORTANTE: Como não usamos 'select=*,patients(...)', os nomes NÃO virão automaticamente.
+  // A lógica de hidratação manual (buscar nomes depois) AINDA É NECESSÁRIA.
+  // (Esta era a lógica 'precisaHidratar' do seu código original)
 
-    // Hidrata nomes dos pacientes em lote
-    const ids = Array.from(new Set(base.map(b => b.patient_id).filter(Boolean))) as string[];
-    let mapa: Record<string, string> = {};
-    if (ids.length) {
-      // formata IN: (id1,id2,...)
-      const inList = `(${ids.map(encodeURIComponent).join(',')})`;
-      const urlP = buildUrl('/patients', { select: 'id,full_name', 'id': `in.${inList}` });
-      try {
-        const pacs = await fetchJson<Array<{ id: string; full_name: string }>>(urlP, { headers });
-        mapa = Object.fromEntries(pacs.map(p => [p.id, p.full_name]));
-      } catch {}
-    }
+  try {
+    // Hidrata nomes dos pacientes em lote (SE a API /patients funcionar com Supabase)
+    const ids = Array.from(new Set(data.map(b => b.patient_id).filter(Boolean))) as string[];
+    let mapa: Record<string, string> = {};
+    if (ids.length) {
+      const inList = `(${ids.map(encodeURIComponent).join(',')})`;
+        // Esta chamada AINDA usa sintaxe Supabase. PODE FALHAR se /patients também for customizado.
+      const urlP = buildUrl('/patients', { select: 'id,full_name', 'id': `in.${inList}` });
+      try {
+        const pacs = await fetchJson<Array<{ id: string; full_name: string }>>(urlP, { headers });
+        mapa = Object.fromEntries(pacs.map(p => [p.id, p.full_name]));
+      } catch (eHydrate) {
+        console.warn("[laudos] Falha ao hidratar nomes de pacientes. Verifique API /patients e RLS.", eHydrate);
+      }
+    }
 
-    data = base.map(r => ({
-      ...r,
-      patient_name: r.patient_id ? (mapa[r.patient_id] || null) : null,
-      patients: r.patient_id ? { id: r.patient_id, full_name: mapa[r.patient_id] } : null,
-    }));
-  } else {
-    // Normaliza campo auxiliar patient_name
-    data = data.map(r => ({ ...r, patient_name: r.patients?.full_name ?? null }));
-  }
+    data = data.map(r => ({
+      ...r,
+      patient_name: r.patient_id ? (mapa[r.patient_id] || null) : null,
+      // O campo 'patients' pode não vir mais, então adaptamos
+      patients: r.patient_id ? { id: r.patient_id, full_name: mapa[r.patient_id] || undefined } : null,
+    }));
 
-  return data;
+  } catch (eMap) {
+    console.error("[laudos] Falha ao mapear dados hidratados", eMap);
+  }
+
+  return data;
 }
 
 export async function getLaudo(id: string): Promise<Report | null> {
@@ -216,6 +232,7 @@ export async function getLaudo(id: string): Promise<Report | null> {
   const headers = getAuthHeaders();
   try {
     const arr = await fetchJson<Report[]>(url, { headers });
+    return Array.isArray(arr) ? arr[0] ?? null : null;
     const r = Array.isArray(arr) ? arr[0] ?? null : null;
     if (!r) return null;
     if (r.patients?.full_name) return { ...r, patient_name: r.patients.full_name };
@@ -226,6 +243,7 @@ export async function getLaudo(id: string): Promise<Report | null> {
     }
     return r;
   } catch (e) {
+    console.error(`[getLaudo] Falha ao buscar laudo ${id}`, e);
     // fallback simples sem join
     const url2 = buildUrl('/reports', { select: '*', id: `eq.${id}`, limit: 1 });
     const arr = await fetchJson<Report[]>(url2, { headers });
@@ -271,12 +289,6 @@ export async function listarMedicos(): Promise<Array<{ id: string | null; full_n
     }
   } catch {}
 
-  // 2) Tenta `user_directory` (como sugerido no erro do PostgREST)
-  try {
-    const url = buildUrl('/user_directory', { select: 'id,full_name,role', role: 'eq.doctor', order: 'full_name.asc' });
-    const d = await fetchJson<any[]>(url, { headers });
-    if (Array.isArray(d) && d.length) return normalize(d);
-  } catch {}
 
   // 3) Fallback: `profiles`
   try {

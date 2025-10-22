@@ -1,8 +1,8 @@
 // src/features/doctor/pages/laudos/NovoLaudoPage.tsx
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createLaudo } from "../../../../services/api/laudos";
-import { listPacientes, getHeaders } from "@/lib/pacientesService";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { listPacientes, getHeaders, listarMedicos, createLaudo, getLaudo, updateLaudo } from "@/lib/pacientesService"; // <--- IMPORTE listarMedicos e createLaudo daqui
+
 
 // Tipos de entidades e shims para Web Speech API
 type Paciente = { id: string; full_name: string };
@@ -28,74 +28,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
 // ===== sem fetch direto / supabase.ts aqui =====
 // usamos apenas pacientesService (apiGet) como “centro” da API
-async function listMedicos(): Promise<Medico[]> {
-  type Row = {
-    id: string;
-    full_name?: string;
-    name?: string;
-    display_name?: string;
-    role?: string;
-    user_role?: string;
-    perfil?: string;
-    type?: string;
-    kind?: string;
-  };
 
-  // Vamos ser super tolerantes com o schema do Supabase.
-  // 1) Tentamos SEM querystring (muitos esquemas com RLS/visões aceitam melhor)
-  // 2) Se falhar, tentamos `select=*`
-  // 3) Se ainda falhar, devolvemos lista vazia (a tela continua usável)
-  const baseUrl = `${SUPABASE_URL}/rest/v1/user_directory`;
-  const tries = [
-    `${baseUrl}`,
-    `${baseUrl}?select=*`,
-  ];
-
-  let rows: Row[] = [];
-  for (let i = 0; i < tries.length; i++) {
-    const u = tries[i];
-    try {
-      console.debug(`[Medicos] tentativa ${i + 1}:`, u);
-      const r = await fetch(u, { headers: getHeaders() });
-      if (!r.ok) {
-        const txt = await r.text().catch(() => "");
-        console.warn(`[Medicos] falhou (${r.status}):`, txt || r.statusText);
-        continue;
-      }
-      const data = (await r.json()) as unknown;
-      if (Array.isArray(data)) {
-        rows = data as Row[];
-        break;
-      }
-    } catch (e) {
-      console.warn("[Medicos] erro na tentativa:", e);
-      continue;
-    }
-  }
-
-  // Se nada deu certo, retorna vazio para não travar a página
-  if (!Array.isArray(rows) || rows.length === 0) {
-    console.info("[Medicos] nenhuma linha encontrada ou schema indisponível; retornando vazio.");
-    return [];
-  }
-
-  // Descobre dinamicamente a coluna que representa o papel (role)
-  const roleKey = ["role", "user_role", "perfil", "type", "kind"].find(
-    (k) => k in (rows[0] || {})
-  ) as keyof Row | undefined;
-
-  const filtered = roleKey
-    ? rows.filter((r) => {
-        const v = String((r as any)[roleKey] ?? "").toLowerCase();
-        return v === "doctor" || v === "medico" || v === "médico" || v === "medic";
-      })
-    : rows;
-
-  // Normaliza e ordena por nome
-  return filtered
-    .map((r) => ({ id: r.id, full_name: r.full_name ?? r.name ?? r.display_name ?? "Sem nome" }))
-    .sort((a, b) => a.full_name.localeCompare(b.full_name, "pt-BR"));
-}
 
 // ===== IA (opcional) =====
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
@@ -120,7 +53,11 @@ function combinarDataEHora(date?: string, time?: string) {
 
 export default function NovoLaudoPage() {
   const nav = useNavigate();
+  const { id: laudoId } = useParams<{ id: string }>();
   const editorRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // dados (carregados via useEffect)
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
@@ -134,6 +71,7 @@ export default function NovoLaudoPage() {
   const [horaExame, setHoraExame] = useState("");
   const [status, setStatus] = useState<"draft" | "published" | "archived">("draft");
   const [assinatura, setAssinatura] = useState(false);
+  const [contentHtml, setContentHtml] = useState("");
 
   // IA: visuais e reconhecimento de voz
   const [aiOpen, setAiOpen] = useState(false);
@@ -152,7 +90,7 @@ export default function NovoLaudoPage() {
       try {
         const [pacs, meds] = await Promise.all([
           listPacientes().catch(() => []),
-          listMedicos().catch(() => []),
+          listarMedicos().catch(() => []),
         ]);
         if (!alive) return;
         setPacientes(Array.isArray(pacs) ? pacs : []);
@@ -166,7 +104,57 @@ export default function NovoLaudoPage() {
       alive = false;
     };
   }, []);
+useEffect(() => {
+    if (laudoId) { // Só executa se estiver a editar (tem ID na URL)
+      setIsLoadingData(true);
+      setError(null); // Limpa erros anteriores
+      getLaudo(laudoId)
+        .then(laudoData => {
+          if (laudoData) {
+            // Preenche os estados do formulário com os dados recebidos
+            setPatientId(laudoData.patient_id || "");
+            setSolicitante(laudoData.requested_by || ""); // Assumindo que requested_by é o ID do médico
+            setExame(laudoData.exam || "Hemograma completo");
+            setStatus(laudoData.status as any || "draft");
+            setAssinatura(!laudoData.hide_signature); // Inverte a lógica
+            setContentHtml(laudoData.content_html || ""); // Guarda o HTML
 
+            // Preenche o editor diretamente
+            if (editorRef.current) {
+                editorRef.current.innerHTML = laudoData.content_html || "";
+            }
+
+            // Formatar data e hora para os inputs
+            if (laudoData.due_at) {
+              try {
+                const dateObj = new Date(laudoData.due_at);
+                setDataExame(dateObj.toISOString().split('T')[0]); // YYYY-MM-DD
+                setHoraExame(dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })); // HH:MM
+              } catch (e) {
+                console.error("Erro ao formatar data/hora do laudo:", e);
+                setDataExame("");
+                setHoraExame("");
+              }
+            } else {
+              setDataExame("");
+              setHoraExame("");
+            }
+          } else {
+            setError(`Laudo com ID ${laudoId} não encontrado.`);
+             alert(`Laudo com ID ${laudoId} não encontrado.`);
+          }
+        })
+        .catch(err => {
+          console.error("Falha ao carregar dados do laudo:", err);
+          setError(`Erro ao carregar laudo: ${err.message}`);
+          alert(`Erro ao carregar laudo: ${err.message}`);
+        })
+        .finally(() => {
+          setIsLoadingData(false);
+        });
+    }
+    // Dependência: laudoId garante que recarrega se o ID mudar (útil em SPAs)
+  }, [laudoId]);
   // Configurar reconhecimento de voz (Web Speech API)
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -277,33 +265,59 @@ Após a anamnese, adicione **Plano Sugerido** com possíveis próximos passos. I
     }
   }
 
-  async function onSubmit(e: React.FormEvent) {
+const onSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!patientId || !exame) {
       alert("Paciente e Exame são obrigatórios!");
       return;
     }
-    const content_html = editorRef.current?.innerHTML || "";
-    const body = {
+
+    // Pega o HTML atual do editor
+    const currentContentHtml = editorRef.current?.innerHTML || "";
+
+    // Monta o corpo da requisição (payload)
+    const body: Partial<Report> = { // Usar Partial<Report> é mais seguro
       patient_id: patientId,
       exam: exame,
       requested_by: solicitante || null,
-      content_html,
-      status,
+      content_html: currentContentHtml,
+      status: status,
       hide_signature: !assinatura,
       due_at: combinarDataEHora(dataExame, horaExame),
-      order_number: `REL-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`,
+      // Não incluir order_number na atualização, geralmente é fixo
     };
-    try {
-      await createLaudo(body);
-      alert("Laudo salvo com sucesso!");
-      nav("/doctor/laudos");
-    } catch (e: any) {
-      console.error(e);
-      alert(`Erro ao salvar laudo: ${e?.message || "desconhecido"}`);
-    }
-  }
 
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      if (laudoId) {
+        // --- Modo Edição ---
+        await updateLaudo(laudoId, body);
+        alert("Laudo atualizado com sucesso!");
+      } else {
+        // --- Modo Criação ---
+        // Adiciona o order_number apenas na criação, se necessário
+        body.order_number = `REL-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`;
+        await createLaudo(body);
+        alert("Laudo salvo com sucesso!");
+      }
+      nav("/doctor/laudos"); // Volta para a lista após sucesso
+    } catch (err: any) {
+      console.error(err);
+      setError(`Erro ao salvar: ${err?.message || "desconhecido"}`);
+      alert(`Erro ao salvar: ${err?.message || "desconhecido"}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [
+      laudoId, patientId, exame, solicitante, status, assinatura, dataExame, horaExame, nav // Adiciona dependências do useCallback
+  ]);
+
+  // Exibir loading enquanto busca dados do laudo
+  if (isLoadingData) {
+    return <div className="p-10 text-center">Carregando dados do laudo...</div>;
+  }
   return (
     <div className="min-h-[calc(100vh-120px)] bg-[#F8F9FA] px-4 py-6 grid place-items-center">
       <form
@@ -566,4 +580,7 @@ function Labeled({
       {children}
     </label>
   );
+}
+function Spinner() {
+    return <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>;
 }

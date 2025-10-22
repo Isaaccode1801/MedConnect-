@@ -73,8 +73,8 @@ export const router = createBrowserRouter([
       // Rotas do médico — Laudos
       { path: "/doctor/laudos", element: <LaudosPage /> },
       { path: "/doctor/laudos/novo", element: <NovoLaudoPage /> },
-      { path: "/doctor/laudos/:id", element: <RevisarLaudoPage /> },
-
+      { path: "/doctor/laudos/:id/revisar", element: <RevisarLaudoPage /> },
+      { path: "/doctor/laudos/:id/editar", element: <NovoLaudoPage /> },
       // 404 explícito
       { path: "*", element: <NotFound /> },
     ],
