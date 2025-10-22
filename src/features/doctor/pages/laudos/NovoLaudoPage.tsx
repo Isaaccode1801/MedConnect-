@@ -1,7 +1,7 @@
 // src/features/doctor/pages/laudos/NovoLaudoPage.tsx
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { listPacientes, getHeaders, listarMedicos, createLaudo, getLaudo, updateLaudo } from "@/lib/pacientesService"; // <--- IMPORTE listarMedicos e createLaudo daqui
+import { Report ,listPacientes, getHeaders, listarMedicos, createLaudo, getLaudo, updateLaudo } from "@/lib/pacientesService"; // <--- IMPORTE listarMedicos e createLaudo daqui
 
 
 // Tipos de entidades e shims para Web Speech API

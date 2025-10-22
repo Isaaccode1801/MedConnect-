@@ -89,13 +89,18 @@ export interface Report {
   content_json?: unknown;
   status?: string;
   requested_by?: string;
-  due_at?: string;
+  due_at?: string | null;
   created_at?: string;
   updated_at?: string;
   created_by?: string;
-  // campos hidratados
-  patients?: { id?: string; full_name?: string } | null;
-  patient_name?: string | null;
+// --- Propriedades em falta ---
+  hide_signature?: boolean; // <-- ADICIONE esta linha
+  hide_date?: boolean;      // <-- ADICIONE esta linha (vi na Spec)
+
+  // --- Campos hidratados (opcionais) ---
+  patients?: { id?: string; full_name?: string } | null; // Já existe
+  patient_name?: string | null; // Já existe
+  updated_by?: string | null; // Adicione se necessário (vi na Spec)
 }
 
 // Pequeno helper para montar URL com querystring
@@ -234,25 +239,12 @@ export async function getLaudo(id: string): Promise<Report | null> {
     const arr = await fetchJson<Report[]>(url, { headers });
     return Array.isArray(arr) ? arr[0] ?? null : null;
     const r = Array.isArray(arr) ? arr[0] ?? null : null;
-    if (!r) return null;
-    if (r.patients?.full_name) return { ...r, patient_name: r.patients.full_name };
-    // hidrata nome se necessário
-    if (r.patient_id) {
-      const p = await getPaciente(r.patient_id);
-      return { ...r, patient_name: p?.full_name ?? null } as Report;
-    }
+
     return r;
-  } catch (e) {
+  }  catch (e) {
     console.error(`[getLaudo] Falha ao buscar laudo ${id}`, e);
-    // fallback simples sem join
-    const url2 = buildUrl('/reports', { select: '*', id: `eq.${id}`, limit: 1 });
-    const arr = await fetchJson<Report[]>(url2, { headers });
-    const r = Array.isArray(arr) ? arr[0] ?? null : null;
-    if (r?.patient_id) {
-      const p = await getPaciente(r.patient_id);
-      return { ...r, patient_name: p?.full_name ?? null } as Report;
-    }
-    return r;
+
+    return null;
   }
 }
 
