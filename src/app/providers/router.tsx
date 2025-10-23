@@ -15,7 +15,7 @@ import UsersList from '@/features/admin/pages/UsersList.jsx'
 import { AdminDashboardContent } from '@/features/admin/components/DashboardWidgets';
 import GerenciamentoPacientesPage from '@/features/doctor/pages/GerenciamentoPacientesPage';
 import PaginaCadastroPaciente from '@/features/doctor/pages/PaginaCadastroPaciente';
-import AgendamentoPacientePage from '@/features/patients/pages/agendamento.jsx';
+import AgendamentoPacientePage from '@/features/patients/pages/Agendamento';
 const Root = () => <Outlet />;
 
 const ErrorPage = () => (

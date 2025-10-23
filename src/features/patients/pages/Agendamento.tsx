@@ -1,25 +1,43 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { listarMedicos } from '@/lib/pacientesService';
-import "./agendamento.css"; // Importa o CSS corrigido
+import { listarMedicos } from '@/lib/pacientesService'; // Importa a função
+import "./agendamento.css"; // Importa o CSS
 import "@fortawesome/fontawesome-free/css/all.min.css";
 // Importa os ícones do React
 import { FaSearch, FaWheelchair, FaRegCalendarAlt, FaClock } from 'react-icons/fa';
 
-// --- Componente Modal (Estrutura Básica) ---
-// (A lógica interna do calendário precisa ser portada do seu agendamento.js original)
-function ModalAgendamento({ medico, onClose }) {
-    const [dataSelecionada, setDataSelecionada] = useState(null);
-    const [horarioSelecionado, setHorarioSelecionado] = useState(null);
+// --- Interface de Tipos ---
+// (Define a estrutura dos dados do médico)
+interface Medico {
+  id: string;
+  full_name: string;
+  especialidade?: string;
+  cidade?: string;
+  contato_telefone?: string;
+  atende_por?: string[] | string;
+  valor_consulta?: string;
+  proxima_janela?: string;
+  is_available?: boolean;
+  [key: string]: any; // Permite outras propriedades que não listamos
+}
 
-    // TODO: Portar a lógica do calendário de agendamento.js para React
-    // Esta é apenas uma simulação
+// --- Props do Modal ---
+interface ModalAgendamentoProps {
+  medico: Medico | null;
+  onClose: () => void; // Função que não retorna nada
+}
+
+// --- Componente Modal (com tipos) ---
+function ModalAgendamento({ medico, onClose }: ModalAgendamentoProps) {
+    const [dataSelecionada, setDataSelecionada] = useState<string | null>(null);
+    const [horarioSelecionado, setHorarioSelecionado] = useState<string | null>(""); // Inicia como ""
+
     const handleConfirmar = () => {
         if (!dataSelecionada || !horarioSelecionado) {
             alert("Por favor, selecione uma data e um horário.");
             return;
         }
-        alert(`Agendamento simulado com ${medico.full_name} para ${dataSelecionada} às ${horarioSelecionado}.`);
+        alert(`Agendamento simulado com ${medico?.full_name} para ${dataSelecionada} às ${horarioSelecionado}.`);
         onClose();
     };
 
@@ -37,7 +55,7 @@ function ModalAgendamento({ medico, onClose }) {
                     {/* Simulação da lógica do calendário */}
                     <div className="agendamento-container" style={{ minHeight: '200px', background: '#f9f9f9', padding: '10px', border: '1px solid #eee' }}>
                         <h4 style={{ color: '#333' }}>
-                            Horários para <span id="data-selecionada-titulo">--/--/----</span>
+                            Horários para <span id="data-selecionada-titulo">{dataSelecionada || '--/--/----'}</span>
                         </h4>
                         <p style={{ color: '#666' }}><i>(Lógica do calendário a ser implementada em React)</i></p>
                         <div>
@@ -72,9 +90,9 @@ function ModalAgendamento({ medico, onClose }) {
 export default function AgendamentoPage() {
     const navigate = useNavigate();
 
-    const [medicos, setMedicos] = useState([]);
+    const [medicos, setMedicos] = useState<Medico[]>([]); // Usa o tipo Medico
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
     // Estados para filtros
     const [searchTerm, setSearchTerm] = useState('');
@@ -83,7 +101,7 @@ export default function AgendamentoPage() {
 
     // Estado do Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [medicoSelecionado, setMedicoSelecionado] = useState(null);
+    const [medicoSelecionado, setMedicoSelecionado] = useState<Medico | null>(null); // Usa o tipo Medico
 
     // Busca dados da API
     useEffect(() => {
@@ -91,32 +109,33 @@ export default function AgendamentoPage() {
         setError(null);
         listarMedicos() // Função do seu service
             .then(data => {
-                // Simulação de dados extras que o CSS espera (substitua pelos seus dados reais)
-                const mockData = data.map(medico => ({
+                // --- DADOS MOCKADOS REMOVIDOS ---
+                // Agora usamos os dados reais da API, apenas garantindo fallbacks
+                const realData = (data || []).map((medico: any): Medico => ({ // Adiciona tipo de retorno :Medico
                     ...medico,
-                    // Garante que full_name exista
                     full_name: medico.full_name || 'Nome Indisponível',
-                    especialidade: medico.especialidade || ['Clínico Geral', 'Cardiologista', 'Neurologista'][Math.floor(Math.random() * 3)],
-                    cidade: medico.cidade || ['São Paulo', 'Rio de Janeiro', 'Curitiba'][Math.floor(Math.random() * 3)],
-                    contato_telefone: medico.contato_telefone || '(11) 98888-7777',
-                    atende_por: medico.atende_por || ['Plano A', 'Particular'],
-                    valor_consulta: medico.valor_consulta || '250,00',
-                    proxima_janela: medico.proxima_janela || 'Amanhã, 10:00',
-                    is_available: medico.is_available ?? (Math.random() > 0.3), // 70% chance de estar disponível
+                    // Adiciona fallbacks para os campos que o JSX espera
+                    especialidade: medico.especialidade || 'Clínico Geral',
+                    cidade: medico.cidade || 'N/A',
+                    contato_telefone: medico.contato_telefone || 'N/A',
+                    atende_por: medico.atende_por || ['Particular'],
+                    valor_consulta: medico.valor_consulta || 'N/A',
+                    proxima_janela: medico.proxima_janela || 'N/A',
+                    is_available: medico.is_available ?? false, // Garante que é booleano
                 }));
-                setMedicos(Array.isArray(mockData) ? mockData : []);
+                setMedicos(realData); // Usa os dados reais/limpos
             })
             .catch(err => {
                 console.error("Falha ao buscar médicos:", err);
-                setError(err.message || "Não foi possível carregar os médicos.");
+                setError((err as Error).message || "Não foi possível carregar os médicos.");
             })
             .finally(() => {
                 setLoading(false);
             });
-    }, []);
+    }, []); // Roda apenas uma vez
 
     // Lógica de filtragem
-    const medicosFiltrados = useMemo(() => {
+    const medicosFiltrados: Medico[] = useMemo(() => {
         return medicos.filter(medico => {
             const searchLower = searchTerm.toLowerCase();
             
@@ -144,7 +163,7 @@ export default function AgendamentoPage() {
         setSomenteDisponiveis(false);
     };
 
-    const handleAbrirModal = (medico) => {
+    const handleAbrirModal = (medico: Medico) => {
         setMedicoSelecionado(medico);
         setIsModalOpen(true);
     };
@@ -156,7 +175,7 @@ export default function AgendamentoPage() {
 
     // Pega especialidades únicas para o dropdown
     const especialidadesUnicas = useMemo(() => {
-        const set = new Set(medicos.map(m => m.especialidade).filter(Boolean));
+        const set = new Set(medicos.map(m => m.especialidade).filter(Boolean)); 
         return Array.from(set).sort();
     }, [medicos]);
 
@@ -164,12 +183,11 @@ export default function AgendamentoPage() {
     const [menuAcessibilidade, setMenuAcessibilidade] = useState(false);
     const [modoEscuro, setModoEscuro] = useState(false);
     const [modoDaltonico, setModoDaltonico] = useState(false);
+    // (A lógica de Zoom e Leitor de Texto precisa ser portada do JS original para o React)
 
     useEffect(() => {
-       // Aplica classes ao <html> ou <body>
        document.body.classList.toggle('modo-escuro', modoEscuro);
        document.body.classList.toggle('modo-daltonico', modoDaltonico);
-       // Limpa as classes quando o componente é desmontado
        return () => {
            document.body.classList.remove('modo-escuro');
            document.body.classList.remove('modo-daltonico');
@@ -177,15 +195,13 @@ export default function AgendamentoPage() {
     }, [modoEscuro, modoDaltonico]);
 
     return (
-        // O body terá a classe 'modo-escuro' se ativo
         <div>
             <div className="appbar">
                 <div className="appbar-inner">
                     <div className="brand">
                         <Link to="/" className="logo-link">
-                            {/* Caminho relativo à pasta /public */}
                             <img
-                                src="/Medconnect.logo.png" 
+                                src="/Medconnect.logo.png" // Caminho absoluto para pasta /public
                                 alt="Logo MedConnect"
                                 className="logo"
                             />
@@ -196,7 +212,7 @@ export default function AgendamentoPage() {
                         <small>Marque sua consulta</small>
                     </div>
                     <nav className="tabs">
-                        <Link to="/paciente/dashboard">Início</Link> {/* TODO: Criar esta rota */}
+                        <Link to="/paciente/dashboard">Início</Link>
                         <Link to="/paciente/agendamento" className="ativo">
                             Marcar Consulta
                         </Link>
@@ -263,31 +279,31 @@ export default function AgendamentoPage() {
                             </thead>
                             <tbody id="tbody">
                                 {loading && (
-                                    <tr className="row"><td colSpan="9" className="empty">Carregando médicos...</td></tr>
+                                    <tr className="row"><td colSpan={9} className="empty">Carregando médicos...</td></tr>
                                 )}
                                 {error && (
-                                    <tr className="row"><td colSpan="9" className="empty" style={{ color: 'var(--danger)' }}>{error}</td></tr>
+                                    <tr className="row"><td colSpan={9} className="empty" style={{ color: 'var(--danger)' }}>{error}</td></tr>
                                 )}
                                 {!loading && !error && medicosFiltrados.length === 0 && (
-                                    <tr className="row"><td colSpan="9" className="empty">Nenhum médico encontrado.</td></tr>
+                                    <tr className="row"><td colSpan={9} className="empty">Nenhum médico encontrado.</td></tr>
                                 )}
                                 {!loading && !error && medicosFiltrados.map(medico => (
                                     <tr key={medico.id} className="row"> 
-                                        <td>{medico.full_name || 'N/A'}</td>
-                                        <td>{medico.especialidade || 'N/A'}</td>
-                                        <td>{medico.cidade || 'N/A'}</td>
-                                        <td>{medico.contato_telefone || 'N/A'}</td>
+                                        <td>{medico.full_name}</td>
+                                        <td>{medico.especialidade}</td>
+                                        <td>{medico.cidade}</td>
+                                        <td>{medico.contato_telefone}</td>
                                         <td>
                                             <div className="convenios">
                                                 {Array.isArray(medico.atende_por) ? (
-                                                    medico.atende_por.map(conv => <span key={conv} className="badge">{conv}</span>)
+                                                    medico.atende_por.map((conv: string) => <span key={conv} className="badge">{conv}</span>)
                                                 ) : (
-                                                    <span className="badge">{medico.atende_por}</span>
+                                                    medico.atende_por && <span className="badge">{medico.atende_por}</span>
                                                 )}
                                             </div>
                                         </td>
-                                        <td>R$ {medico.valor_consulta || 'N/A'}</td>
-                                        <td>{medico.proxima_janela || 'N/A'}</td>
+                                        <td>R$ {medico.valor_consulta}</td>
+                                        <td>{medico.proxima_janela}</td>
                                         <td>
                                             <span className={`badge ${medico.is_available ? 'ok' : 'warn'}`}>
                                                 {medico.is_available ? 'Disponível' : 'Indisponível'}
@@ -331,7 +347,6 @@ export default function AgendamentoPage() {
                 </button>
                 <div className="menu-item" id="aumentarFonteContainer">
                     🔠 Aumentar Fonte
-                    {/* A lógica de Zoom/Leitor precisa ser portada do JS original para o React */}
                     <div id="controlesFonte" className="controles-fonte">
                          <button id="diminuirFonte" className="controle-fonte">➖</button>
                          <span id="tamanhoFonteValor">100%</span>
@@ -348,4 +363,3 @@ export default function AgendamentoPage() {
         </div>
     );
 }
-
