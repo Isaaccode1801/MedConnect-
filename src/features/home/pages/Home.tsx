@@ -120,7 +120,7 @@ mãos
           </button>
 
           <button
-            onClick={() => window.location.href = '/admin'}
+            onClick={() => window.location.href = '/login?role=admin'}
             className="cta transition-transform transform hover:scale-105"
             style={{
               background: 'linear-gradient(135deg, #6b7280, #9ca3af)',

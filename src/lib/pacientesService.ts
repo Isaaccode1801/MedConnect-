@@ -5,7 +5,7 @@
 // Base da API (Supabase REST)
 const API_BASE_URL: string = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1`;
 const API_KEY: string = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
+const FUNCTIONS_BASE_URL = API_BASE_URL.replace('/rest/v1', '/functions/v1');
 if (!import.meta.env.VITE_SUPABASE_URL || !API_KEY) {
   // Log leve para ajudar em 401 causados por env faltando
   // eslint-disable-next-line no-console
@@ -132,11 +132,12 @@ async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> 
 }
 
 // ======================= PACIENTES =======================
-export async function listPacientes(): Promise<Array<{ id: string; full_name: string }>> {
-  const url = buildUrl('/patients', { select: 'id,full_name', order: 'full_name.asc' });
-  return fetchJson(url, { headers: getAuthHeaders() });
+export async function listPacientes(): Promise<Array<Partial<Report>>> { // Pode usar Partial<Report> ou um tipo Paciente mais completo
+  // CORREÇÃO: Mude 'select' para '*' para buscar todas as colunas
+  const url = buildUrl('/patients', { select: '*', order: 'full_name.asc' });
+  // O tipo de retorno do fetchJson também precisa ser ajustado se você for mais estrito
+  return fetchJson<Array<Partial<Report>>>(url, { headers: getAuthHeaders() });
 }
-
 export async function getPaciente(id: string | number): Promise<any> {
   const url = buildUrl('/patients', { select: '*', id: `eq.${id}`, limit: 1 });
   const data = await fetchJson<any[]>(url, { headers: getAuthHeaders() });
@@ -144,8 +145,17 @@ export async function getPaciente(id: string | number): Promise<any> {
 }
 
 export async function createPaciente(dados: Record<string, unknown>): Promise<any> {
-  const url = `${API_BASE_URL}/patients`;
-  return fetchJson(url, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(dados) });
+  const url = `${FUNCTIONS_BASE_URL}/create-patient`;
+ 
+  const baseHeaders = getAuthHeaders();
+  const functionHeaders: Record<string, string> = {
+    Authorization: baseHeaders.Authorization, 
+    'Content-Type': baseHeaders['Content-Type'], 
+    apikey: baseHeaders.apikey, 
+    // 'x-user-role': baseHeaders['x-user-role'] // Opcional: Pode remover se a function não usar
+    // NÃO inclua 'Prefer'
+  };
+  return fetchJson(url, { method: 'POST', headers: functionHeaders, body: JSON.stringify(dados) });
 }
 
 export async function updatePaciente(id: string | number, dados: Record<string, unknown>): Promise<any> {

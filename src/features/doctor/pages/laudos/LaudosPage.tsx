@@ -189,9 +189,13 @@ async function handleDeletar(id: string) {
             <button onClick={() => nav("/doctor/laudos")} className="nav-link active">
               Laudos
             </button>
-            <a href="#" className="nav-link">
-              Gerenciamento de Pacientes
-            </a>
+            <button
+              type="button"
+              onClick={() => nav('/doctor/pacientes')}
+              className="nav-link hidden-lg"
+            >
+              Gerenciamento de Pacientes
+            </button>
           </nav>
         </div>
       </header>

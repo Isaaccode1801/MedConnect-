@@ -10,7 +10,11 @@ import LaudosPage from "@/features/doctor/pages/laudos/LaudosPage";
 import NovoLaudoPage from "@/features/doctor/pages/laudos/NovoLaudoPage";
 import RevisarLaudoPage from "@/features/doctor/pages/laudos/RevisarLaudoPage";
 import DoctorDashboard from "@/features/doctor/pages/Dashboard";
-
+import AdminPage from '@/features/admin/pages/App'; 
+import UsersList from '@/features/admin/pages/UsersList.jsx'
+import { AdminDashboardContent } from '@/features/admin/components/DashboardWidgets';
+import GerenciamentoPacientesPage from '@/features/doctor/pages/GerenciamentoPacientesPage';
+import PaginaCadastroPaciente from '@/features/doctor/pages/PaginaCadastroPaciente';
 const Root = () => <Outlet />;
 
 const ErrorPage = () => (
@@ -67,16 +71,32 @@ export const router = createBrowserRouter([
       { path: "/doctor", element: <Navigate to="/doctor/dashboard" replace /> },
       { path: "/dashboard", element: <Navigate to="/doctor/dashboard" replace /> },
       { path: "/laudos", element: <Navigate to="/doctor/laudos" replace /> },
-
       { path: "/doctor/dashboard", element: <DoctorDashboard /> },
 
       // Rotas do médico — Laudos
       { path: "/doctor/laudos", element: <LaudosPage /> },
       { path: "/doctor/laudos/novo", element: <NovoLaudoPage /> },
+      { path: "/doctor/pacientes", element: <GerenciamentoPacientesPage /> },
+      { path: "/doctor/pacientes/novo", element: <PaginaCadastroPaciente /> },
+      { path: "/doctor/pacientes/editar/:id", element: <PaginaCadastroPaciente /> },
       { path: "/doctor/laudos/:id/revisar", element: <RevisarLaudoPage /> },
       { path: "/doctor/laudos/:id/editar", element: <NovoLaudoPage /> },
       // 404 explícito
       { path: "*", element: <NotFound /> },
+
+      // --- Rotas do Admin (Estrutura Aninhada) ---
+      {
+        path: "/admin", // 👈 Caminho base para o layout admin
+        element: <AdminPage />,
+        children: [
+          {
+            index: true,
+            element: <AdminDashboardContent />,
+          },
+          { path: "users", element: <UsersList /> },
+          
+        ]   // 👈 Renderiza o layout AdminPage (o componente App antigo)
+      },
     ],
   },
 ]);

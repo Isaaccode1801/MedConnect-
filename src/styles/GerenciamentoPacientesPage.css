@@ -1,0 +1,612 @@
+    :root {
+      --brand: #1db7ae;
+      --brand-600: #12968f;
+      --brand-100: #e7f7f6;
+      --ink: #24323f;
+      --muted: #6b7a88;
+      --line: #e6eaef;
+      --bg: #ffffff;
+      --danger: #e55353;
+      --warning: #f59e0b;
+      --success: #22c55e;
+      --shadow: 0 10px 20px rgba(15, 23, 42, .06);
+      --radius: 14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; color: var(--ink); background: #f6f8fb; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+
+    .topbar { background: var(--brand); color: #fff; font-size: .9rem; }
+    .topbar .wrap { max-width: 1200px; margin: 0 auto; padding: .5rem 1rem; display: flex; gap: 1rem; align-items: center; justify-content: space-between; }
+    .topbar small { opacity: .95; }
+
+  header {
+  background: #fff;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* ✅ Garante espaço entre brand e navbar */
+  padding: 0 2rem; /* ✅ Adiciona espaçamento nas laterais */
+}
+
+.logo-link img {
+  height: 100px;
+  width: auto;
+  display: block;
+}
+    .wrap { max-width: 1200px; margin: 0 auto; padding: .9rem 1rem; display: flex; align-items: center; justify-content: space-between; }
+  .brand {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  font-weight: 800;
+  letter-spacing: .4px;
+  margin-right: auto; /* ✅ A técnica para empurrar a navbar para a direita */
+}
+    .logo { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--brand), #4dd7cf); display: grid; place-items: center; color: #fff; font-weight: 700; box-shadow: 0 6px 14px rgba(29,183,174,.35); }
+    nav { display: flex; gap: 1.2rem; color: var(--muted); font-weight: 600; }
+    .cta { background: var(--brand); color: #fff; padding: .6rem 1rem; border-radius: 999px; box-shadow: 0 10px 18px rgba(29,183,174,.25); transition: .2s ease; }
+    .cta:hover { background: var(--brand-600); transform: translateY(-1px); }
+
+    .container { max-width: 1200px; margin: 28px auto; padding: 0 1rem 4rem; }
+
+    .card { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .card .head { padding: 1rem 1.2rem; border-bottom: 1px solid var(--line); display: flex; gap: 1rem; align-items: center; justify-content: space-between; }
+    .title { display: flex; gap: .8rem; align-items: center; }
+    .title h1 { margin: 0; font-size: 1.25rem; }
+    .badge { background: var(--brand-100); color: var(--brand-600); font-weight: 700; padding: .2rem .5rem; border-radius: 6px; font-size: .75rem; }
+
+    .toolbar { display: grid; grid-template-columns: 1fr auto; gap: .8rem; width: 100%; }
+    .search { display: flex; align-items: center; gap: .6rem; background: #f9fbfd; border: 1px solid var(--line); padding: .55rem .8rem; border-radius: 999px; }
+    .search input { all: unset; width: 100%; color: var(--ink); }
+    .btn { display: inline-flex; gap: .5rem; align-items: center; border: 1px solid transparent; border-radius: 999px; padding: .65rem 1rem; font-weight: 700; cursor: pointer; transition: .2s ease; }
+    .btn.primary { background: var(--brand); color: #fff; box-shadow: 0 10px 18px rgba(29,183,174,.25); }
+    .btn.primary:hover { background: var(--brand-600); transform: translateY(-1px); }
+
+    .table { width: 100%; border-collapse: collapse; }
+    .table thead th { text-align: left; font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); background: #fbfdff; border-bottom: 1px solid var(--line); padding: .9rem .9rem; }
+    .table tbody td { padding: .9rem .9rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    .table tbody tr:hover { background: #fcfefe; }
+
+    .actions { display: inline-flex; gap: .35rem; }
+    .icon-btn { --bg: #f2f6fb; --bd: var(--line); display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--bd); background: var(--bg); transition: .2s ease; }
+    .icon-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+
+    .table-footer { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.2rem; }
+    .pagination { display: inline-flex; gap: .4rem; }
+    .page-btn, .page { min-width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); display: grid; place-items: center; padding: 0 .6rem; background:#fff; cursor:pointer }
+    .page-btn.active, .page.is-active { background: var(--brand); color: #fff; border-color: transparent; box-shadow: 0 10px 18px rgba(29,183,174,.25); }
+    .col-actions{ text-align:right }
+
+    @media (max-width: 900px) {
+      .toolbar { grid-template-columns: 1fr; }
+      .table thead { display: none; }
+      .table, .table tbody, .table tr, .table td { display: block; width: 100%; }
+      .table tbody tr { border-bottom: 1px solid var(--line); padding: .6rem 0; }
+      .table tbody td { border-bottom: none; display: grid; grid-template-columns: 30% 1fr; gap: .6rem; padding: .5rem .9rem; }
+      .actions { justify-content: flex-end; }
+    }
+    :root{
+  --brand: #1db7ae;
+  --brand-600:#12968f;
+  --brand-100:#e7f7f6;
+  --ink:#24323f;
+  --muted:#6b7a88;
+  --line:#e6eaef;
+  --bg:#ffffff;
+  --shadow: 0 20px 60px rgba(18,150,143,.22);
+}
+
+.overlay{
+  position: fixed; inset: 0;
+  background: rgba(14, 23, 29, .56);
+  display: none; align-items: center; justify-content: center;
+  padding: 24px;
+  z-index: 999;
+}
+.overlay[aria-hidden="false"]{ display:flex; }
+
+.carteirinha-wrap{
+  width: min(820px, 96vw);
+  perspective: 1400px;
+  position: relative;
+  animation: overlayIn .18s ease-out;
+}
+
+@keyframes overlayIn {
+  from{ transform: translateY(8px); opacity:.0}
+  to{ transform: translateY(0); opacity:1}
+}
+
+.close-btn{
+ position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 40px; height: 40px;
+  border: none; border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+  font-size: 28px; line-height: 40px;
+  color: #6b7a88; cursor: pointer;
+  z-index: 1010;  }
+  
+.close-btn:hover{ transform: translateY(-1px); }
+
+.carteirinha{
+  background: var(--bg);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transform: rotateX(14deg) rotateY(-8deg) scale(.96);
+  transform-origin: 50% 60%;
+  animation: cardEnter .35s cubic-bezier(.22,.9,.27,1.05) forwards;
+}
+
+@keyframes cardEnter{
+  to { transform: rotateX(0) rotateY(0) scale(1); }
+}
+
+.cart-header{
+  display:flex; align-items:center; gap:12px;
+  background: linear-gradient(135deg, var(--brand), #15a6a0);
+  color:#fff; padding: 20px 22px;
+}
+.logo-dot{ width:12px; height:12px; border-radius:50%; background:#fff; opacity:.9 }
+.cart-header h3{ margin:0; font-weight:700; letter-spacing:.3px }
+.tag{
+  margin-left:auto; background: rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.35);
+  padding:6px 10px; border-radius:999px; font-size:12px
+}
+
+.cart-body{ padding: 20px 22px; display:grid; grid-template-columns: 120px 1fr; gap: 18px; }
+.avatar{
+  position: relative; width:110px; height:110px; border-radius:16px;
+  background: var(--brand-100);
+  display:grid; place-items:center; font-weight:700; color:var(--brand-600);
+  isolation:isolate;
+}
+.avatar-ring{
+  position:absolute; inset:-6px;
+  border-radius:20px; border: 2px dashed var(--brand-600);
+  opacity:.25; animation: spin 10s linear infinite;
+  z-index: -1;
+}
+@keyframes spin { to{ transform: rotate(360deg); } }
+.avatar-iniciais{ font-size:28px }
+
+.grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.field label{
+  display:block; font-size:12px; color: var(--muted); margin-bottom:4px
+}
+.field p{
+  background:#fff; border:1px solid var(--line);
+  border-radius:12px; padding:10px 12px; margin:0; color:var(--ink);
+}
+
+.obs{ grid-column: 1/-1; }
+.obs label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+.obs p{
+  margin:0; background:#fff; border:1px dashed var(--line);
+  border-radius:12px; padding:12px; min-height:56px; color:var(--ink)
+}
+
+.cart-footer{
+  display:flex; align-items:center; gap:16px; justify-content:space-between;
+  padding: 12px 18px 18px;
+  border-top:1px solid var(--line);
+  background: #fafdfd;
+}
+.chips{ display:flex; gap:10px; flex-wrap:wrap }
+.chip{
+  background: var(--brand-100); color: var(--brand-600);
+  border:1px solid #cbeeed; padding:6px 10px; border-radius:999px; font-size:12px;
+}
+.chip.outline{
+  background: #fff; border:1px dashed #cbeeed; color: var(--brand-600);
+}
+.actions{ display:flex; gap:10px }
+button.primary, button.ghost{
+  border-radius:12px; padding:10px 14px; border:1px solid var(--line);
+  cursor:pointer; font-weight:600;
+}
+button.primary{ background: var(--brand); color:#fff; border-color: transparent; }
+button.primary:hover{ background: var(--brand-600); }
+button.ghost{ background:#fff; color: var(--ink); }
+button.ghost:hover{ border-color: var(--brand-600); color: var(--brand-600); }
+
+/* Responsivo */
+@media (max-width: 720px){
+  .cart-body{ grid-template-columns: 1fr; }
+  .grid{ grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 440px){
+  .grid{ grid-template-columns: 1fr; }
+}
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* Espaço entre os grupos de links */
+}
+.navbar a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 999px;
+  transition: .2s ease;
+  white-space: nowrap; /* Impede que o texto quebre linha */
+}
+.navbar a:hover {
+  color: var(--brand-600);
+}
+.navbar a.active {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(18,150,143,.25);
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: .5rem; /* Espaço entre 'Início' e 'Laudo' */
+}
+    .nav-links a {
+      text-decoration: none;
+      color: #555;
+      font-weight: 500;
+      padding: 10px 18px;
+      border-radius: 20px;
+      transition: background 0.3s ease;
+    }
+
+    .nav-links a.active {
+      background: #26bdbd;
+      color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      font-weight: bold;
+    }
+
+    .btn-navbar {
+      background: none;
+      color: #555;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .btn-navbar:hover {
+      background: #f0f0f0;
+    }
+
+/* ======================== RESPONSIVIDADE DO CABEÇALHO (CELULAR) ======================== */
+/* ADICIONE ESTE BLOCO NO FINAL DO SEU ARQUIVO CSS */
+
+@media (max-width: 760px) {
+  header {
+    flex-direction: column;   /* Empilha brand e navbar */
+    align-items: flex-start; /* Alinha tudo à esquerda */
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .brand {
+    margin-right: 0; /* Reseta a margem automática no celular */
+  }
+
+  .navbar {
+    flex-direction: column; /* Empilha os links */
+    align-items: stretch;   /* Faz os links ocuparem toda a largura */
+    width: 100%;
+    gap: .5rem;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: .5rem;
+  }
+
+  .navbar a {
+    text-align: center; /* Centraliza o texto dos links */
+  }
+}
+
+/* Botão flutuante */
+ .acessibilidade-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #008b8b; /* verde-azulado */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 65px;
+  height: 65px;
+  font-size: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s, background-color 0.3s;
+  z-index: 1000;
+}
+
+.acessibilidade-btn:hover {
+  background-color: #006666;
+  transform: scale(1.1);
+}
+
+/* Menu flutuante */
+.menu-acessibilidade {
+  position: fixed;
+  bottom: 95px; /* aparece acima do botão */
+  right: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  padding: 15px;
+  width: 220px;
+  display: none; /* começa escondido */
+  flex-direction: column;
+  gap: 8px;
+  z-index: 999;
+}
+
+.menu-acessibilidade h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  text-align: center;
+  color: #333;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 5px;
+}
+
+.menu-item {
+  background-color: #f5f5f5;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.menu-item:hover {
+  background-color: #e5e5e5;
+}
+
+/* ======= MODOS DE ACESSIBILIDADE ======= */
+
+/* ======== MODO ESCURO ======== */
+/* 1. Evita que o botão flutuante e o menu percam o 'position: fixed' no modo daltônico */
+/* 2. Impede que o filtro do modo daltônico afete o botão e menu */
+
+
+/* ======== MODO ESCURO (Dark Mode) ======== */
+body.modo-escuro {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Cabeçalho e barra superior */
+body.modo-escuro header,
+body.modo-escuro .topbar,
+body.modo-escuro .branding {
+    background-color: #1c1c1c !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Card, Container (Fundo), e Cabeçalho do Card (Regra Consolidada) */
+body.modo-escuro .card,
+body.modo-escuro .container,
+body.modo-escuro .card .head {
+    background: #1e1e1e !important; 
+    border-color: #333 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+}
+
+/* Campo de busca/toolbar */
+body.modo-escuro .search {
+    background: #2a2a2a !important;
+    border-color: #3a3a3a !important;
+}
+
+body.modo-escuro .search input {
+    color: #e0e0e0 !important; 
+}
+
+/* Fundos e cores de texto da tabela */
+body.modo-escuro .table,
+body.modo-escuro .table tbody td {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+    border-bottom: 1px solid #333 !important; /* Linhas separadoras */
+}
+
+/* Cabeçalho da tabela (thead) */
+body.modo-escuro .table thead th {
+    background: #1a1a1a !important; 
+    color: #888 !important; 
+    border-bottom: 1px solid #333 !important;
+}
+
+/* Efeito hover nas linhas da tabela */
+body.modo-escuro .table tbody tr:hover {
+    background: #282828 !important;
+}
+
+/* Rodapé da tabela (onde fica a contagem e paginação) - CORREÇÃO DA BARRA BRANCA */
+body.modo-escuro .table-footer {
+    background: #1a1a1a !important; 
+    border-top: 1px solid #333 !important; 
+}
+
+/* Paginação e Botões de Ação na Tabela */
+body.modo-escuro .page-btn,
+body.modo-escuro .page {
+    background: #2a2a2a !important; 
+    border-color: #333 !important;
+    color: #e0e0e0 !important;
+}
+
+/* Botão de paginação/ação (primário/ativo) */
+body.modo-escuro .page-btn.active,
+body.modo-escuro .page.is-active {
+    background: var(--brand) !important; /* Mantém a cor de destaque (verde) */
+    color: #fff !important;
+    border-color: transparent !important;
+}
+body.modo-escuro .page-btn:hover {
+    background: #3a3a3a !important;
+}
+
+/* O badge (onde tem o texto "CRM") */
+body.modo-escuro .badge {
+    background: #3a3a3a !important;
+    color: #90ee90 !important; 
+}
+
+/* Links e botões gerais (navegação) */
+body.modo-escuro a,
+body.modo-escuro .navmenu a {
+    color: #4fc3f7 !important;
+}
+
+body.modo-escuro a:hover,
+body.modo-escuro .navmenu a:hover {
+    color: #80d8ff !important;
+}
+
+/* Botão "Marcar Consulta" (.cta ou similar) */
+body.modo-escuro .cta,
+body.modo-escuro .cta-btn {
+    background-color: #009688 !important;
+    color: #fff !important;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.6);
+    border: none !important;
+}
+
+/* Botões principais (outras variações) */
+body.modo-escuro .btn,
+body.modo-escuro .btn-med,
+body.modo-escuro .btn-paciente,
+body.modo-escuro .btn-secretaria {
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Breadcrumbs e rodapé (footer) */
+body.modo-escuro footer,
+body.modo-escuro .breadcrumbs {
+    background-color: #1a1a1a !important;
+    color: #ccc !important;
+}
+
+/* ===============================
+   🧩 MENU DE ACESSIBILIDADE ESCURO
+=============================== */
+body.modo-escuro .menu-acessibilidade {
+    background-color: #1e1e1e !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.modo-escuro .menu-acessibilidade h4 {
+    color: #f1f1f1 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.modo-escuro .menu-acessibilidade button {
+    background-color: #2a2a2a !important;
+    color: #f5f5f5 !important;
+    border: none !important;
+}
+
+body.modo-escuro .menu-acessibilidade button:hover {
+    background-color: #3a3a3a !important;
+    transform: scale(1.03);
+    transition: all 0.2s ease;
+}
+
+/* Ícone flutuante e controles de fonte */
+body.modo-escuro #btnAcessibilidade {
+    background-color: #00bfa5 !important;
+    color: #fff !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+body.modo-escuro #aumentarFonteContainer {
+    background-color: #2a2a2a !important;
+    color: #f5f5f5 !important;
+    border: none !important;
+}
+
+body.modo-escuro #aumentarFonteContainer:hover {
+    background-color: #3a3a3a !important;
+}
+
+/* ===============================
+   TRANSICÕES E OUTROS MODOS
+=============================== */
+
+/* Transições suaves */
+body, 
+body * {
+    transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Aumentar fonte */
+.aumentar-fonte * {
+  font-size: 1.2em !important;
+}
+
+.controles-fonte {
+  display: none;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.controle-fonte {
+  flex: 1;
+  background-color: #e0e0e0;
+  border: none;
+  border-radius: 6px;
+  font-size: 18px;
+  margin: 0 5px;
+  padding: 6px 0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.controle-fonte:hover {
+  background-color: #ccc;
+}
+
+/* Quando visível */
+.controles-fonte.visivel {
+  display: flex;
+}
+
+
+/* Modo daltônico (usa paleta amigável) */
+.modo-daltonico {
+    filter: hue-rotate(45deg) saturate(120%) !important;
+}
+
+
