@@ -19,7 +19,7 @@ function resolveRouteByRole(role: string) {
     case "doctor":
       return "/doctor";
     case "patient":
-      return "/patient";
+      return "/patient/agendamento";
     case "secretary":
       return "/secretary";
     case "admin":

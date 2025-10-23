@@ -1,192 +1,351 @@
-import React, { useEffect } from "react";
-import "./agendamento.css";
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { listarMedicos } from '@/lib/pacientesService';
+import "./agendamento.css"; // Importa o CSS corrigido
 import "@fortawesome/fontawesome-free/css/all.min.css";
+// Importa os ícones do React
+import { FaSearch, FaWheelchair, FaRegCalendarAlt, FaClock } from 'react-icons/fa';
 
-const Agendamento = () => {
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "./agendamento.js"; // script local na mesma pasta
-    script.type = "module";
-    document.body.appendChild(script);
+// --- Componente Modal (Estrutura Básica) ---
+// (A lógica interna do calendário precisa ser portada do seu agendamento.js original)
+function ModalAgendamento({ medico, onClose }) {
+    const [dataSelecionada, setDataSelecionada] = useState(null);
+    const [horarioSelecionado, setHorarioSelecionado] = useState(null);
 
-    return () => {
-      if (script && script.parentNode) document.body.removeChild(script);
+    // TODO: Portar a lógica do calendário de agendamento.js para React
+    // Esta é apenas uma simulação
+    const handleConfirmar = () => {
+        if (!dataSelecionada || !horarioSelecionado) {
+            alert("Por favor, selecione uma data e um horário.");
+            return;
+        }
+        alert(`Agendamento simulado com ${medico.full_name} para ${dataSelecionada} às ${horarioSelecionado}.`);
+        onClose();
     };
-  }, []);
+
     return (
-    <div>
-      <div className="appbar">
-        <div className="appbar-inner">
-          <div className="brand">
-            <a href="../../index.html" className="logo-link">
-              <img
-                src="../../assets/img/Medconnect.logo.png"
-                alt="Logo HealthOne - Página Principal"
-                className="logo"
-              />
-            </a>
-          </div>
-          <div>
-            <h1>Diretório de Médicos</h1>
-            <small>Marque sua consulta</small>
-          </div>
-          <nav className="tabs">
-            <a href="dash-pacientes.html">Início</a>
-            <a href="agendamento.html" className="ativo">
-              Marcar Consulta
-            </a>
-          </nav>
-        </div>
-      </div>
-
-      <main className="wrap">
-        <div className="toolbar">
-          <div
-            className="field"
-            title="Pesquise por nome, CRM, cidade, especialidade"
-          >
-            <span role="img" aria-label="pesquisar">
-              🔎
-            </span>
-            <input
-              id="searchInput"
-              type="search"
-              placeholder="Pesquisar (ex.: Neurologista, Dr. Ana...)"
-            />
-          </div>
-          <div className="field">
-            <select id="especialidadeFilter">
-              <option value="">Todas as especialidades</option>
-              <option>Cardiologista</option>
-              <option>Clínico Geral</option>
-              <option>Dermatologista</option>
-              <option>Ginecologista</option>
-              <option>Neurologista</option>
-              <option>Pediatra</option>
-            </select>
-          </div>
-          <div className="switch">
-            <input id="disponiveisToggle" type="checkbox" />
-            <label htmlFor="disponiveisToggle">Somente disponíveis</label>
-          </div>
-          <button id="limparFiltros" className="btn secondary">
-            Limpar filtros
-          </button>
-        </div>
-
-        <section className="card" aria-label="Lista de médicos">
-          <div className="card-header">
-            <h2>Médicos</h2>
-          </div>
-          <div className="card-content">
-            <table className="table" aria-describedby="Lista de médicos">
-              <thead className="thead">
-                <tr>
-                  <th>Médico</th>
-                  <th>Especialidade</th>
-                  <th>Cidade</th>
-                  <th>Contato</th>
-                  <th>Atende por</th>
-                  <th>Consulta</th>
-                  <th>Próxima janela</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: "right" }}>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="tbody"></tbody>
-            </table>
-          </div>
-        </section>
-      </main>
-
-      <div
-        id="modal-agendamento"
-        className="modal-backdrop"
-        style={{ display: "none" }}
-      >
-        <div className="modal-content card">
-          <div className="modal-header card-header">
-            <h3 id="modal-medico-nome">Agendar com [Nome do Médico]</h3>
-            <button id="modal-fechar" className="close-btn">
-              &times;
-            </button>
-          </div>
-          <div className="modal-body card-content">
-            <p>Selecione uma data e um horário para a sua consulta.</p>
-            <div className="agendamento-container">
-              <div className="calendario">
-                <div className="calendario-header">
-                  <button id="mes-anterior">◀</button>
-                  <h4 id="mes-ano">Outubro 2025</h4>
-                  <button id="mes-seguinte">▶</button>
+        <div id="modal-agendamento" className="modal-backdrop" style={{ display: "flex" }}>
+            <div className="modal-content card">
+                <div className="modal-header card-header">
+                    <h3 id="modal-medico-nome">Agendar com {medico?.full_name || 'Médico'}</h3>
+                    <button id="modal-fechar" className="close-btn" onClick={onClose}>
+                        &times;
+                    </button>
                 </div>
-                <div className="calendario-dias-semana">
-                  <div>Dom</div>
-                  <div>Seg</div>
-                  <div>Ter</div>
-                  <div>Qua</div>
-                  <div>Qui</div>
-                  <div>Sex</div>
-                  <div>Sáb</div>
+                <div className="modal-body card-content">
+                    <p>Selecione uma data e um horário para a sua consulta.</p>
+                    {/* Simulação da lógica do calendário */}
+                    <div className="agendamento-container" style={{ minHeight: '200px', background: '#f9f9f9', padding: '10px', border: '1px solid #eee' }}>
+                        <h4 style={{ color: '#333' }}>
+                            Horários para <span id="data-selecionada-titulo">--/--/----</span>
+                        </h4>
+                        <p style={{ color: '#666' }}><i>(Lógica do calendário a ser implementada em React)</i></p>
+                        <div>
+                            <label style={{ color: '#333', marginRight: '10px' }}>Data:</label>
+                            <input type="date" onChange={(e) => setDataSelecionada(e.target.value)} />
+                        </div>
+                        <div style={{ marginTop: '10px' }}>
+                            <label style={{ color: '#333', marginRight: '10px' }}>Horário:</label>
+                            <select onChange={(e) => setHorarioSelecionado(e.target.value)} value={horarioSelecionado || ''}>
+                                <option value="" disabled>Selecione...</option>
+                                <option value="09:00">09:00</option>
+                                <option value="10:00">10:00</option>
+                                <option value="11:00">11:00</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div id="calendario-grid" className="calendario-grid"></div>
-              </div>
-              <div className="horarios-container">
-                <h4>
-                  Horários para{" "}
-                  <span id="data-selecionada-titulo">--/--/----</span>
-                </h4>
-                <div id="horarios-grid" className="horarios-grid">
-                  <p>Selecione um dia no calendário.</p>
+                <div className="modal-footer">
+                    <button id="btn-cancelar-modal" className="btn secondary" onClick={onClose}>
+                        Cancelar
+                    </button>
+                    <button id="btn-confirmar-agendamento" className="btn primary" onClick={handleConfirmar}>
+                        Confirmar Agendamento
+                    </button>
                 </div>
-              </div>
             </div>
-          </div>
-          <div className="modal-footer">
-            <button id="btn-cancelar-modal" className="btn secondary">
-              Cancelar
-            </button>
-            <button id="btn-confirmar-agendamento" className="btn primary">
-              Confirmar Agendamento
-            </button>
-          </div>
         </div>
-      </div>
+    );
+}
 
-      <button
-        id="btnAcessibilidade"
-        className="acessibilidade-btn"
-        aria-label="Menu de acessibilidade"
-      >
-        <i className="fa-solid fa-wheelchair"></i>
-      </button>
+// --- Componente Principal da Página ---
+export default function AgendamentoPage() {
+    const navigate = useNavigate();
 
-      <div id="menuAcessibilidade" className="menu-acessibilidade">
-        <h4>Opções de Acessibilidade</h4>
-        <button className="menu-item" id="modoEscuro">
-          🌓 Fundo Preto
-        </button>
-        <div className="menu-item" id="aumentarFonteContainer">
-          🔠 Aumentar Fonte
-          <div id="controlesFonte" className="controles-fonte">
-            <button id="diminuirFonte" className="controle-fonte">
-              ➖
+    const [medicos, setMedicos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Estados para filtros
+    const [searchTerm, setSearchTerm] = useState('');
+    const [especialidade, setEspecialidade] = useState('');
+    const [somenteDisponiveis, setSomenteDisponiveis] = useState(false);
+
+    // Estado do Modal
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [medicoSelecionado, setMedicoSelecionado] = useState(null);
+
+    // Busca dados da API
+    useEffect(() => {
+        setLoading(true);
+        setError(null);
+        listarMedicos() // Função do seu service
+            .then(data => {
+                // Simulação de dados extras que o CSS espera (substitua pelos seus dados reais)
+                const mockData = data.map(medico => ({
+                    ...medico,
+                    // Garante que full_name exista
+                    full_name: medico.full_name || 'Nome Indisponível',
+                    especialidade: medico.especialidade || ['Clínico Geral', 'Cardiologista', 'Neurologista'][Math.floor(Math.random() * 3)],
+                    cidade: medico.cidade || ['São Paulo', 'Rio de Janeiro', 'Curitiba'][Math.floor(Math.random() * 3)],
+                    contato_telefone: medico.contato_telefone || '(11) 98888-7777',
+                    atende_por: medico.atende_por || ['Plano A', 'Particular'],
+                    valor_consulta: medico.valor_consulta || '250,00',
+                    proxima_janela: medico.proxima_janela || 'Amanhã, 10:00',
+                    is_available: medico.is_available ?? (Math.random() > 0.3), // 70% chance de estar disponível
+                }));
+                setMedicos(Array.isArray(mockData) ? mockData : []);
+            })
+            .catch(err => {
+                console.error("Falha ao buscar médicos:", err);
+                setError(err.message || "Não foi possível carregar os médicos.");
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, []);
+
+    // Lógica de filtragem
+    const medicosFiltrados = useMemo(() => {
+        return medicos.filter(medico => {
+            const searchLower = searchTerm.toLowerCase();
+            
+            if (especialidade && medico.especialidade?.toLowerCase() !== especialidade.toLowerCase()) {
+                return false;
+            }
+            if (somenteDisponiveis && !medico.is_available) {
+                return false;
+            }
+            if (searchTerm &&
+                !medico.full_name?.toLowerCase().includes(searchLower) &&
+                !medico.especialidade?.toLowerCase().includes(searchLower) &&
+                !medico.cidade?.toLowerCase().includes(searchLower)
+            ) {
+                return false;
+            }
+            return true;
+        });
+    }, [medicos, searchTerm, especialidade, somenteDisponiveis]);
+
+    // Handlers
+    const handleLimparFiltros = () => {
+        setSearchTerm('');
+        setEspecialidade('');
+        setSomenteDisponiveis(false);
+    };
+
+    const handleAbrirModal = (medico) => {
+        setMedicoSelecionado(medico);
+        setIsModalOpen(true);
+    };
+
+    const handleFecharModal = () => {
+        setIsModalOpen(false);
+        setMedicoSelecionado(null);
+    };
+
+    // Pega especialidades únicas para o dropdown
+    const especialidadesUnicas = useMemo(() => {
+        const set = new Set(medicos.map(m => m.especialidade).filter(Boolean));
+        return Array.from(set).sort();
+    }, [medicos]);
+
+    // Lógica do menu de acessibilidade
+    const [menuAcessibilidade, setMenuAcessibilidade] = useState(false);
+    const [modoEscuro, setModoEscuro] = useState(false);
+    const [modoDaltonico, setModoDaltonico] = useState(false);
+
+    useEffect(() => {
+       // Aplica classes ao <html> ou <body>
+       document.body.classList.toggle('modo-escuro', modoEscuro);
+       document.body.classList.toggle('modo-daltonico', modoDaltonico);
+       // Limpa as classes quando o componente é desmontado
+       return () => {
+           document.body.classList.remove('modo-escuro');
+           document.body.classList.remove('modo-daltonico');
+       }
+    }, [modoEscuro, modoDaltonico]);
+
+    return (
+        // O body terá a classe 'modo-escuro' se ativo
+        <div>
+            <div className="appbar">
+                <div className="appbar-inner">
+                    <div className="brand">
+                        <Link to="/" className="logo-link">
+                            {/* Caminho relativo à pasta /public */}
+                            <img
+                                src="/Medconnect.logo.png" 
+                                alt="Logo MedConnect"
+                                className="logo"
+                            />
+                        </Link>
+                    </div>
+                    <div>
+                        <h1>Diretório de Médicos</h1>
+                        <small>Marque sua consulta</small>
+                    </div>
+                    <nav className="tabs">
+                        <Link to="/paciente/dashboard">Início</Link> {/* TODO: Criar esta rota */}
+                        <Link to="/paciente/agendamento" className="ativo">
+                            Marcar Consulta
+                        </Link>
+                    </nav>
+                </div>
+            </div>
+
+            <main className="wrap">
+                <div className="toolbar">
+                    <div className="field">
+                        <span><FaSearch /></span>
+                        <input
+                            id="searchInput"
+                            type="search"
+                            placeholder="Pesquisar (ex.: Neurologista, Dr. Ana...)"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="field">
+                        <select
+                            id="especialidadeFilter"
+                            value={especialidade}
+                            onChange={(e) => setEspecialidade(e.target.value)}
+                        >
+                            <option value="">Todas as especialidades</option>
+                            {especialidadesUnicas.map(esp => (
+                                <option key={esp} value={esp}>{esp}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="switch">
+                        <input
+                            id="disponiveisToggle"
+                            type="checkbox"
+                            checked={somenteDisponiveis}
+                            onChange={(e) => setSomenteDisponiveis(e.target.checked)}
+                        />
+                        <label htmlFor="disponiveisToggle">Somente disponíveis</label>
+                    </div>
+                    <button id="limparFiltros" className="btn secondary" onClick={handleLimparFiltros}>
+                        Limpar filtros
+                    </button>
+                </div>
+
+                <section className="card" aria-label="Lista de médicos">
+                    <div className="card-header">
+                        <h2>Médicos ({medicosFiltrados.length})</h2>
+                    </div>
+                    <div className="card-content">
+                        <table className="table">
+                            <thead className="thead">
+                                <tr>
+                                    <th>Médico</th>
+                                    <th>Especialidade</th>
+                                    <th>Cidade</th>
+                                    <th>Contato</th>
+                                    <th>Atende por</th>
+                                    <th>Consulta</th>
+                                    <th>Próxima janela</th>
+                                    <th>Status</th>
+                                    <th style={{ textAlign: "right" }}>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody">
+                                {loading && (
+                                    <tr className="row"><td colSpan="9" className="empty">Carregando médicos...</td></tr>
+                                )}
+                                {error && (
+                                    <tr className="row"><td colSpan="9" className="empty" style={{ color: 'var(--danger)' }}>{error}</td></tr>
+                                )}
+                                {!loading && !error && medicosFiltrados.length === 0 && (
+                                    <tr className="row"><td colSpan="9" className="empty">Nenhum médico encontrado.</td></tr>
+                                )}
+                                {!loading && !error && medicosFiltrados.map(medico => (
+                                    <tr key={medico.id} className="row"> 
+                                        <td>{medico.full_name || 'N/A'}</td>
+                                        <td>{medico.especialidade || 'N/A'}</td>
+                                        <td>{medico.cidade || 'N/A'}</td>
+                                        <td>{medico.contato_telefone || 'N/A'}</td>
+                                        <td>
+                                            <div className="convenios">
+                                                {Array.isArray(medico.atende_por) ? (
+                                                    medico.atende_por.map(conv => <span key={conv} className="badge">{conv}</span>)
+                                                ) : (
+                                                    <span className="badge">{medico.atende_por}</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td>R$ {medico.valor_consulta || 'N/A'}</td>
+                                        <td>{medico.proxima_janela || 'N/A'}</td>
+                                        <td>
+                                            <span className={`badge ${medico.is_available ? 'ok' : 'warn'}`}>
+                                                {medico.is_available ? 'Disponível' : 'Indisponível'}
+                                            </span>
+                                        </td>
+                                        <td style={{ textAlign: "right" }} className="actions">
+                                            <button
+                                                className="btn primary icon"
+                                                onClick={() => handleAbrirModal(medico)}
+                                                disabled={!medico.is_available}
+                                                title={!medico.is_available ? "Médico indisponível" : "Agendar consulta"}
+                                            >
+                                                <FaRegCalendarAlt /> <span style={{ marginLeft: '4px' }}>Agendar</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+
+            {isModalOpen && medicoSelecionado && (
+                <ModalAgendamento medico={medicoSelecionado} onClose={handleFecharModal} />
+            )}
+
+            {/* Menu de Acessibilidade */}
+            <button
+                id="btnAcessibilidade"
+                className="acessibilidade-btn"
+                aria-label="Menu de acessibilidade"
+                onClick={() => setMenuAcessibilidade(prev => !prev)}
+            >
+                <i className="fa-solid fa-wheelchair"></i>
             </button>
-            <span id="tamanhoFonteValor">100%</span>
-            <button id="aumentarFonte" className="controle-fonte">
-              ➕
-            </button>
-          </div>
+            <div id="menuAcessibilidade" className="menu-acessibilidade" style={{ display: menuAcessibilidade ? 'flex' : 'none' }}>
+                <h4>Opções de Acessibilidade</h4>
+                <button className="menu-item" id="modoEscuro" onClick={() => setModoEscuro(prev => !prev)}>
+                    🌓 Fundo Preto {modoEscuro ? '(Ativado)' : '(Desativado)'}
+                </button>
+                <div className="menu-item" id="aumentarFonteContainer">
+                    🔠 Aumentar Fonte
+                    {/* A lógica de Zoom/Leitor precisa ser portada do JS original para o React */}
+                    <div id="controlesFonte" className="controles-fonte">
+                         <button id="diminuirFonte" className="controle-fonte">➖</button>
+                         <span id="tamanhoFonteValor">100%</span>
+                         <button id="aumentarFonte" className="controle-fonte">➕</button>
+                    </div>
+                </div>
+                <button className="menu-item" id="leitorTexto">
+                    🔊 Leitor de Texto
+                </button>
+                <button className="menu-item" id="modoDaltonico" onClick={() => setModoDaltonico(prev => !prev)}>
+                    🎨 Modo Daltônico {modoDaltonico ? '(Ativado)' : '(Desativado)'}
+                </button>
+            </div>
         </div>
-        <button className="menu-item" id="leitorTexto">
-          🔊 Leitor de Texto
-        </button>
-        <button className="menu-item" id="modoDaltonico">
-          🎨 Modo Daltônico
-        </button>
-      </div>
-    </div>
-  );
-};
+    );
+}
 
-export default Agendamento;

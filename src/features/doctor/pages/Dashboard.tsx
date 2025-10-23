@@ -12,7 +12,7 @@ import {
   Clock4,
 } from "lucide-react";
 import "./Dashboard.css";
-import medicaImg from "../../../assets/medica.jpeg";
+import medicaImg from "/medica.jpeg";
 
 // --- Basic Card primitives scoped to this page ---
 function Card({

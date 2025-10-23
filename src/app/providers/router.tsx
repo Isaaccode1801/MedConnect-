@@ -15,6 +15,7 @@ import UsersList from '@/features/admin/pages/UsersList.jsx'
 import { AdminDashboardContent } from '@/features/admin/components/DashboardWidgets';
 import GerenciamentoPacientesPage from '@/features/doctor/pages/GerenciamentoPacientesPage';
 import PaginaCadastroPaciente from '@/features/doctor/pages/PaginaCadastroPaciente';
+import AgendamentoPacientePage from '@/features/patients/pages/agendamento';
 const Root = () => <Outlet />;
 
 const ErrorPage = () => (
@@ -97,6 +98,12 @@ export const router = createBrowserRouter([
           
         ]   // 👈 Renderiza o layout AdminPage (o componente App antigo)
       },
+      // --- Rotas do Paciente ---
+      // 👇 Adicione a nova rota aqui 👇
+      { path: "/patient/agendamento", element: <AgendamentoPacientePage /> },
+      // (Opcional) Adicione um redirect para a rota principal do paciente, se houver
+      // { path: "/paciente", element: <Navigate to="/paciente/agendamento" replace /> },
+      { path: "*", element: <NotFound /> },
     ],
   },
 ]);

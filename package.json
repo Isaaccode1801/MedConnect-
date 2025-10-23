@@ -12,6 +12,7 @@
     "format": "prettier -w ."
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "@splinetool/react-spline": "^4.1.0",
     "@splinetool/runtime": "^1.10.81",
     "@supabase/supabase-js": "^2.75.0",
