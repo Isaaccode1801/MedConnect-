@@ -1,0 +1,341 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Dashboard.css';
+
+interface Consulta {
+  id: string;
+  tipo: string;
+  data: string;
+  horario: string;
+  medico: string;
+  especialidade: string;
+}
+
+interface PerfilPaciente {
+  nome: string;
+  cpf: string;
+  idade: number;
+  tipoSanguineo: string;
+  altura: number;
+  peso: number;
+}
+
+export default function PatientDashboard() {
+  const navigate = useNavigate();
+  const [currentMonth] = useState(new Date());
+  
+  // Dados mockados do perfil do paciente
+  const [perfil] = useState<PerfilPaciente>({
+    nome: 'Isaac Kauã',
+    cpf: '862.346.645-47',
+    idade: 18,
+    tipoSanguineo: 'O+',
+    altura: 1.90,
+    peso: 100
+  });
+
+  // Consultas próximas
+  const [proximasConsultas] = useState<Consulta[]>([
+    {
+      id: '1',
+      tipo: 'Dentista',
+      data: 'Quarta',
+      horario: '09:00',
+      medico: 'Dra. Gorex Mathew',
+      especialidade: 'Odontologia'
+    },
+    {
+      id: '2',
+      tipo: 'Cardiologia',
+      data: 'Quarta',
+      horario: '12:00',
+      medico: 'Dr. Craig Gemx',
+      especialidade: 'Cardiologia'
+    },
+    {
+      id: '3',
+      tipo: 'Ortopedia',
+      data: 'Quinta',
+      horario: '15:00',
+      medico: 'Dr. Bruce Williams',
+      especialidade: 'Ortopedia'
+    },
+    {
+      id: '4',
+      tipo: 'Clínico',
+      data: 'Quinta',
+      horario: '16:00',
+      medico: 'Dra. Kiera Knight',
+      especialidade: 'Clínica Geral'
+    }
+  ]);
+
+  // Dados para os gráficos (valores de 0 a 100)
+  const saudeGeral = 75;
+  const frequenciaPresenca = 83;
+
+  // Dados para o gráfico de taxa de melhora (7 dias)
+  const taxaMelhora = [65, 75, 70, 85, 72, 68, 78];
+
+  // Dados para condições de saúde (últimos 12 meses - simulação)
+  const condicoesSaude = [
+    65, 68, 70, 72, 75, 73, 74, 78, 76, 74, 82, 70
+  ];
+
+  // Gera calendário do mês atual
+  const generateCalendar = (): (number | null)[] => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    const days: (number | null)[] = [];
+    
+    // Dias vazios antes do primeiro dia
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+    
+    // Dias do mês
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(day);
+    }
+    
+    return days;
+  };
+
+  const calendar = generateCalendar();
+  const monthName = currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+  // Dias com consultas marcadas (exemplo)
+  const diasComConsultas = [3, 10, 17, 24];
+  const hoje = new Date().getDate();
+
+  const getEmojiEspecialidade = (especialidade: string) => {
+    const emojis: Record<string, string> = {
+      'Odontologia': '🦷',
+      'Cardiologia': '💜',
+      'Ortopedia': '🦴',
+      'Clínica Geral': '🩺'
+    };
+    return emojis[especialidade] || '📋';
+  };
+
+  return (
+    <div className="patient-dashboard">
+      {/* Header */}
+      <header className="dashboard-header">
+        <div className="header-left">
+          <div className="logo">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M16 8v8m0 0v8m0-8h8m-8 0H8" stroke="#14b8a6" strokeWidth="3" strokeLinecap="round"/>
+              <circle cx="16" cy="16" r="14" stroke="#14b8a6" strokeWidth="2"/>
+            </svg>
+            <span className="logo-text">HealthOne</span>
+          </div>
+          <div className="user-greeting">
+            <div className="user-avatar">IK</div>
+            <span className="user-name">{perfil.nome}</span>
+          </div>
+        </div>
+        <div className="header-right">
+          <button className="btn-inicio" onClick={() => void navigate('/')}>Início</button>
+          <button className="btn-consulta" onClick={() => void navigate('/patient/agendamento')}>
+            Marcar Consulta
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="dashboard-main">
+        <div className="welcome-section">
+          <h1 className="welcome-title">Olá, <span className="highlight-name">{perfil.nome}</span> 👋</h1>
+        </div>
+
+        <div className="dashboard-grid">
+          {/* Perfil do Paciente */}
+          <div className="card perfil-card">
+            <div className="card-header">
+              <h2>Perfil do Paciente</h2>
+            </div>
+            <div className="card-body">
+              <div className="perfil-avatar-container">
+                <div className="perfil-avatar-large">IK</div>
+                <div className="perfil-info">
+                  <h3>{perfil.nome}</h3>
+                  <p className="perfil-cpf">{perfil.cpf}</p>
+                </div>
+              </div>
+              <div className="perfil-detalhes">
+                <div className="perfil-item">
+                  <span className="label">Idade</span>
+                  <span className="value">{perfil.idade} anos</span>
+                </div>
+                <div className="perfil-item">
+                  <span className="label">Tipo Sanguíneo</span>
+                  <span className="value">{perfil.tipoSanguineo}</span>
+                </div>
+                <div className="perfil-item">
+                  <span className="label">Altura</span>
+                  <span className="value">{perfil.altura.toFixed(2)} m</span>
+                </div>
+                <div className="perfil-item">
+                  <span className="label">Peso</span>
+                  <span className="value">{perfil.peso} kg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Indicadores */}
+          <div className="card indicadores-card">
+            <div className="card-header">
+              <h2>Indicadores</h2>
+            </div>
+            <div className="card-body indicadores-body">
+              <div className="indicador">
+                <div className="circular-progress pink">
+                  <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" />
+                    <circle 
+                      cx="50" 
+                      cy="50" 
+                      r="40" 
+                      strokeDasharray={`${saudeGeral * 2.51} 251`}
+                      transform="rotate(-90 50 50)"
+                    />
+                  </svg>
+                  <div className="percentage">{saudeGeral}%</div>
+                </div>
+                <p className="indicador-label">Saúde Geral</p>
+              </div>
+              <div className="indicador">
+                <div className="circular-progress blue">
+                  <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" />
+                    <circle 
+                      cx="50" 
+                      cy="50" 
+                      r="40" 
+                      strokeDasharray={`${frequenciaPresenca * 2.51} 251`}
+                      transform="rotate(-90 50 50)"
+                    />
+                  </svg>
+                  <div className="percentage">{frequenciaPresenca}%</div>
+                </div>
+                <p className="indicador-label">Frequência de Presença</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Calendário */}
+          <div className="card calendario-card">
+            <div className="card-header">
+              <h2>Consultas</h2>
+              <span className="mes-ano">{monthName.charAt(0).toUpperCase() + monthName.slice(1)}</span>
+            </div>
+            <div className="card-body">
+              <div className="calendario">
+                <div className="calendario-dias-semana">
+                  <div>S</div>
+                  <div>T</div>
+                  <div>Q</div>
+                  <div>Q</div>
+                  <div>S</div>
+                  <div>S</div>
+                  <div>D</div>
+                </div>
+                <div className="calendario-dias">
+                  {calendar.map((day, index) => (
+                    <div
+                      key={index}
+                      className={`dia ${!day ? 'vazio' : ''} ${
+                        day === hoje ? 'hoje' : ''
+                      } ${day && diasComConsultas.includes(day) ? 'com-consulta' : ''}`}
+                    >
+                      {day ?? ''}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Taxa de Melhora */}
+          <div className="card taxa-card">
+            <div className="card-header">
+              <h2>Taxa de Melhora</h2>
+            </div>
+            <div className="card-body">
+              <div className="grafico-barras">
+                {taxaMelhora.map((valor, index) => (
+                  <div key={index} className="barra-container">
+                    <div 
+                      className="barra" 
+                      style={{ height: `${valor}%` }}
+                      title={`${valor}%`}
+                    />
+                  </div>
+                ))}
+              </div>
+              <p className="grafico-label">Durante Tratamento</p>
+            </div>
+          </div>
+
+          {/* Condições de Saúde */}
+          <div className="card condicoes-card">
+            <div className="card-header">
+              <h2>Condições de Saúde</h2>
+            </div>
+            <div className="card-body">
+              <div className="grafico-linha-container">
+                <svg className="grafico-linha" viewBox="0 0 400 150" preserveAspectRatio="none">
+                  <polyline
+                    points={condicoesSaude.map((val, i) => 
+                      `${(i / (condicoesSaude.length - 1)) * 400},${150 - (val * 1.5)}`
+                    ).join(' ')}
+                    fill="none"
+                    stroke="#3b82f6"
+                    strokeWidth="2"
+                  />
+                </svg>
+                <div className="meses-labels">
+                  <span>Jan</span>
+                  <span>Dez</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Próximas Consultas */}
+          <div className="card proximas-consultas-card">
+            <div className="card-header">
+              <h2>Próximas Consultas</h2>
+            </div>
+            <div className="card-body">
+              <div className="consultas-lista">
+                {proximasConsultas.map((consulta) => (
+                  <div key={consulta.id} className="consulta-item">
+                    <div className="consulta-icon">
+                      {getEmojiEspecialidade(consulta.especialidade)}
+                    </div>
+                    <div className="consulta-info">
+                      <h4>{consulta.tipo}</h4>
+                      <p>{consulta.data} - {consulta.medico}</p>
+                    </div>
+                    <div className="consulta-horario">
+                      {consulta.horario}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

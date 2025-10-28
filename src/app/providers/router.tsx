@@ -16,6 +16,7 @@ import { AdminDashboardContent } from '@/features/admin/components/DashboardWidg
 import GerenciamentoPacientesPage from '@/features/doctor/pages/GerenciamentoPacientesPage';
 import PaginaCadastroPaciente from '@/features/doctor/pages/PaginaCadastroPaciente';
 import AgendamentoPacientePage from '@/features/patients/pages/Agendamento';
+import PatientDashboard from '@/features/patients/pages/Dashboard';
 const Root = () => <Outlet />;
 
 const ErrorPage = () => (
@@ -100,9 +101,10 @@ export const router = createBrowserRouter([
       },
       // --- Rotas do Paciente ---
       // 👇 Adicione a nova rota aqui 👇
+      { path: "/patient/dashboard", element: <PatientDashboard /> },
       { path: "/patient/agendamento", element: <AgendamentoPacientePage /> },
       // (Opcional) Adicione um redirect para a rota principal do paciente, se houver
-      // { path: "/paciente", element: <Navigate to="/paciente/agendamento" replace /> },
+      { path: "/patient", element: <Navigate to="/patient/dashboard" replace /> },
       { path: "*", element: <NotFound /> },
     ],
   },

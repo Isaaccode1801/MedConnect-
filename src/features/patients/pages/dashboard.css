@@ -1,0 +1,557 @@
+/* Dashboard de Paciente */
+.patient-dashboard {
+  min-height: 100vh;
+  background: #f5f7fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+/* Header */
+.dashboard-header {
+  background: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.user-greeting {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.header-right {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-inicio,
+.btn-consulta {
+  padding: 0.625rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.btn-inicio {
+  background: #14b8a6;
+  color: white;
+}
+
+.btn-inicio:hover {
+  background: #0d9488;
+  transform: translateY(-1px);
+}
+
+.btn-consulta {
+  background: white;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+}
+
+.btn-consulta:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* Main Content */
+.dashboard-main {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.welcome-section {
+  margin-bottom: 2rem;
+}
+
+.welcome-title {
+  font-size: 2rem;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+}
+
+.highlight-name {
+  color: #14b8a6;
+  font-weight: 600;
+}
+
+/* Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  grid-auto-rows: auto;
+}
+
+/* Cards */
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Perfil Card */
+.perfil-card {
+  grid-column: span 1;
+}
+
+.perfil-avatar-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.perfil-avatar-large {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.perfil-info h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.perfil-cpf {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.perfil-detalhes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.perfil-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.perfil-item .label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.perfil-item .value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Indicadores Card */
+.indicadores-card {
+  grid-column: span 1;
+}
+
+.indicadores-body {
+  display: flex;
+  gap: 2rem;
+  justify-content: space-around;
+}
+
+.indicador {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.circular-progress {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.circular-progress svg {
+  width: 100%;
+  height: 100%;
+}
+
+.circular-progress circle {
+  fill: none;
+  stroke-width: 8;
+}
+
+.circular-progress circle:first-child {
+  stroke: #f3f4f6;
+}
+
+.circular-progress.pink circle:last-child {
+  stroke: #ec4899;
+}
+
+.circular-progress.blue circle:last-child {
+  stroke: #3b82f6;
+}
+
+.circular-progress .percentage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.indicador-label {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  max-width: 120px;
+}
+
+/* Calendário Card */
+.calendario-card {
+  grid-column: span 1;
+}
+
+.mes-ano {
+  font-size: 0.875rem;
+  color: #14b8a6;
+  font-weight: 600;
+}
+
+.calendario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.calendario-dias-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.calendario-dias-semana div {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  padding: 0.5rem 0;
+}
+
+.calendario-dias {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.dia {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #1f2937;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dia:not(.vazio):hover {
+  background: #f3f4f6;
+}
+
+.dia.vazio {
+  cursor: default;
+}
+
+.dia.hoje {
+  background: #14b8a6;
+  color: white;
+  font-weight: 600;
+}
+
+.dia.com-consulta {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-weight: 600;
+}
+
+/* Taxa de Melhora Card */
+.taxa-card {
+  grid-column: span 1;
+}
+
+.grafico-barras {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 150px;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.barra-container {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+}
+
+.barra {
+  width: 100%;
+  background: linear-gradient(to top, #fecdd3, #fda4af);
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s;
+  min-height: 10px;
+}
+
+.barra:hover {
+  opacity: 0.8;
+}
+
+.grafico-label {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0;
+  padding: 0.5rem;
+  background: #dffbf5;
+  border-radius: 6px;
+}
+
+/* Condições de Saúde Card */
+.condicoes-card {
+  grid-column: span 1;
+}
+
+.grafico-linha-container {
+  position: relative;
+}
+
+.grafico-linha {
+  width: 100%;
+  height: 150px;
+  margin-bottom: 0.5rem;
+}
+
+.meses-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #6b7280;
+  padding: 0 0.5rem;
+}
+
+/* Próximas Consultas Card */
+.proximas-consultas-card {
+  grid-column: span 1;
+}
+
+.consultas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.consulta-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.consulta-item:hover {
+  background: #f3f4f6;
+  transform: translateX(4px);
+}
+
+.consulta-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.consulta-item:nth-child(1) .consulta-icon {
+  background: #fce7f3;
+}
+
+.consulta-item:nth-child(2) .consulta-icon {
+  background: #ede9fe;
+}
+
+.consulta-item:nth-child(3) .consulta-icon {
+  background: #ffedd5;
+}
+
+.consulta-item:nth-child(4) .consulta-icon {
+  background: #dcfce7;
+}
+
+.consulta-info {
+  flex: 1;
+}
+
+.consulta-info h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.consulta-info p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.consulta-horario {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #14b8a6;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .perfil-card {
+    grid-column: span 1;
+  }
+  
+  .indicadores-card {
+    grid-column: span 1;
+  }
+  
+  .calendario-card {
+    grid-column: span 1;
+  }
+  
+  .taxa-card {
+    grid-column: span 1;
+  }
+  
+  .condicoes-card {
+    grid-column: span 2;
+  }
+  
+  .proximas-consultas-card {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 767px) {
+  .dashboard-main {
+    padding: 1rem;
+  }
+  
+  .dashboard-header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .header-left,
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .welcome-title {
+    font-size: 1.5rem;
+  }
+  
+  .indicadores-body {
+    flex-direction: column;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

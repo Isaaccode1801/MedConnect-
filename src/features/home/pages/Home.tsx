@@ -88,10 +88,14 @@ mãos
               fontSize: '1rem',
               fontWeight: 600,
               boxShadow: '0 4px 15px rgba(37,99,235,0.4)',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px'
             }}>
 
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24" style={{ marginRight: '8px' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zM4 21v-1c0-2.8 3.6-5 8-5s8 2.2 8 5v1H4z"/>
             </svg>
             Sou Paciente
