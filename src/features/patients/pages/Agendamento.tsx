@@ -212,8 +212,8 @@ export default function AgendamentoPage() {
                         <small>Marque sua consulta</small>
                     </div>
                     <nav className="tabs">
-                        <Link to="/paciente/dashboard">Início</Link>
-                        <Link to="/paciente/agendamento" className="ativo">
+                        <Link to="/patient/dashboard">Início</Link>
+                        <Link to="/patient/agendamento" className="ativo">
                             Marcar Consulta
                         </Link>
                     </nav>
