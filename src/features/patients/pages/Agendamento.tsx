@@ -213,9 +213,7 @@ export default function AgendamentoPage() {
                     </div>
                     <nav className="tabs">
                         <Link to="/patient/dashboard">Início</Link>
-                        <Link to="/patient/agendamento" className="ativo">
-                            Marcar Consulta
-                        </Link>
+                        {/* Link removido nesta página para evitar redundância */}
                     </nav>
                 </div>
             </div>

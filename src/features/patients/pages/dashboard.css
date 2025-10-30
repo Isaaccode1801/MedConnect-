@@ -30,9 +30,10 @@
 }
 
 .logo-image {
-  height: 36px;
+  height: 56px; /* maior e sem arredondar */
   width: auto;
   object-fit: contain;
+  border-radius: 0;
 }
 
 .user-greeting {

@@ -69,9 +69,11 @@ body {
   font-weight: 500;
 }
 .logo-link img.logo {
-  height: 40px; /* Altura ajustada */
+  height: 56px; /* Logo maior */
   width: auto;
   display: block;
+  border-radius: 0; /* sem arredondamento */
+  object-fit: contain;
 }
 
 .wrap{
