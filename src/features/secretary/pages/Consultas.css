@@ -1,0 +1,210 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css");
+
+:root {
+  -background: #F5F7FA;
+  color: #0f172a; /* slate-900 */
+  /* brand tokens */
+  --brand-teal: #0d9488;   /* teal-600 */
+  --brand-cyan: #06b6d4;   /* cyan-500 */
+  --ink-700: #334155;      /* slate-700 */
+  --ink-900: #0f172a;      /* slate-900 */
+  --muted-500: #64748b;    /* slate-500 */
+  --muted-600: #475569;    /* slate-600 */
+  --line-200: #e2e8f0;     /* slate-200 */
+  --bg-soft: #f1f5f9;      /* slate-100 */
+}
+
+body,
+.app {
+  font-family: "Inter", sans-serif;
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto-principal);
+  min-height: 100vh;
+  background-image: radial-gradient(
+      circle at 5% 15%,
+      rgba(63, 187, 192, 0.15),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 95% 85%,
+      rgba(63, 187, 192, 0.1),
+      transparent 40%
+    );
+}
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100%;
+  background-color: var(--cor-sidebar-vidro);
+  backdrop-filter: blur(var(--blur-fundo));
+  border-right: 1px solid var(--cor-borda);
+  box-shadow: var(--sombra);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  transition: var(--transicao);
+  z-index: 1000;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 25px 20px 25px;
+  font-size: 22px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.sidebar-header i {
+  color: var(--cor-acento-healthone);
+}
+
+.nav-links {
+  flex-grow: 1;
+  margin-top: 20px;
+}
+
+.nav-links a {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 25px;
+  margin: 5px 15px;
+  text-decoration: none;
+  color: var(--cor-texto-secundario);
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: var(--raio-borda);
+  transition: var(--transicao);
+}
+
+.nav-links a i {
+  width: 20px;
+  text-align: center;
+}
+
+.nav-links a:hover {
+  background: var(--cor-acento-healthone-claro);
+  color: var(--cor-acento-healthone);
+}
+
+.nav-links a.active {
+  background: var(--cor-acento-healthone-claro);
+  color: var(--cor-acento-healthone);
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  border-top: 1px solid var(--cor-borda);
+  padding-top: 10px;
+}
+
+/* BOTÃO TOGGLE */
+#toggle-sidebar-btn {
+  position: fixed;
+  top: 20px;
+  left: 275px;
+  background: var(--cor-sidebar-vidro);
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-acento-healthone);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  box-shadow: var(--sombra);
+  display: grid;
+  place-items: center;
+  transition: var(--transicao);
+  z-index: 1001;
+}
+
+#toggle-sidebar-btn:hover {
+  background: var(--cor-acento-healthone);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+/* FECHAR SIDEBAR */
+.sidebar-fechada .sidebar {
+  left: -260px;
+}
+.sidebar-fechada .main-content {
+  margin-left: 0;
+}
+.sidebar-fechada #toggle-sidebar-btn {
+  left: 20px;
+}
+
+/* CONTEÚDO PRINCIPAL */
+.main-content {
+  margin-left: 260px;
+  padding: 20px;
+  transition: var(--transicao);
+}
+
+/* APPBAR */
+.appbar {
+  background: var(--cor-sidebar-vidro);
+  border-bottom: 1px solid var(--cor-borda);
+  border-radius: var(--raio-borda);
+  backdrop-filter: blur(var(--blur-fundo));
+}
+
+.appbar-inner {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 20px;
+}
+
+/* TABELA */
+.card {
+  background: #fff;
+  border-radius: var(--raio-borda);
+  box-shadow: var(--sombra);
+}
+
+.card-header {
+  padding: 16px 18px 10px;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.card-content {
+  padding: 12px 18px 18px;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+thead th {
+  text-align: left;
+  font-size: 12px;
+  color: var(--cor-texto-secundario);
+  padding: 8px 12px;
+  text-transform: uppercase;
+}
+
+tbody tr {
+  background: #fff;
+  border-radius: var(--raio-borda);
+}
+
+tbody tr td {
+  padding: 12px;
+  font-size: 14px;
+}
+
+.empty.note {
+  color: var(--cor-texto-secundario);
+  text-align: center;
+  padding: 16px;
+}

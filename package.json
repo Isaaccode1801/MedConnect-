@@ -16,6 +16,7 @@
     "@splinetool/react-spline": "^4.1.0",
     "@splinetool/runtime": "^1.10.81",
     "@supabase/supabase-js": "^2.75.0",
+    "bootstrap-icons": "^1.13.1",
     "chart.js": "^4.5.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.24",

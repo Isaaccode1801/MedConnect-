@@ -320,3 +320,111 @@ export async function listarMedicos(): Promise<Array<{ id: string | null; full_n
     return [];
   }
 }
+
+// ================= CONSULTAS =================
+
+/**
+ * Busca as consultas marcadas (appointments) e hidrata com nome do paciente e nome do médico.
+ * Retorna já no formato que a tela de Consultas.jsx espera.
+ */
+export async function listarConsultasComNomes() {
+  const headers = getAuthHeaders();
+
+  // 1) Buscar appointments
+  const urlAppointments = new URL(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/appointments`);
+  // queremos todas as colunas relevantes
+  urlAppointments.searchParams.set("select", "id,doctor_id,patient_id,scheduled_at,duration_minutes,created_by");
+  urlAppointments.searchParams.set("order", "scheduled_at.desc");
+
+  let appointmentsRaw: any[] = [];
+  {
+    const res = await fetch(urlAppointments.toString(), { headers });
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(`[listarConsultasComNomes] appointments falhou ${res.status}: ${txt}`);
+    }
+    appointmentsRaw = await res.json();
+  }
+
+  if (!Array.isArray(appointmentsRaw) || appointmentsRaw.length === 0) {
+    return [];
+  }
+
+  // 2) coletar todos os patient_id e doctor_id únicos
+  const patientIds = Array.from(
+    new Set(appointmentsRaw.map(a => a.patient_id).filter(Boolean))
+  );
+  const doctorIds = Array.from(
+    new Set(appointmentsRaw.map(a => a.doctor_id).filter(Boolean))
+  );
+
+  // helper para montar "in.(id1,id2,id3)" como Supabase espera
+  function buildInParam(ids: string[]) {
+    // precisa ser in.(uuid1,uuid2,...)
+    return `in.(${ids.map(encodeURIComponent).join(",")})`;
+  }
+
+  // 3) buscar info dos pacientes
+  let mapaPacientes: Record<string, { nome?: string; phone?: string; cpf?: string }> = {};
+  if (patientIds.length) {
+    const urlPatients = new URL(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/patients`);
+    urlPatients.searchParams.set("select", "id,full_name,phone,cpf");
+    urlPatients.searchParams.set("id", buildInParam(patientIds));
+
+    const resP = await fetch(urlPatients.toString(), { headers });
+    if (resP.ok) {
+      const arrP = await resP.json();
+      mapaPacientes = Object.fromEntries(
+        arrP.map((p: any) => [
+          p.id,
+          {
+            nome: p.full_name || "",
+            phone: p.phone || "",
+            cpf: p.cpf || "",
+          },
+        ])
+      );
+    } else {
+      console.warn("[listarConsultasComNomes] Falha ao carregar pacientes");
+    }
+  }
+
+  // 4) buscar info dos médicos
+  let mapaMedicos: Record<string, { nome?: string }> = {};
+  if (doctorIds.length) {
+    const urlDoctors = new URL(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/doctors`);
+    urlDoctors.searchParams.set("select", "id,full_name");
+    urlDoctors.searchParams.set("id", buildInParam(doctorIds));
+
+    const resD = await fetch(urlDoctors.toString(), { headers });
+    if (resD.ok) {
+      const arrD = await resD.json();
+      mapaMedicos = Object.fromEntries(
+        arrD.map((d: any) => [
+          d.id,
+          {
+            nome: d.full_name || "",
+          },
+        ])
+      );
+    } else {
+      console.warn("[listarConsultasComNomes] Falha ao carregar médicos");
+    }
+  }
+
+  // 5) montar resultado final já com nomes
+  return appointmentsRaw.map((a: any) => {
+    const pacienteInfo = a.patient_id ? mapaPacientes[a.patient_id] || {} : {};
+    const medicoInfo = a.doctor_id ? mapaMedicos[a.doctor_id] || {} : {};
+
+    return {
+      id: a.id,
+      scheduled_at: a.scheduled_at,
+      duration_minutes: a.duration_minutes,
+      cpf: pacienteInfo.cpf || "",
+      paciente_nome: pacienteInfo.nome || "",
+      paciente_telefone: pacienteInfo.phone || "",
+      medico_nome: medicoInfo.nome || "",
+    };
+  });
+}

@@ -105,13 +105,15 @@ export default function Home() {
             </span>
           </button>
 
-          <button className="btn-card btn-secretaria" onClick={() => nav("/secretary")}>
+          <button
+            className="btn-card btn-secretaria"
+            onClick={() => nav("/login?role=secretary")}
+          >
             <FaEnvelope size={20} />
             <span>
               Sou<br />Secretaria
             </span>
           </button>
-
           <button className="btn-card btn-admin" onClick={() => nav("/login?role=admin")}>
             <FaUsersCog size={22} />
             <span>
