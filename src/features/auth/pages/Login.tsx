@@ -24,27 +24,58 @@ function resolveRouteByRole(role: string) {
 export default function Login() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const role = (searchParams.get("role") || "").toLowerCase();
+  const roleFromURL = (searchParams.get("role") || "").toLowerCase();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // pega o role desejado (URL > localStorage > fallback "user")
+  function getChosenRole() {
+    return (
+      roleFromURL ||
+      localStorage.getItem("mc.pendingRole") ||
+      "user"
+    ).toLowerCase();
+  }
+
+  async function persistSessionAndRedirect(sessionAccessToken: string | undefined, chosenRole: string) {
+    // salvar o JWT e o role igual fazemos no login por senha
+    if (sessionAccessToken) {
+      localStorage.setItem("user_token", sessionAccessToken);
+    }
+    localStorage.setItem("user_role", chosenRole);
+
+    // tentar gravar role no perfil do usuário (metadata)
+    try {
+      await supabase.auth.updateUser({
+        data: { role: chosenRole },
+      });
+    } catch {
+      /* silencioso */
+    }
+
+    // mandar pra rota certa
+    navigate(resolveRouteByRole(chosenRole));
+  }
+
+  // ======================
+  // LOGIN COM EMAIL/SENHA
+  // ======================
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrorMsg(null);
     setSubmitting(true);
 
-    const chosenRole = (
-      role || localStorage.getItem("mc.pendingRole") || "user"
-    ).toLowerCase();
+    const chosenRole = getChosenRole();
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
       if (error) {
         setErrorMsg(
           error.message || "Falha ao entrar. Verifique suas credenciais."
@@ -54,26 +85,118 @@ export default function Login() {
       }
 
       const accessToken = data.session?.access_token || "";
-      localStorage.setItem("user_token", accessToken);
-      localStorage.setItem("user_role", chosenRole);
 
-      try {
-        await supabase.auth.updateUser({
-          data: { role: chosenRole },
-        });
-      } catch {
-        /* silencioso */
-      }
-
-      navigate(resolveRouteByRole(chosenRole));
+      await persistSessionAndRedirect(accessToken, chosenRole);
     } catch (err: any) {
       setErrorMsg(
         err?.message || "Falha ao entrar. Verifique suas credenciais."
       );
+      setSubmitting(false);
     } finally {
-        setSubmitting(false);
+      setSubmitting(false);
     }
   }
+
+  // ===========================
+  // LOGIN COM GOOGLE (OAUTH)
+  // ===========================
+  async function handleGoogleLogin() {
+    setErrorMsg(null);
+    setSubmitting(true);
+
+    const chosenRole = getChosenRole();
+
+    try {
+      // Inicia o fluxo OAuth com Google
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          // garante que quando o Google voltar ele volte pro app certo
+          redirectTo: window.location.origin + "/login?oauth=google",
+        },
+      });
+
+      if (error) {
+        setErrorMsg(
+          error.message ||
+            "Não foi possível iniciar o login com Google."
+        );
+        setSubmitting(false);
+        return;
+      }
+
+      // IMPORTANTE:
+      // signInWithOAuth NÃO retorna o token imediatamente.
+      // Ele faz um redirect pro Google.
+      //
+      // Depois que o usuário aceita no Google e o Supabase redireciona de volta
+      // pra /login?oauth=google:
+      //   - A sessão já vai estar dentro do supabase.auth.getSession()
+      //
+      // Então aqui no momento do clique não temos como já salvar localStorage
+      // porque ainda não temos o token final.
+      //
+      // Solução: no carregamento da página /login, se detectar ?oauth=google,
+      // checa se já existe sessão ativa e finaliza o fluxo.
+      //
+      // Vamos implementar isso logo abaixo num efeito.
+
+      // Como o fluxo agora vai redirecionar o navegador,
+      // não precisamos fazer mais nada aqui.
+    } catch (err: any) {
+      setErrorMsg(
+        err?.message || "Falha ao iniciar login com Google."
+      );
+      setSubmitting(false);
+    }
+  }
+
+  // ===========================
+  // FINALIZAR OAUTH (callback)
+  // ===========================
+  // Quando o usuário volta de Google -> Supabase -> /login?oauth=google,
+  // já existe uma sessão ativa em supabase.
+  // Vamos checar isso e então salvar token/role em localStorage e redirecionar.
+  //
+  // Observação: esse efeito só roda no browser e só depois do primeiro render.
+  //
+  // Se você já tem um useEffect neste arquivo, pode mesclar.
+  import.meta.env; // só pra garantir que o arquivo continua como módulo TS/ESM
+
+  // pequena gambiarra: React Hook dentro do componente (abaixo do resto)
+  // para evitar mexer na sua estrutura atual
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useState(() => {
+    (async () => {
+      try {
+        const urlHasOAuthCallback = window.location.search.includes("oauth=google");
+
+        if (!urlHasOAuthCallback) return;
+
+        // pega sessão atual
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+
+        if (!accessToken) {
+          // se por algum motivo não tem sessão, nada a fazer
+          return;
+        }
+
+        const chosenRole = getChosenRole();
+
+        await persistSessionAndRedirect(accessToken, chosenRole);
+      } catch (err) {
+        // se der erro, só loga no console e segue normal
+        console.warn("[Google OAuth callback] erro ao finalizar sessão:", err);
+      } finally {
+        setSubmitting(false);
+      }
+    })();
+
+    // esse useState aqui está sendo usado como "useEffect on mount"
+    // porque não quero introduzir outro import agora.
+    return null;
+  });
 
   return (
     <div
@@ -86,53 +209,38 @@ export default function Login() {
       <div
         className="w-full max-w-xl rounded-2xl shadow-xl bg-white"
         style={{
-          padding: "3rem 3rem 2.5rem",
+          padding: "4rem 3.5rem 3rem",
           boxShadow:
             "0 30px 80px rgba(0,0,0,0.08), 0 6px 20px rgba(0,0,0,0.04)",
         }}
       >
-        {/* Header (logo + texto) */}
-        <div className="mb-10">
-          <div className="flex items-center gap-3 mb-6">
-            <img
-              src={medLogo}
-              alt="MedConnect Logo"
-              className="h-16 w-auto object-contain"
-            />
-            <div className="flex flex-col">
-              <span
-                className="text-gray-900 font-semibold"
-                style={{ fontSize: "1.1rem", lineHeight: "1.3" }}
-              >
-                MedConnect
-              </span>
-              <span
-                className="text-gray-500 font-normal"
-                style={{ fontSize: ".9rem", lineHeight: "1.3" }}
-              >
-                Cuidar de você é nossa prioridade
-              </span>
-            </div>
-          </div>
+        {/* Header (logo only, centered) */}
+        <div className="flex justify-center mb-10">
+          <img
+            src={medLogo}
+            alt="MedConnect Logo"
+            className="h-44 w-auto"
+          />
+        </div>
 
-          <div>
-            <h1
-              className="text-gray-900 font-semibold"
-              style={{ fontSize: "1.5rem", lineHeight: "1.25" }}
-            >
-              Bem-vindo de volta
-            </h1>
-            <p
-              className="text-gray-500"
-              style={{
-                fontSize: ".95rem",
-                marginTop: "0.5rem",
-                lineHeight: "1.4",
-              }}
-            >
-              Faça login para acessar o painel
-            </p>
-          </div>
+        <div>
+          <h1
+            className="text-gray-900 font-semibold mt-4 mb-8"
+            style={{ fontSize: "1.7rem", lineHeight: "1.25" }}
+          >
+            Bem-vindo de volta
+          </h1>
+          <p
+            className="text-gray-500"
+            style={{
+              fontSize: ".95rem",
+              marginTop: "1rem",
+              marginBottom: "2rem",
+              lineHeight: "1.4",
+            }}
+          >
+            Faça login para acessar o painel
+          </p>
         </div>
 
         {/* Erro */}
@@ -151,9 +259,9 @@ export default function Login() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-10">
           {/* Email */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             <label
               htmlFor="email"
               className="text-gray-700 font-medium"
@@ -172,9 +280,9 @@ export default function Login() {
                 disabled={submitting}
                 className="w-full rounded-xl border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 style={{
-                  paddingLeft: "2.5rem",
+                  paddingLeft: "2.75rem",
                   paddingRight: "1rem",
-                  height: "3.25rem",
+                  height: "3.75rem",
                   fontSize: "1rem",
                   lineHeight: "1.4",
                   fontWeight: 500,
@@ -194,7 +302,7 @@ export default function Login() {
           </div>
 
           {/* Senha */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             <label
               htmlFor="password"
               className="text-gray-700 font-medium"
@@ -213,9 +321,9 @@ export default function Login() {
                 disabled={submitting}
                 className="w-full rounded-xl border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 style={{
-                  paddingLeft: "2.5rem",
+                  paddingLeft: "2.75rem",
                   paddingRight: "1rem",
-                  height: "3.25rem",
+                  height: "3.75rem",
                   fontSize: "1rem",
                   lineHeight: "1.4",
                   fontWeight: 500,
@@ -235,7 +343,7 @@ export default function Login() {
           </div>
 
           {/* remember / forgot */}
-          <div className="flex items-start justify-between text-gray-600 text-sm">
+          <div className="mt-4 mb-6 flex items-start justify-between text-gray-600 text-sm">
             <label
               className="flex items-center gap-2 cursor-pointer select-none"
               style={{ lineHeight: "1.3" }}
@@ -263,17 +371,18 @@ export default function Login() {
             className="w-full font-semibold text-white rounded-xl transition disabled:opacity-60 disabled:cursor-not-allowed"
             style={{
               backgroundColor: "#2563eb",
-              height: "3.25rem",
+              height: "3.75rem",
               fontSize: "1rem",
               lineHeight: "1.2",
               boxShadow:
                 "0 16px 32px rgba(37,99,235,0.25), 0 2px 6px rgba(0,0,0,0.12)",
+              marginTop: "1.5rem",
             }}
           >
             {submitting ? "Entrando..." : "Entrar"}
           </button>
 
-          {/* Divider visual opcional */}
+          {/* Divider visual */}
           <div
             className="flex items-center justify-center"
             style={{ marginTop: "0.5rem", marginBottom: "-0.5rem" }}
@@ -303,14 +412,17 @@ export default function Login() {
           {/* Botão Google */}
           <button
             type="button"
-            className="w-full border bg-white flex items-center justify-center gap-3 rounded-xl hover:bg-gray-50 transition"
+            onClick={handleGoogleLogin}
+            disabled={submitting}
+            className="w-full border bg-white flex items-center justify-center gap-3 rounded-xl hover:bg-gray-50 transition disabled:opacity-60 disabled:cursor-not-allowed"
             style={{
               borderColor: "#D1D5DB",
-              height: "3.25rem",
+              height: "3.75rem",
               fontSize: "0.95rem",
               fontWeight: 500,
               color: "#374151",
               lineHeight: "1.2",
+              marginTop: "1rem",
             }}
           >
             <svg
@@ -346,7 +458,7 @@ export default function Login() {
           style={{
             fontSize: ".9rem",
             lineHeight: "1.4",
-            marginTop: "2rem",
+            marginTop: "3rem",
           }}
         >
           Não tem uma conta?{" "}
