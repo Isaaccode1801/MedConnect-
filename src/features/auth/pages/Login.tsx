@@ -1,18 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Spotlight } from "@/components/ui/spotlight";
-import { SplineScene } from "@/components/ui/splite";
 import { supabase } from "@/lib/supabase";
-
-import {
-  LogIn,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  ShieldCheck,
-  ArrowRight,
-} from "lucide-react";
+import medLogo from "@/assets/Medconnect.logo.png";
+import { Mail, Lock } from "lucide-react";
 
 function resolveRouteByRole(role: string) {
   switch ((role || "").toLowerCase()) {
@@ -40,75 +30,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-
-  const roleLabel =
-    role === "doctor"
-      ? "Médico"
-      : role === "patient"
-      ? "Paciente"
-      : role === "secretary"
-      ? "Secretaria"
-      : role === "admin"
-      ? "Administrador"
-      : role === "finance"
-      ? "Financeiro"
-      : "Usuário";
-
-  // === Parallax leve no robô ===
-  const robotWrapRef = useRef<HTMLDivElement>(null);
-  const rafRef = useRef<number | null>(null);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!robotWrapRef.current) return;
-    const el = robotWrapRef.current;
-
-    const nx = e.clientX / window.innerWidth - 0.5;
-    const ny = e.clientY / window.innerHeight - 0.5;
-
-    const rotX = -(ny * 10);
-    const rotY = nx * 14;
-    const tx = nx * 20;
-    const ty = ny * 20;
-
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      el.style.transform = `
-        perspective(1200px)
-        translate3d(${tx}px, ${ty}px, 0)
-        rotateX(${rotX}deg)
-        rotateY(${rotY}deg)
-      `;
-    });
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    if (!robotWrapRef.current) return;
-    robotWrapRef.current.style.transform = `
-      perspective(1200px)
-      translate3d(0, 0, 0)
-      rotateX(0deg)
-      rotateY(0deg)
-    `;
-  }, []);
-
-  // === Cores do chip ===
-  const roleChipClasses = useMemo(() => {
-    switch (role) {
-      case "doctor":
-        return "bg-emerald-500/20 text-emerald-300 ring-emerald-400/30";
-      case "patient":
-        return "bg-sky-500/20 text-sky-300 ring-sky-400/30";
-      case "secretary":
-        return "bg-violet-500/20 text-violet-300 ring-violet-400/30";
-      case "admin":
-        return "bg-zinc-500/20 text-zinc-200 ring-zinc-400/30";
-      case "finance":
-        return "bg-amber-500/20 text-amber-300 ring-amber-400/30";
-      default:
-        return "bg-cyan-500/20 text-cyan-200 ring-cyan-400/30";
-    }
-  }, [role]);
 
   // === Login com Supabase ===
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -159,158 +80,83 @@ export default function Login() {
   }
 
   return (
-    <div
-      className="relative min-h-screen bg-[#050505] overflow-hidden text-white flex items-center justify-center"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-      {/* Fundo animado */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-fuchsia-900/5 to-emerald-800/10" />
-        <Spotlight className="top-0 left-1/4 opacity-25" fill="white" />
-        <div
-          ref={robotWrapRef}
-          className="absolute inset-0 will-change-transform transition-transform duration-150 ease-out"
-          style={{ transform: "perspective(1200px)" }}
-        >
-          <SplineScene
-            scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-            className="absolute inset-0 w-full h-full"
-          />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-10 m-8 pt-10">
+      <div className="bg-white shadow-lg rounded-xl p-16 w-full max-w-lg">
+        <div className="flex items-center mb-10">
+          <img src={medLogo} alt="MedConnect Logo" className="h-20 w-auto" />
         </div>
-      </div>
-
-      {/* Overlay leve */}
-      <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-
-      {/* ===== Caixa de Login ===== */}
-      <div className="relative z-10 w-full max-w-md px-4 sm:px-6">
-        <div className="relative rounded-2xl p-[1px] bg-gradient-to-br from-cyan-400/60 via-fuchsia-400/40 to-emerald-400/40 shadow-[0_0_0_1px_rgba(255,255,255,0.05)]">
-          <div className="rounded-2xl bg-white/10 backdrop-blur-xl ring-1 ring-white/15 shadow-2xl">
-            {/* Header */}
-            <div className="px-6 sm:px-8 pt-6 sm:pt-8">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <LogIn className="w-6 h-6 text-white/80" />
-                <h1 className="text-xl sm:text-2xl font-semibold">Entrar</h1>
-              </div>
-
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-xs sm:text-sm text-white/60">Acessando como</span>
-                <span
-                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs sm:text-sm ring-1 ${roleChipClasses}`}
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  {roleLabel}
-                </span>
-              </div>
-            </div>
-
-            {/* Mensagem de erro */}
-            {errorMsg && (
-              <div className="mx-6 sm:mx-8 mt-3 rounded-md border border-red-400/30 bg-red-500/10 text-red-200 text-sm px-3 py-2">
-                {errorMsg}
-              </div>
-            )}
-
-            {/* Form */}
-            <form
-              className="px-6 sm:px-8 pb-6 sm:pb-8 pt-4 space-y-6"
-              onSubmit={handleSubmit}
-            >
-              {/* Email */}
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-xs sm:text-sm text-white/70">
-                  E-mail
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/60">
-                    <Mail className="w-5 h-5" />
-                  </span>
-                  <input
-                    id="email"
-                    type="email"
-                    placeholder="exemplo@medconnect.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full h-11 rounded-lg bg-white/10 text-white placeholder-white/40 border border-white/20 pl-12 pr-3 outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent"
-                    disabled={submitting}
-                  />
-                </div>
-              </div>
-
-              {/* Senha */}
-              <div className="space-y-2">
-                <label htmlFor="password" className="block text-xs sm:text-sm text-white/70">
-                  Senha
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/60">
-                    <Lock className="w-5 h-5" />
-                  </span>
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full h-11 rounded-lg bg-white/10 text-white placeholder-white/40 border border-white/20 pl-12 pr-10 outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent"
-                    disabled={submitting}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((s) => !s)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 px-2 text-white/70 hover:text-white"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Botão principal */}
-              <div className="flex justify-center mt-5">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="group inline-flex items-center justify-center rounded-md bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-emerald-400 text-black font-semibold text-sm shadow-md px-[60px] py-[16px] min-w-[200px] transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  <span className="inline-flex items-center justify-center gap-2">
-                    {submitting ? (
-                      <>
-                        <span className="h-4 w-4 border-2 border-black/40 border-t-black rounded-full animate-spin" />
-                        Entrando...
-                      </>
-                    ) : (
-                      <>
-                        Entrar
-                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                      </>
-                    )}
-                  </span>
-                </button>
-              </div>
-
-              {/* Divisor */}
-              <div className="relative text-center py-1">
-                <span className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-white/10" />
-                <span className="relative bg-white/10 px-2 py-0.5 rounded text-[11px] text-white/60 ring-1 ring-white/15">
-                  MedConnect © {new Date().getFullYear()}
-                </span>
-              </div>
-            </form>
+        <div className="mb-10">
+          <p className="text-gray-500 text-sm mb-20">Por favor, insira seus dados</p>
+          <h1 className="text-2xl font-bold text-gray-900">Bem-vindo de volta</h1>
+        </div>
+        {errorMsg && (
+          <div className="mb-30 rounded-md border border-red-400 bg-red-100 text-red-700 text-sm px-3 py-2">
+            {errorMsg}
           </div>
-        </div>
-
-        <p className="mt-4 text-center text-xs text-white/50">
-          Ao continuar, você concorda com nossos{" "}
-          <a className="underline hover:text-white" href="#">
-            Termos de Uso
-          </a>{" "}
-          e{" "}
-          <a className="underline hover:text-white" href="#">
-            Política de Privacidade
-          </a>.
+        )}
+        <form onSubmit={handleSubmit} className="space-y-30">
+          <div>
+            <label htmlFor="email" className="sr-only">E-mail</label>
+            <div className="relative">
+              <input
+                id="email"
+                type="email"
+                placeholder="exemplo@medconnect.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-30 py-30 text-gray-700 focus:ring-30 focus:ring-blue-500 outline-none"
+                disabled={submitting}
+              />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="password" className="sr-only">Senha</label>
+            <div className="relative">
+              <input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-30 py-30 m-20 text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none"
+                disabled={submitting}
+              />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-sm text-gray-600">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" className="form-checkbox h-4 w-4 text-blue-600" />
+              Lembrar por 30 dias
+            </label>
+            <a href="#" className="text-blue-600 hover:underline">Esqueci minha senha</a>
+          </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg py-3 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {submitting ? "Entrando..." : "Entrar"}
+          </button>
+        </form>
+        <button
+          type="button"
+          className="w-full border border-gray-300 flex items-center justify-center gap-2 rounded-lg py-2 mt-4 hover:bg-gray-50"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 533.5 544.3" className="h-5 w-5" aria-hidden="true">
+            <path fill="#4285f4" d="M533.5 278.4c0-18.4-1.6-36.2-4.7-53.4H272v101h146.9c-6.3 34-25.4 62.8-54.4 82v68h87.9c51.4-47.4 81.1-117.3 81.1-197.6z"/>
+            <path fill="#34a853" d="M272 544.3c73 0 134.3-24.2 179.1-65.7l-87.9-68c-24.4 16.3-55.5 25.9-91.2 25.9-70.1 0-129.5-47.4-150.8-111.3H32.8v69.9c44.8 88.3 137.2 149.2 239.2 149.2z"/>
+            <path fill="#fbbc04" d="M121.2 325.2c-8.8-26.4-8.8-54.8 0-81.2v-69.9H32.8c-29.8 58.3-29.8 127.9 0 186.2l88.4-34.9z"/>
+            <path fill="#ea4335" d="M272 107.7c37.7-.6 73.9 13.3 101.4 38.3l76-75.9C399.4 24.4 338 0 272 0 170 0 77.6 60.9 32.8 149.2l88.4 69.9c21.3-63.9 80.7-111.4 150.8-111.4z"/>
+          </svg>
+          Entrar com Google
+        </button>
+        <p className="text-gray-500 text-sm text-center mt-6">
+          Não tem uma conta?{" "}
+          <a href="#" className="text-blue-600 hover:underline">Cadastre-se</a>
         </p>
       </div>
     </div>

@@ -11,12 +11,14 @@ import NovoLaudoPage from "@/features/doctor/pages/laudos/NovoLaudoPage";
 import RevisarLaudoPage from "@/features/doctor/pages/laudos/RevisarLaudoPage";
 import DoctorDashboard from "@/features/doctor/pages/Dashboard";
 import AdminPage from '@/features/admin/pages/App'; 
+import CreateUser from '@/features/admin/pages/CreateUser';
 import UsersList from '@/features/admin/pages/UsersList.jsx'
 import { AdminDashboardContent } from '@/features/admin/components/DashboardWidgets';
 import GerenciamentoPacientesPage from '@/features/doctor/pages/GerenciamentoPacientesPage';
 import PaginaCadastroPaciente from '@/features/doctor/pages/PaginaCadastroPaciente';
 import AgendamentoPacientePage from '@/features/patients/pages/Agendamento';
-import PatientDashboard from '@/features/patients/pages/Dashboard';
+import AppointmentsPage from '@/features/admin/pages/AppointmentsPage';
+
 const Root = () => <Outlet />;
 
 const ErrorPage = () => (
@@ -83,25 +85,21 @@ export const router = createBrowserRouter([
       { path: "/doctor/pacientes/editar/:id", element: <PaginaCadastroPaciente /> },
       { path: "/doctor/laudos/:id/revisar", element: <RevisarLaudoPage /> },
       { path: "/doctor/laudos/:id/editar", element: <NovoLaudoPage /> },
-      // 404 explícito
-      { path: "*", element: <NotFound /> },
-
+      
       // --- Rotas do Admin (Estrutura Aninhada) ---
       {
         path: "/admin", // 👈 Caminho base para o layout admin
         element: <AdminPage />,
         children: [
-          {
-            index: true,
-            element: <AdminDashboardContent />,
-          },
-          { path: "users", element: <UsersList /> },
-          
-        ]   // 👈 Renderiza o layout AdminPage (o componente App antigo)
+          { index: true, element: <AdminDashboardContent /> },
+          { path: "UsersList", element: <UsersList /> },
+          { path: "CreateUser", element: <CreateUser /> },
+          { path: "AppointmentsPage", element: <AppointmentsPage /> }
+        ]
       },
       // --- Rotas do Paciente ---
       // 👇 Adicione a nova rota aqui 👇
-      { path: "/patient/dashboard", element: <PatientDashboard /> },
+
       { path: "/patient/agendamento", element: <AgendamentoPacientePage /> },
       // (Opcional) Adicione um redirect para a rota principal do paciente, se houver
       { path: "/patient", element: <Navigate to="/patient/dashboard" replace /> },

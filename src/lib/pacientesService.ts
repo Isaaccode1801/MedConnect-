@@ -131,6 +131,25 @@ async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> 
   return res.json() as Promise<T>;
 }
 
+// ======================= PERFIS (USUÁRIOS) =======================
+export interface Profile {
+  id: string;
+  full_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  role?: string | null;
+  disabled?: boolean | null;
+  avatar_url?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  user_metadata?: any;
+}
+
+export async function listProfiles(): Promise<Profile[]> {
+  const url = buildUrl('/profiles', { select: '*', order: 'created_at.desc' });
+  return fetchJson<Profile[]>(url, { headers: getAuthHeaders() });
+}
+
 // ======================= PACIENTES =======================
 export async function listPacientes(): Promise<Array<Partial<Report>>> { // Pode usar Partial<Report> ou um tipo Paciente mais completo
   // CORREÇÃO: Mude 'select' para '*' para buscar todas as colunas

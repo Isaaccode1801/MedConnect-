@@ -8,7 +8,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
-import { listPacientes} from "@/lib/pacientesService";
+import { listProfiles, getAuthHeaders } from "@/lib/pacientesService";
 import "./UsersList.css";
 import { FaEye } from "react-icons/fa";
 import UserDetailsModal from "./UserDetailsModal";
@@ -28,16 +28,18 @@ export default function UsersList() {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState("");
   const [detailsData, setDetailsData] = useState(null);
+
   useEffect(() => {
     let alive = true;
     const loadUsers = async () => {
       setLoading(true);
       setErr('');
       try {
-        const res = await api.get('/profiles?select=*');
+        const data = await listProfiles();
         if (!alive) return;
-        setProfiles(Array.isArray(res.data) ? res.data : []);
+        setProfiles(Array.isArray(data) ? data : []);
       } catch (err) {
+        console.error('[UsersList] erro ao buscar usuários:', err);
         if (!alive) return;
         const status = err?.response?.status;
         setErr(status ? `Erro ${status}: não foi possível carregar os usuários.` : 'Erro ao carregar usuários.');
@@ -128,7 +130,11 @@ export default function UsersList() {
       // 2) Tenta buscar roles via REST (pode falhar por RLS; manter silencioso)
       let roles = [];
       try {
-        const { data: rolesData } = await api.get(`/user_roles?user_id=eq.${id}&select=role`);
+        const API_BASE = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1`;
+        const res = await fetch(`${API_BASE}/user_roles?user_id=eq.${id}&select=role`, {
+          headers: getAuthHeaders(),
+        });
+        const rolesData = res.ok ? await res.json() : [];
         roles = Array.isArray(rolesData) ? rolesData.map(r => r.role).filter(Boolean) : [];
       } catch {
         roles = [];
@@ -192,7 +198,7 @@ export default function UsersList() {
             <FaSync />
             <span>Atualizar</span>
           </button>
-          <Link to="/users/new" className="btn primary">
+          <Link to="/admin/CreateUser" className="btn primary">
             <FaPlus />
             <span>Novo usuário</span>
           </Link>
@@ -221,7 +227,7 @@ export default function UsersList() {
           />
           <h3>Nenhum usuário encontrado</h3>
           <p>Ajuste sua busca ou crie um novo usuário.</p>
-            <Link to="/users/new" className="btn primary">
+            <Link to="/admin/CreateUser" className="btn primary">
             <FaPlus /><span>Novo usuário</span>
             </Link>
         </div>

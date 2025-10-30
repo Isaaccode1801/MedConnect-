@@ -25,7 +25,7 @@ export default function App() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const chartRef = useRef(null);
   const { pathname } = useLocation();
-
+const navigate = useNavigate();
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
@@ -35,23 +35,16 @@ export default function App() {
     setIsUserMenuOpen(!isUserMenuOpen);
   };
 
-  const handleLogout = (e) => {
-    e.preventDefault();
-    try {
-      localStorage.removeItem('user_token');
-      localStorage.removeItem('user_role');
-    } catch (_) {}
+const handleLogout = (e) => {
+  e.preventDefault();
 
-    const origin = window.location.origin;
-    const path = window.location.pathname;
-    // Remove "/admin-dashboard..." to compute the project root
-    const idx = path.indexOf('/admin-dashboard');
-    const base = idx >= 0 ? path.slice(0, idx) : '';
-    const target = `${origin}${base}/index.html`;
+  try {
+    localStorage.removeItem('user_token');
+    localStorage.removeItem('user_role');
+  } catch (_) {}
 
-    // Use assign so the dashboard won't stay in history
-    window.location.assign(target);
-  };
+  navigate('/', { replace: true });
+};
 
   useEffect(() => {
     let chartInstance = null;
@@ -176,35 +169,75 @@ export default function App() {
         .submenu a:hover { background: var(--cor-principal); }
       `}</style>
       <div className="dashboard-container">
-        <nav className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
-          <div className="sidebar-header">
-            <FaHeartbeat className="logo-icon" />
-            <span className="logo-text">HealthOne</span>
-          </div>
-          <div className="nav-links">
-            <ul>
-              <li>
-  <Link to="/" className={pathname === '/' ? 'active' : ''}>
-    <FaColumns className="icon" /> <span>Dashboard</span>
-  </Link>
-</li>
-              <li><a href="#"><FaCalendarCheck className="icon" /> <span>Agendamentos</span></a></li>
+<nav className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+  <div className="sidebar-header">
+    <FaHeartbeat className="logo-icon" />
+    <span className="logo-text">Medconnect</span>
+  </div>
 
-              <li>
-                <Link to="/users" className={pathname.startsWith('/users') ? 'active' : ''}>
-                  <FaUsers className="icon" /> <span>Todos os Usuários</span>
-                </Link>
-              </li>
-              <li><a href="#"><FaFileInvoice className="icon" /> <span>Laudos</span></a></li>
-              <li><a href="#"><FaCog className="icon" /> <span>Configurações</span></a></li>
-              <li>
-                <a href="#" onClick={handleLogout}>
-                  <FaChevronRight className="icon" /> <span>Sair</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </nav>
+  <div className="nav-links">
+    <ul>
+      <li>
+        <Link to="/admin" className={pathname === '/admin' ? 'active' : ''}>
+          <FaColumns className="icon" /> <span>Dashboard</span>
+        </Link>
+      </li>
+
+      <li>
+        <Link
+          to="/admin/AppointmentsPage"
+          className={pathname.startsWith("/admin/AppointmentsPage") ? "active" : ""}
+        >
+          <FaCalendarCheck className="icon" /> <span>Agendamentos</span>
+        </Link>
+      </li>
+
+      <li>
+        <Link
+          to="/admin/UsersList"
+          className={pathname.startsWith("/admin/UsersList") ? "active" : ""}
+        >
+          <FaUsers className="icon" /> <span>Todos os Usuários</span>
+        </Link>
+      </li>
+
+      <li>
+        <a href="#">
+          <FaFileInvoice className="icon" /> <span>Laudos</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="#">
+          <FaCog className="icon" /> <span>Configurações</span>
+        </a>
+      </li>
+
+      <li>
+        <button
+          onClick={handleLogout}
+          style={{
+            background: 'none',
+            border: 'none',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            padding: '0.9rem 1.5rem',
+            margin: '0.25rem 1rem',
+            borderRadius: '0.75rem',
+            color: 'var(--cor-sidebar-texto)',
+            fontWeight: 500,
+            textAlign: 'left',
+            cursor: 'pointer'
+          }}
+        >
+          <FaChevronRight className="icon" /> <span>Sair</span>
+        </button>
+      </li>
+    </ul>
+  </div>
+</nav>
         <div className={`main-content ${isSidebarCollapsed ? 'collapsed' : ''}`}>
           <header className="header">
             <div className="header-left">
@@ -222,7 +255,7 @@ export default function App() {
                 <img src="https://placehold.co/40x40/3B82F6/FFFFFF?text=A" alt="Admin" />
                 <div>
                   <div style={{ fontWeight: 600 }}>Admin</div>
-                  <div style={{ fontSize: '0.8rem' }}>gestao@healthone.com</div>
+                  <div style={{ fontSize: '0.8rem' }}>gestao@medconnect.com</div>
                 </div>
               </div>
             </div>
