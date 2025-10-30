@@ -12,7 +12,7 @@ export default function Home() {
   const [acessOpen, setAcessOpen] = useState(false);
   const [dark, setDark] = useState(false);
 
-  // Foco em fidelidade visual: fonte base + dark-mode só quando o usuário clicar
+  // Foco em fidlidade visual: fonte base + dark-mode só quando o usuário clicar
   useEffect(() => {
     document.body.classList.toggle("modo-escuro", dark);
   }, [dark]);
@@ -64,25 +64,10 @@ export default function Home() {
 
           <nav className="navmenu">
             <ul>
-              <li><Link to="/" className="active">INÍCIO</Link></li>
-
-              <li className="dropdown">
-                <button className="drop-btn" onClick={() => setMenuOpen(v => !v)}>
-                  MENU <span>▾</span>
-                </button>
-                <div className="drop-menu" style={{ display: menuOpen ? "block" : undefined }}>
-                  <button onClick={() => nav("/login?role=doctor")}>Sou Médico</button>
-                  <button onClick={() => nav("/login?role=patient")}>Sou Paciente</button>
-                  <button onClick={() => nav("/secretary")}>Sou Secretaria</button>
-                  <button onClick={() => nav("/login?role=admin")}>Sou Admin</button>
-                  <button onClick={() => nav("/finance")}>Financeiro</button>
-                </div>
-              </li>
-
-              <li><a href="#contato">CONTATO</a></li>
-              <li>
+              {/* Removido: CADASTRA-SE */}
+              {/* <li>
                 <Link to="/signup" className="btn-outline">Cadastra-se</Link>
-              </li>
+              </li> */}
             </ul>
           </nav>
         </div>
