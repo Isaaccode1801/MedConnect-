@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import medLogo from '@/assets/Medconnect.logo.png';
 import './dashboard.css';
 
 interface Consulta {
@@ -129,12 +130,8 @@ export default function PatientDashboard() {
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-left">
-          <div className="logo">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <path d="M16 8v8m0 0v8m0-8h8m-8 0H8" stroke="#14b8a6" strokeWidth="3" strokeLinecap="round"/>
-              <circle cx="16" cy="16" r="14" stroke="#14b8a6" strokeWidth="2"/>
-            </svg>
-            <span className="logo-text">HealthOne</span>
+          <div className="logo" aria-label="MedConnect">
+            <img src={medLogo} alt="MedConnect" className="logo-image" />
           </div>
           <div className="user-greeting">
             <div className="user-avatar">IK</div>
@@ -144,7 +141,7 @@ export default function PatientDashboard() {
         <div className="header-right">
           <button className="btn-inicio" onClick={() => void navigate('/')}>Início</button>
           <button className="btn-consulta" onClick={() => void navigate('/patient/agendamento')}>
-            Marcar Consulta
+            Ver lista de médicos
           </button>
         </div>
       </header>

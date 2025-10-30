@@ -27,13 +27,12 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
 }
 
-.logo-text {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1f2937;
+.logo-image {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
 }
 
 .user-greeting {
@@ -126,6 +125,7 @@
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
   grid-auto-rows: auto;
+  align-items: stretch;
 }
 
 /* Cards */
@@ -514,7 +514,7 @@
   }
   
   .taxa-card {
-    grid-column: span 1;
+    grid-column: span 2;
   }
   
   .condicoes-card {
@@ -522,7 +522,7 @@
   }
   
   .proximas-consultas-card {
-    grid-column: span 2;
+    grid-column: span 1;
   }
 }
 
@@ -541,6 +541,7 @@
   .header-right {
     width: 100%;
     justify-content: space-between;
+    gap: .75rem;
   }
   
   .welcome-title {
