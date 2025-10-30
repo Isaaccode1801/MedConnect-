@@ -22,6 +22,7 @@ import AppointmentsPage from "@/features/admin/pages/AppointmentsPage";
 
 // Paciente
 import AgendamentoPacientePage from "@/features/patients/pages/Agendamento";
+import PatientDashboard from "@/features/patients/pages/Dashboard";
 
 // Secretaria
 import SecretaryLayout from "@/features/secretary/pages/SecretaryLayout";
@@ -135,11 +136,11 @@ export const router = createBrowserRouter([
       },
 
       //
-      // ÁREA DO PACIENTE
-      //
-      { path: "/patient/agendamento", element: <AgendamentoPacientePage /> },
-      // se você criar depois um dashboard do paciente, você pode ligar assim:
-      // { path: "/patient", element: <Navigate to="/patient/dashboard" replace /> },
+  // ÁREA DO PACIENTE
+  //
+  { path: "/patient/dashboard", element: <PatientDashboard /> },
+  { path: "/patient/agendamento", element: <AgendamentoPacientePage /> },
+  { path: "/patient", element: <Navigate to="/patient/dashboard" replace /> },
 
       //
       // ÁREA DA SECRETARIA
@@ -158,4 +159,6 @@ export const router = createBrowserRouter([
 },
     ],
   },
+        // catch-all 404
+        { path: "*", element: <NotFound /> },
 ]);
