@@ -54,7 +54,7 @@ export default function Home() {
       {/* HEADER */}
       <header className="header">
         <div className="header-inner">
-          <div className="branding" onClick={() => nav("/")} role="button" aria-label="Ir para início">
+          <div className="branding">
             <img src={medLogo} alt="Medconnect" className="brand-logo" />
             <div>
               <div className="brand-title">Medconnect</div>
