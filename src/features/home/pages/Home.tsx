@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "./home.css";
 import medLogo from "../../../assets/Medconnect.logo.png";
 import { FaHeartbeat, FaUserAlt, FaEnvelope, FaUsersCog, FaCoins } from "react-icons/fa";
-import { MdPhoneIphone, MdAccessTime, MdOutlineAccessibilityNew } from "react-icons/md";
+import { MdOutlineAccessibilityNew } from "react-icons/md";
 
 export default function Home() {
   const nav = useNavigate();
@@ -37,18 +37,9 @@ export default function Home() {
 
   return (
     <>
-      {/* TOPBAR */}
+      {/* TOPBAR - apenas cor de fundo, sem texto */}
       <div className="topbar">
-        <div className="container">
-          <div className="topbar-item" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <MdAccessTime size={18} />
-            <span>Segunda – Sábado, 8h às 22h</span>
-          </div>
-          <div className="topbar-item" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <MdPhoneIphone size={18} />
-            <span>Número da empresa</span>
-          </div>
-        </div>
+        <div className="container"></div>
       </div>
 
       {/* HEADER */}
