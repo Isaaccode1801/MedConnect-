@@ -1,44 +1,38 @@
+// src/features/admin/pages/CreateUser.jsx (LÓGICA DE API ÚNICA)
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getAuthHeaders, readUserToken } from "@/lib/pacientesService";
-import { supabase } from "@/lib/supabase" // Precisamos do supabase
-
-// (função getFunctionHeaders - sem alterações)
-function getFunctionHeaders() {
-  const bearer = readUserToken();
-  const base = getAuthHeaders();
-  return {
-    apikey: base.apikey,
-    Authorization: bearer ? `Bearer ${bearer}` : base.Authorization,
-    "Content-Type": "application/json",
-  };
-}
+import { supabase } from "@/lib/supabase"; 
 
 export default function CreateUser() {
   const navigate = useNavigate();
   const [role, setRole] = useState("paciente"); 
+  
   const [form, setForm] = useState({
     email: "",
     password: "",
     full_name: "",
-    phone: "",
-    cpf: "",
-    phone_mobile: "",
+    phone: "", // Fixo (Admin/Secretaria)
+    cpf: "", // Paciente E Médico
+    phone_mobile: "", // Paciente E Médico
+    crm: "", // Médico
+    crm_uf: "", // Médico
+    specialty: "", // Médico
   });
 
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
 
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
   function onChange(e) {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (name === 'crm_uf') {
+        value = value.toUpperCase().slice(0, 2);
+    }
     setForm((f) => ({ ...f, [name]: value }));
   }
 
   // =================================================================
-  // 🚀 FUNÇÃO HANDLESUBMIT (LÓGICA DE PROCURA POR CPF)
+  // FUNÇÃO HANDLESUBMIT (Refatorada para API Única)
   // =================================================================
   async function handleSubmit(e) {
     e.preventDefault();
@@ -48,20 +42,21 @@ export default function CreateUser() {
 
     const currentRole = role;
     const isPatient = currentRole === "paciente";
+    const isDoctor = currentRole === "medico";
+    const isAdminOrSecretary = currentRole === "admin" || currentRole === "secretaria";
 
-    // ---- 1. Validações (sem alterações) ----
+    // --- 1. Validações ---
     if (!currentRole) {
       setErr("Selecione o tipo de usuário.");
       setLoading(false);
       return;
     }
     if (!form.email || !form.password || !form.full_name) {
-      setErr("Preencha pelo menos e-mail, senha e nome completo.");
+      setErr("Preencha e-mail, senha e nome completo.");
       setLoading(false);
       return;
     }
     
-    // Limpa o CPF *antes* de o validar ou enviar
     const cpfLimpo = form.cpf.replace(/[^\d]/g, '');
 
     if (isPatient) {
@@ -70,8 +65,25 @@ export default function CreateUser() {
             setLoading(false);
             return;
         }
-         if (!form.phone_mobile) {
+        if (!form.phone_mobile) {
             setErr("Celular (WhatsApp) é obrigatório para pacientes.");
+            setLoading(false);
+            return;
+        }
+    }
+    if (isDoctor) {
+        if (!cpfLimpo || cpfLimpo.length !== 11) {
+            setErr("CPF (do médico) é obrigatório e deve ter 11 dígitos.");
+            setLoading(false);
+            return;
+        }
+        if (!form.crm) {
+            setErr("CRM é obrigatório para médicos.");
+            setLoading(false);
+            return;
+        }
+        if (!form.crm_uf || form.crm_uf.length !== 2) {
+            setErr("UF do CRM é obrigatória (ex: SP, RJ).");
             setLoading(false);
             return;
         }
@@ -79,83 +91,70 @@ export default function CreateUser() {
     
     try {
       // =========================================================
-      // ETAPA 1: CHAMAR A FUNÇÃO DE BACKEND
-      // (Cria o Auth User E o Patient Record, mas não os liga)
+      // ETAPA ÚNICA: MONTAR O PAYLOAD COMPLETO
       // =========================================================
-      const fnUrl = '/proxy/functions/v1/create-user-with-password';
 
+      // 1.1. Telefone principal (auth)
+      let phonePayload = null;
+      if (isPatient || isDoctor) {
+        phonePayload = form.phone_mobile || null; 
+      } else if (isAdminOrSecretary) {
+        phonePayload = form.phone || null;
+      }
+
+      // 1.2. Payload base (comum a todos)
       const bodyPayload = {
         email: form.email,
         password: form.password,
         full_name: form.full_name,
-        phone: form.phone || null,
-        role: currentRole, 
-        create_patient_record: isPatient, 
-        cpf: isPatient ? cpfLimpo : undefined,
-        phone_mobile: isPatient ? form.phone_mobile : undefined,
+        phone: phonePayload,
+        role: currentRole,
       };
+
+      // 1.3. Adicionar campos de Paciente (se for paciente)
+      if (isPatient) {
+        bodyPayload.create_patient_record = true; // Flag da API
+        bodyPayload.cpf = cpfLimpo;
+        bodyPayload.phone_mobile = form.phone_mobile;
+      }
+
+      // 1.4. Adicionar campos de Médico (se for médico)
+      // (Esta é a mudança: enviamos tudo para a API)
+      if (isDoctor) {
+        bodyPayload.cpf = cpfLimpo;
+        bodyPayload.phone_mobile = form.phone_mobile || null;
+        bodyPayload.crm = form.crm;
+        bodyPayload.crm_uf = form.crm_uf;
+        bodyPayload.specialty = form.specialty || null;
+      }
       
+      // =========================================================
+      // CHAMADA ÚNICA À API
+      // =========================================================
+      
+      // Limpar campos indefinidos (opcional, mas boa prática)
       Object.keys(bodyPayload).forEach(key => {
         if (bodyPayload[key] === undefined) delete bodyPayload[key];
       });
 
-      const r = await fetch(fnUrl, {
-        method: "POST",
-        headers: getFunctionHeaders(),
-        body: JSON.stringify(bodyPayload),
-      });
-
-      const data = await r.json();
-
-      if (!r.ok) {
-        throw new Error(data.error || `Função create-user falhou (${r.status})`);
+      const { data, error } = await supabase.functions.invoke(
+        'create-user-with-password', 
+        { body: bodyPayload }
+      );
+      
+      // Se a API retornar um erro, lança-o
+      if (error) throw error;
+      
+      // Se a API não retornar dados ou ID, lança um erro
+      if (!data?.user?.id) {
+        throw new Error("Falha: A API não retornou o usuário criado.");
       }
       
       // =========================================================
-      // ETAPA 2: LIGAÇÃO MANUAL (COM A NOVA LÓGICA)
+      // SUCESSO E FEEDBACK
       // =========================================================
-      if (isPatient) {
-        const userId = data?.user?.id;
-        
-        if (!userId) {
-            console.error("API criou o usuário mas não retornou o user.id:", data);
-            throw new Error("Falha grave: A API não retornou o ID do usuário.");
-        }
-
-        // ✅ CORREÇÃO: Procurar o paciente pelo CPF que acabámos de criar
-        const { data: patientData, error: findError } = await supabase
-            .from('patients')
-            .select('id')
-            .eq('cpf', cpfLimpo) // Procura pelo CPF limpo
-            .limit(1)
-            .single(); // .single() devolve um objeto ou um erro
-
-        if (findError || !patientData) {
-            console.error("Erro ao buscar paciente pelo CPF:", findError);
-            throw new Error("Usuário criado, mas não foi possível encontrar o registro de paciente pelo CPF para fazer a ligação.");
-        }
-        
-        const patientId = patientData.id; // Encontrámos o ID do paciente!
-
-        // Agora, fazemos o UPDATE para ligar os dois
-        const { error: updateError } = await supabase
-            .from('patients')
-            .update({ user_id: userId }) // Define a coluna 'user_id'
-            .eq('id', patientId);        // No 'id' do paciente que encontrámos
-
-        if (updateError) {
-            console.error("Falha ao ligar paciente:", updateError);
-            throw new Error(`Usuário e paciente criados, mas falha ao ligar os registos: ${updateError.message}`);
-        }
-        
-        console.log("✅ Paciente e Auth ligados com sucesso!");
-      }
-
-      // =========================================================
-      // 3. FEEDBACK PRO USUÁRIO
-      // =========================================================
+      
       setOk(data.message || "Usuário criado com sucesso!");
-
       setForm({
         email: "",
         password: "",
@@ -163,22 +162,28 @@ export default function CreateUser() {
         phone: "",
         cpf: "",
         phone_mobile: "",
+        crm: "",
+        crm_uf: "",
+        specialty: "",
       });
 
       setTimeout(() => {
         navigate("/admin/UsersList");
       }, 1000); 
 
-    } catch (e2) {
+    } catch (e2) { 
       console.error("[CreateUser] erro:", e2);
-      setErr(e2?.message || "Erro ao criar usuário");
+      // Tenta extrair a mensagem de erro de dentro do objeto de erro da Supabase Function
+      const errorMessage = e2.context?.error?.message || e2.message || "Erro ao criar usuário";
+      setErr(errorMessage); 
     } finally {
       setLoading(false);
     }
   }
 
+
   // =================================================================
-  // O RESTO DO SEU CÓDIGO JSX (LIMPO, SEM ERROS DE SINTAXE)
+  // JSX (Formulário) - (Nenhuma alteração aqui)
   // =================================================================
   return (
     <div style={{ padding: 24 }}>
@@ -242,6 +247,7 @@ export default function CreateUser() {
           gap: 12,
         }}
       >
+        {/* --- CAMPOS COMUNS (Email, Nome, Senha) --- */}
         <label style={{ display: "grid", gap: 6 }}>
           <span>E-mail</span>
           <input
@@ -253,7 +259,7 @@ export default function CreateUser() {
             style={inputStyle}
           />
         </label>
-
+        
         <label style={{ display: "grid", gap: 6 }}>
           <span>Senha</span>
           <input
@@ -261,7 +267,7 @@ export default function CreateUser() {
             type="password"
             value={form.password}
             onChange={onChange}
-            required
+            required 
             style={inputStyle}
           />
         </label>
@@ -277,46 +283,90 @@ export default function CreateUser() {
           />
         </label>
 
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Telefone fixo / clínica</span>
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={onChange}
-            placeholder="(11) 3333-4444"
-            style={inputStyle}
-          />
-        </label>
-
-        {/* Campos de Paciente Condicionais */}
-        {role === 'paciente' && (
-          <>
+        {/* CAMPO TELEFONE FIXO (Apenas para Admin e Secretaria) */}
+        {(role === 'admin' || role === 'secretaria') && (
             <label style={{ display: "grid", gap: 6 }}>
-              <span>Celular / WhatsApp (Obrigatório)</span>
-              <input
+            <span>Telefone fixo / clínica</span>
+            <input
+                name="phone"
+                value={form.phone}
+                onChange={onChange}
+                placeholder="(11) 3333-4444"
+                style={inputStyle}
+            />
+            </label>
+        )}
+
+        {/* CAMPO CELULAR (Apenas para Paciente e Médico) */}
+        {(role === 'paciente' || role === 'medico') && (
+            <label style={{ display: "grid", gap: 6 }}>
+            <span>Celular / WhatsApp {role === 'paciente' ? '(Obrigatório)' : '(Opcional para Médico)'}</span>
+            <input
                 name="phone_mobile"
                 value={form.phone_mobile}
                 onChange={onChange}
                 placeholder="(11) 99999-8888"
                 required={role === 'paciente'}
                 style={inputStyle}
-              />
+            />
             </label>
+        )}
 
+        {/* CAMPO CPF (Apenas para Paciente e Médico) */}
+        {(role === 'paciente' || role === 'medico') && (
             <label style={{ display: "grid", gap: 6 }}>
-              <span>CPF (Obrigatório, só números)</span>
-              <input
+            <span>CPF (Obrigatório, só números)</span>
+            <input
                 name="cpf"
                 value={form.cpf}
                 onChange={onChange}
                 placeholder="12345678901"
-                required={role === 'paciente'}
+                required={true}
+                style={inputStyle}
+            />
+            </label>
+        )}
+        
+        {/* NOVOS CAMPOS DE MÉDICO (Apenas para Médico) */}
+        {role === 'medico' && (
+          <>
+            <label style={{ display: "grid", gap: 6 }}>
+              <span>CRM (Obrigatório)</span>
+              <input
+                name="crm"
+                value={form.crm}
+                onChange={onChange}
+                placeholder="123456"
+                required
+                style={inputStyle}
+              />
+            </label>
+            <label style={{ display: "grid", gap: 6 }}>
+              <span>UF do CRM (Obrigatório)</span>
+              <input
+                name="crm_uf"
+                value={form.crm_uf}
+                onChange={onChange}
+                placeholder="SP"
+                maxLength={2}
+                required
+                style={inputStyle}
+              />
+            </label>
+            <label style={{ display: "grid", gap: 6 }}>
+              <span>Especialidade (Opcional)</span>
+              <input
+                name="specialty"
+                value={form.specialty}
+                onChange={onChange}
+                placeholder="Cardiologia"
                 style={inputStyle}
               />
             </label>
           </>
         )}
 
+        {/* Feedback de Erro/Sucesso */}
         {err && (
           <div
             style={{
@@ -345,6 +395,7 @@ export default function CreateUser() {
           </div>
         )}
 
+        {/* Botões */}
         <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
           <button type="submit" disabled={loading} style={primaryBtnStyle}>
             {loading ? "Salvando..." : "Criar usuário"}
@@ -358,7 +409,7 @@ export default function CreateUser() {
   );
 }
 
-// Estilos (limpos)
+// Estilos
 const inputStyle = {
   padding: "10px 12px",
   borderRadius: 8,
