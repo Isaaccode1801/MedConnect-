@@ -74,7 +74,12 @@ body {
   display: block;
   border-radius: 0; /* sem arredondamento */
   object-fit: contain;
+  /* Evita qualquer filtro global (ex.: modo daltônico) afetar a marca */
+  filter: none !important;
+  mix-blend-mode: normal !important;
 }
+/* Mesmo em modo daltônico, preservar as cores originais da logo */
+.modo-daltonico .logo-link img.logo { filter: none !important; }
 
 .wrap{
   max-width:1200px; margin:24px auto; padding:0 20px 80px;

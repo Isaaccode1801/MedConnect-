@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { getAuthHeaders } from "@/lib/pacientesService";
 
@@ -23,14 +23,23 @@ export default function AppointmentsPage() {
   const [erro, setErro] = useState("");
   const [consultas, setConsultas] = useState([]);
 
-  // Novos estados para médicos e pacientes
+  // filtros UI
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  // combos
   const [medicos, setMedicos] = useState([]);
   const [pacientes, setPacientes] = useState([]);
 
-  // modal state
+  // modal
   const [showModal, setShowModal] = useState(false);
+  const [createMsg, setCreateMsg] = useState("");
+  const [createErr, setCreateErr] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  // form state da nova consulta
+  // form
   const [formConsulta, setFormConsulta] = useState({
     doctor_id: "",
     patient_id: "",
@@ -38,182 +47,118 @@ export default function AppointmentsPage() {
     duration_minutes: 30,
   });
 
-  // sucesso/erro após criar
-  const [createMsg, setCreateMsg] = useState("");
-  const [createErr, setCreateErr] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  // ===========================
-  // 1. Buscar agendamentos + hidratar nomes
-  // ===========================
   useEffect(() => {
+    let alive = true;
     async function carregarConsultas() {
       setLoading(true);
       setErro("");
-
       try {
-        // 1) Buscar todas as consultas cruas (sem join)
         const base = import.meta.env.VITE_SUPABASE_URL;
-        const urlAppointments =
-          `${base}/rest/v1/appointments` +
-          `?select=id,scheduled_at,duration_minutes,status,doctor_id,patient_id`;
-        const respApp = await fetch(urlAppointments, {
-          headers: getAuthHeaders(),
-        });
-
+        const respApp = await fetch(
+          `${base}/rest/v1/appointments?select=id,scheduled_at,duration_minutes,status,doctor_id,patient_id`,
+          { headers: getAuthHeaders() }
+        );
         if (!respApp.ok) {
           const txt = await respApp.text();
-          throw new Error(
-            `Falha ao carregar consultas (${respApp.status}): ${txt}`
-          );
+          throw new Error(`Falha ao carregar consultas (${respApp.status}): ${txt}`);
         }
+        const listaConsultas = await respApp.json();
 
-        const dataApp = await respApp.json();
-        const listaConsultas = Array.isArray(dataApp) ? dataApp : [];
+        const doctorIds = [...new Set((listaConsultas || []).map(c => c.doctor_id).filter(Boolean))];
+        const patientIds = [...new Set((listaConsultas || []).map(c => c.patient_id).filter(Boolean))];
 
-        // 2) Extrair IDs únicos de médicos e pacientes
-        const doctorIds = [
-          ...new Set(listaConsultas.map(c => c.doctor_id).filter(Boolean)),
-        ];
-        const patientIds = [
-          ...new Set(listaConsultas.map(c => c.patient_id).filter(Boolean)),
-        ];
+        const [mapaDoctors, mapaPatients] = await Promise.all([
+          (async () => {
+            if (doctorIds.length === 0) return {};
+            const inStr = `(${doctorIds.map(id => `"${id}"`).join(",")})`;
+            const r = await fetch(`${base}/rest/v1/doctors?id=in.${encodeURIComponent(inStr)}&select=id,full_name`, { headers: getAuthHeaders() });
+            if (!r.ok) return {};
+            const arr = await r.json();
+            return Object.fromEntries(arr.map(d => [d.id, d.full_name || "—"]));
+          })(),
+          (async () => {
+            if (patientIds.length === 0) return {};
+            const inStr = `(${patientIds.map(id => `"${id}"`).join(",")})`;
+            const r = await fetch(`${base}/rest/v1/patients?id=in.${encodeURIComponent(inStr)}&select=id,full_name`, { headers: getAuthHeaders() });
+            if (!r.ok) return {};
+            const arr = await r.json();
+            return Object.fromEntries(arr.map(p => [p.id, p.full_name || "—"]));
+          })(),
+        ]);
 
-        // 3) Buscar nomes dos médicos
-        let mapaDoctors = {};
-        if (doctorIds.length > 0) {
-          // formata in.(id1,id2,id3)
-          const inDoctors = `(${doctorIds.map(id => `"${id}"`).join(",")})`;
-          const urlDocs =
-            `${base}/rest/v1/doctors` +
-            `?id=in.${encodeURIComponent(inDoctors)}` +
-            `&select=id,full_name`;
-          const respDocs = await fetch(urlDocs, {
-            headers: getAuthHeaders(),
-          });
-          if (respDocs.ok) {
-            const arrDocs = await respDocs.json();
-            mapaDoctors = Object.fromEntries(
-              (arrDocs || []).map(d => [d.id, d.full_name || "—"])
-            );
-          } else {
-            console.warn("[AppointmentsPage] não consegui nomes de doctors");
-          }
-        }
-
-        // 4) Buscar nomes dos pacientes
-        let mapaPatients = {};
-        if (patientIds.length > 0) {
-          const inPatients = `(${patientIds.map(id => `"${id}"`).join(",")})`;
-          const urlPacs =
-            `${base}/rest/v1/patients` +
-            `?id=in.${encodeURIComponent(inPatients)}` +
-            `&select=id,full_name`;
-          const respPacs = await fetch(urlPacs, {
-            headers: getAuthHeaders(),
-          });
-          if (respPacs.ok) {
-            const arrPacs = await respPacs.json();
-            mapaPatients = Object.fromEntries(
-              (arrPacs || []).map(p => [p.id, p.full_name || "—"])
-            );
-          } else {
-            console.warn("[AppointmentsPage] não consegui nomes de patients");
-          }
-        }
-
-        // 5) Anexar names a cada consulta
-        const enriquecidas = listaConsultas.map(c => ({
+        const enriquecidas = (listaConsultas || []).map(c => ({
           ...c,
-          doctor_name: c.doctor_id ? mapaDoctors[c.doctor_id] || "—" : "—",
-          patient_name: c.patient_id ? mapaPatients[c.patient_id] || "—" : "—",
+          doctor_name: c.doctor_id ? (mapaDoctors[c.doctor_id] || "—") : "—",
+          patient_name: c.patient_id ? (mapaPatients[c.patient_id] || "—") : "—",
         }));
-
-        setConsultas(enriquecidas);
+        if (alive) setConsultas(enriquecidas);
       } catch (e) {
         console.error("[AppointmentsPage] erro GET consultas", e);
-        setErro(
-          "Não foi possível carregar os agendamentos. Verifique permissões/RLS."
-        );
+        if (alive) setErro("Não foi possível carregar os agendamentos. Verifique permissões/RLS.");
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
       }
     }
 
-    async function carregarMedicos() {
+    async function carregarCombos() {
       try {
         const base = import.meta.env.VITE_SUPABASE_URL;
-        const url = `${base}/rest/v1/doctors?select=id,full_name&order=full_name.asc`;
-        const resp = await fetch(url, { headers: getAuthHeaders() });
-        if (resp.ok) {
-          const data = await resp.json();
-          setMedicos(data);
-        }
+        const [r1, r2] = await Promise.all([
+          fetch(`${base}/rest/v1/doctors?select=id,full_name&order=full_name.asc`, { headers: getAuthHeaders() }),
+          fetch(`${base}/rest/v1/patients?select=id,full_name&order=full_name.asc`, { headers: getAuthHeaders() }),
+        ]);
+        if (r1.ok) setMedicos(await r1.json());
+        if (r2.ok) setPacientes(await r2.json());
       } catch (e) {
-        console.error("[AppointmentsPage] Erro ao carregar médicos:", e);
-      }
-    }
-
-    async function carregarPacientes() {
-      try {
-        const base = import.meta.env.VITE_SUPABASE_URL;
-        const url = `${base}/rest/v1/patients?select=id,full_name&order=full_name.asc`;
-        const resp = await fetch(url, { headers: getAuthHeaders() });
-        if (resp.ok) {
-          const data = await resp.json();
-          setPacientes(data);
-        }
-      } catch (e) {
-        console.error("[AppointmentsPage] Erro ao carregar pacientes:", e);
+        console.warn("[AppointmentsPage] combos", e);
       }
     }
 
     carregarConsultas();
-    carregarMedicos();
-    carregarPacientes();
+    carregarCombos();
+    return () => { alive = false; };
   }, []);
 
-  // ===========================
-  // 2. Abrir/fechar modal
-  // ===========================
+  const linhasFiltradas = useMemo(() => {
+    let arr = Array.isArray(consultas) ? [...consultas] : [];
+    const term = q.trim().toLowerCase();
+    if (term) {
+      arr = arr.filter(c => (c.patient_name || "").toLowerCase().includes(term) || (c.doctor_name || "").toLowerCase().includes(term));
+    }
+    if (statusFilter !== "all") {
+      arr = arr.filter(c => (c.status || "").toLowerCase() === statusFilter);
+    }
+    if (dateFrom) {
+      const from = new Date(dateFrom).getTime();
+      arr = arr.filter(c => new Date(c.scheduled_at).getTime() >= from);
+    }
+    if (dateTo) {
+      const to = new Date(dateTo).getTime();
+      arr = arr.filter(c => new Date(c.scheduled_at).getTime() <= to);
+    }
+    return arr.sort((a,b) => new Date(b.scheduled_at) - new Date(a.scheduled_at));
+  }, [consultas, q, statusFilter, dateFrom, dateTo]);
+
   function abrirModal() {
     setCreateMsg("");
     setCreateErr("");
-    setFormConsulta({
-      doctor_id: "",
-      patient_id: "",
-      scheduled_at: "",
-      duration_minutes: 30,
-    });
+    setFormConsulta({ doctor_id: "", patient_id: "", scheduled_at: "", duration_minutes: 30 });
     setShowModal(true);
   }
 
-  function fecharModal() {
-    if (submitting) return;
-    setShowModal(false);
-  }
+  function fecharModal() { if (!submitting) setShowModal(false); }
 
-  // ===========================
-  // 3. Submit Nova Consulta
-  // ===========================
+  function limparFiltros() { setQ(""); setStatusFilter("all"); setDateFrom(""); setDateTo(""); }
+
   async function handleCreateConsulta(e) {
     e.preventDefault();
-    setCreateMsg("");
-    setCreateErr("");
-
-    if (
-      !formConsulta.doctor_id ||
-      !formConsulta.patient_id ||
-      !formConsulta.scheduled_at
-    ) {
+    setCreateMsg(""); setCreateErr("");
+    if (!formConsulta.doctor_id || !formConsulta.patient_id || !formConsulta.scheduled_at) {
       setCreateErr("Preencha médico, paciente e data/hora.");
       return;
     }
-
     setSubmitting(true);
-
     try {
-      // pegar quem está criando via JWT salvo
       let created_by = "";
       try {
         const bearer = localStorage.getItem("user_token");
@@ -221,7 +166,7 @@ export default function AppointmentsPage() {
           const payload = JSON.parse(atob(bearer.split(".")[1] || ""));
           created_by = payload?.sub || "";
         }
-      } catch (_) {}
+      } catch(_){}
 
       const body = {
         doctor_id: formConsulta.doctor_id,
@@ -230,241 +175,64 @@ export default function AppointmentsPage() {
         duration_minutes: Number(formConsulta.duration_minutes) || 30,
         created_by: created_by || formConsulta.doctor_id,
       };
-
-      const postUrl = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/appointments`;
-      const resp = await fetch(postUrl, {
-        method: "POST",
-        headers: {
-          ...getAuthHeaders(),
-          Prefer: "return=representation",
-        },
-        body: JSON.stringify(body),
-      });
-
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/appointments`;
+      const resp = await fetch(url, { method: 'POST', headers: { ...getAuthHeaders(), Prefer: 'return=representation' }, body: JSON.stringify(body) });
       if (!resp.ok) {
         const txt = await resp.text();
-        throw new Error(
-          `Erro ao criar consulta (${resp.status}): ${txt}`
-        );
+        throw new Error(`Erro ao criar consulta (${resp.status}): ${txt}`);
       }
-
       const retorno = await resp.json();
       const criados = Array.isArray(retorno) ? retorno : [retorno];
-
-      // precisamos re-hidratar nome pros criados também
-      const novosEnriquecidos = criados.map(c => ({
-        ...c,
-        doctor_name: c.doctor_id || "—",
-        patient_name: c.patient_id || "—",
-      }));
-
-      // concatena no topo
-      setConsultas(prev => [...novosEnriquecidos, ...prev]);
-
-      setCreateMsg("Consulta criada com sucesso ✨");
+      const novos = criados.map(c => ({ ...c, doctor_name: c.doctor_id || '—', patient_name: c.patient_id || '—' }));
+      setConsultas(prev => [...novos, ...prev]);
+      setCreateMsg('Consulta criada com sucesso ✨');
       setShowModal(false);
     } catch (err) {
-      console.error("[AppointmentsPage] erro POST consulta", err);
-      setCreateErr(
-        err.message || "Não foi possível criar a consulta. Cheque permissões."
-      );
-    } finally {
-      setSubmitting(false);
-    }
+      setCreateErr(err?.message || 'Não foi possível criar a consulta. Cheque permissões.');
+    } finally { setSubmitting(false); }
   }
 
-  // ===========================
-  // 4. Render
-  // ===========================
   return (
     <>
       <style>{`
-        .appointments-wrapper {
-          background: #fff;
-          border-radius: 0.75rem;
-          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1),
-                      0 2px 4px -2px rgba(0,0,0,0.1);
-          padding: 1.5rem;
-          color: #1F2937;
-          font-family: 'Poppins', sans-serif;
-        }
-        .appointments-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          flex-wrap: wrap;
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-        .appointments-title {
-          display: flex;
-          flex-direction: column;
-        }
-        .appointments-title h2 {
-          font-size: 1.1rem;
-          font-weight: 600;
-          margin: 0;
-          color: #1F2937;
-        }
-        .appointments-title span {
-          font-size: 0.8rem;
-          color: #6B7280;
-        }
-        .appointments-actions {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-        }
-        .btn-new {
-          background: #3B82F6;
-          color: #fff;
-          border: 0;
-          border-radius: 0.5rem;
-          padding: 0.6rem 1rem;
-          font-size: 0.9rem;
-          font-weight: 500;
-          cursor: pointer;
-          box-shadow: 0 10px 20px rgba(59,130,246,0.25);
-          transition: all .15s;
-        }
-        .btn-new:hover {
-          filter: brightness(1.07);
-          transform: translateY(-1px);
-        }
-        .appointments-table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        .appointments-table th {
-          text-align: left;
-          font-size: 0.75rem;
-          text-transform: uppercase;
-          color: #6B7280;
-          font-weight: 600;
-          border-bottom: 1px solid #E5E7EB;
-          padding: 0.75rem 0.5rem;
-        }
-        .appointments-table td {
-          font-size: 0.9rem;
-          color: #1F2937;
-          border-bottom: 1px solid #E5E7EB;
-          padding: 0.75rem 0.5rem;
-          vertical-align: top;
-        }
-        .status-pill {
-          display: inline-block;
-          font-size: 0.75rem;
-          padding: 0.25rem 0.6rem;
-          border-radius: 999px;
-          font-weight: 500;
-        }
-        .status-upcoming {
-          background: #EFF6FF;
-          color: #1D4ED8;
-        }
-        .status-done {
-          background: #D1FAE5;
-          color: #065F46;
-        }
-        .status-cancel {
-          background: #FEE2E2;
-          color: #991B1B;
-        }
-        /* ===== Modal styles ===== */
-        .overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.5);
-          display: grid;
-          place-items: center;
-          z-index: 9999;
-        }
-        .modal-card {
-          background: #fff;
-          border-radius: 0.75rem;
-          box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-          width: 100%;
-          max-width: 400px;
-          padding: 1.25rem 1.25rem 1rem;
-          position: relative;
-          font-family: 'Poppins', sans-serif;
-        }
-        .modal-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 1rem;
-        }
-        .modal-header h3 {
-          margin: 0;
-          font-size: 1rem;
-          font-weight: 600;
-          color: #111827;
-        }
-        .close-btn {
-          background: none;
-          border: 0;
-          color: #6B7280;
-          cursor: pointer;
-          font-size: 0.9rem;
-        }
-        .form-field {
-          display: flex;
-          flex-direction: column;
-          margin-bottom: 0.75rem;
-        }
-        .form-field label {
-          font-size: 0.8rem;
-          font-weight: 500;
-          color: #374151;
-          margin-bottom: 0.4rem;
-        }
-        .form-field input,
-        .form-field select {
-          border: 1px solid #D1D5DB;
-          border-radius: 0.5rem;
-          padding: 0.6rem 0.75rem;
-          font-size: 0.9rem;
-          line-height: 1.2rem;
-          font-family: inherit;
-        }
-        .submit-btn {
-          width: 100%;
-          background: #3B82F6;
-          border: 0;
-          border-radius: 0.5rem;
-          color: #fff;
-          font-weight: 600;
-          padding: 0.7rem 1rem;
-          font-size: 0.9rem;
-          cursor: pointer;
-          box-shadow: 0 15px 30px rgba(59,130,246,0.3);
-          transition: all .15s;
-          margin-top: 0.5rem;
-        }
-        .submit-btn[disabled] {
-          opacity: .6;
-          cursor: not-allowed;
-          box-shadow: none;
-        }
-        .msg-ok {
-          background: #ECFDF5;
-          color: #065F46;
-          border: 1px solid #A7F3D0;
-          border-radius: 0.5rem;
-          font-size: 0.8rem;
-          padding: 0.5rem 0.75rem;
-          margin-bottom: 0.75rem;
-        }
-        .msg-err {
-          background: #FEF2F2;
-          color: #991B1B;
-          border: 1px solid #FECACA;
-          border-radius: 0.5rem;
-          font-size: 0.8rem;
-          padding: 0.5rem 0.75rem;
-          margin-bottom: 0.75rem;
-        }
+.appointments-wrapper { background:#fff; border-radius:.75rem; box-shadow:0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1); padding:1.5rem; color:#1F2937; font-family:'Poppins',sans-serif; }
+.appointments-header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; }
+.appointments-title h2 { font-size:1.1rem; font-weight:600; margin:0; color:#1F2937; }
+.appointments-title span { font-size:.8rem; color:#6B7280; }
+.appointments-actions { display:flex; flex-direction:column; gap:.75rem; align-items:stretch; }
+.filters { display:grid; grid-template-columns:1fr repeat(3, minmax(140px, 1fr)); gap:.5rem; }
+@media (max-width:900px){ .filters{ grid-template-columns:1fr 1fr; } }
+.filter-input,.filter-select{ border:1px solid #D1D5DB; border-radius:.5rem; padding:.55rem .75rem; font-size:.9rem; }
+.filters-row{ display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+.btn-new { background:#0d9488; color:#fff; border:0; border-radius:.5rem; padding:.6rem 1rem; font-size:.9rem; font-weight:500; cursor:pointer; box-shadow:0 10px 20px rgba(13,148,136,.25); transition:all .15s; }
+.btn-new:hover{ filter:brightness(1.07); transform:translateY(-1px); }
+.btn-clear{ background:transparent; color:#0f766e; border:1px solid #99f6e4; border-radius:.5rem; padding:.55rem .9rem; font-size:.85rem; cursor:pointer; }
+.btn-clear:hover{ background:#ecfeff; }
+.table-scroll{ overflow-x:auto; border-radius:.75rem; }
+.appointments-table{ width:100%; border-collapse:collapse; min-width:760px; }
+.appointments-table th{ text-align:left; font-size:.75rem; text-transform:uppercase; color:#6B7280; font-weight:600; border-bottom:1px solid #E5E7EB; padding:.75rem .75rem; position:sticky; top:0; background:#fff; z-index:1; }
+.appointments-table td{ font-size:.9rem; color:#1F2937; border-bottom:1px solid #E5E7EB; padding:.75rem .75rem; vertical-align:top; }
+.appointments-table tbody tr:nth-child(even){ background:#fafafa; }
+.appointments-table tbody tr:hover{ background:#f1f5f9; }
+.status-pill{ display:inline-block; font-size:.75rem; padding:.25rem .6rem; border-radius:999px; font-weight:500; }
+.status-upcoming{ background:#EFF6FF; color:#1D4ED8; }
+.status-requested{ background:#e0f2fe; color:#0369a1; }
+.status-confirmed{ background:#D1FAE5; color:#065F46; }
+.status-pending{ background:#FEF3C7; color:#92400E; }
+.status-done{ background:#DCFCE7; color:#166534; }
+.status-cancel,.status-cancelled{ background:#FEE2E2; color:#991B1B; }
+.overlay{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:grid; place-items:center; z-index:9999; }
+.modal-card{ background:#fff; border-radius:.75rem; box-shadow:0 25px 60px rgba(0,0,0,.3); width:100%; max-width:400px; padding:1.25rem 1.25rem 1rem; position:relative; font-family:'Poppins',sans-serif; }
+.modal-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
+.modal-header h3{ margin:0; font-size:1rem; font-weight:600; color:#111827; }
+.close-btn{ background:none; border:0; color:#6B7280; cursor:pointer; font-size:.9rem; }
+.form-field{ display:flex; flex-direction:column; margin-bottom:.75rem; }
+.form-field label{ font-size:.8rem; font-weight:500; color:#374151; margin-bottom:.4rem; }
+.form-field input,.form-field select{ border:1px solid #D1D5DB; border-radius:.5rem; padding:.6rem .75rem; font-size:.9rem; line-height:1.2rem; font-family:inherit; }
+.submit-btn{ width:100%; background:#0d9488; border:0; border-radius:.5rem; color:#fff; font-weight:600; padding:.7rem 1rem; font-size:.9rem; cursor:pointer; box-shadow:0 15px 30px rgba(13,148,136,.3); transition:all .15s; margin-top:.5rem; }
+.submit-btn[disabled]{ opacity:.6; cursor:not-allowed; box-shadow:none; }
+.msg-ok{ background:#ECFDF5; color:#065F46; border:1px solid #A7F3D0; border-radius:.5rem; font-size:.8rem; padding:.5rem .75rem; margin-bottom:.75rem; }
+.msg-err{ background:#FEF2F2; color:#991B1B; border:1px solid #FECACA; border-radius:.5rem; font-size:.8rem; padding:.5rem .75rem; margin-bottom:.75rem; }
       `}</style>
 
       <div className="appointments-wrapper">
@@ -473,91 +241,86 @@ export default function AppointmentsPage() {
             <h2>Agendamentos</h2>
             <span>Lista completa de consultas marcadas</span>
           </div>
-
-          <div className="appointments-actions">
-            <button className="btn-new" onClick={abrirModal}>
-              + Nova Consulta
-            </button>
+          <div className="appointments-actions" style={{minWidth:'280px', flex:1}}>
+            <div className="filters">
+              <input className="filter-input" placeholder="Buscar por paciente ou médico..." value={q} onChange={(e)=>setQ(e.target.value)} />
+              <select className="filter-select" value={statusFilter} onChange={(e)=>setStatusFilter(e.target.value)}>
+                <option value="all">Todos status</option>
+                <option value="requested">Requested</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="pending">Pending</option>
+                <option value="done">Done</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <input className="filter-input" type="date" value={dateFrom} onChange={(e)=>setDateFrom(e.target.value)} />
+              <input className="filter-input" type="date" value={dateTo} onChange={(e)=>setDateTo(e.target.value)} />
+            </div>
+            <div className="filters-row">
+              <button className="btn-new" onClick={abrirModal}>+ Nova Consulta</button>
+              <button className="btn-clear" onClick={limparFiltros}>Limpar filtros</button>
+              <div style={{marginLeft:'auto', fontSize:'.8rem', color:'#6B7280'}}>Resultados: {linhasFiltradas.length}</div>
+            </div>
           </div>
         </div>
 
         {loading ? (
-          <div style={{ fontSize: ".9rem", color: "#6B7280" }}>
-            Carregando consultas...
-          </div>
+          <div style={{ fontSize: ".9rem", color: "#6B7280" }}>Carregando consultas...</div>
         ) : erro ? (
           <div style={{ fontSize: ".9rem", color: "#B91C1C" }}>{erro}</div>
         ) : (
-          <table className="appointments-table">
-            <thead>
-              <tr>
-                <th>Paciente</th>
-                <th>Médico</th>
-                <th>Data</th>
-                <th>Duração</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {consultas.length === 0 ? (
+          <div className="table-scroll">
+            <table className="appointments-table">
+              <thead>
                 <tr>
-                  <td
-                    colSpan={5}
-                    style={{
-                      fontSize: ".9rem",
-                      color: "#6B7280",
-                      paddingTop: "1rem",
-                    }}
-                  >
-                    Nenhuma consulta encontrado.
-                  </td>
+                  <th>Paciente</th>
+                  <th>Médico</th>
+                  <th>Data</th>
+                  <th>Duração</th>
+                  <th>Status</th>
                 </tr>
-              ) : (
-                consultas.map((c) => (
-                  <tr key={c.id || `${c.patient_id}-${c.scheduled_at}`}>
-                    <td>{c.patient_name || "—"}</td>
-                    <td>{c.doctor_name || "—"}</td>
-                    <td>{formatDateTime(c.scheduled_at)}</td>
-                    <td>
-                      {c.duration_minutes
-                        ? `${c.duration_minutes} min`
-                        : "—"}
-                    </td>
-                    <td>
-                      <span
-                        className={
-                          "status-pill " +
-                          (c.status === "cancelled"
-                            ? "status-cancel"
-                            : c.status === "done"
-                            ? "status-done"
-                            : "status-upcoming")
-                        }
-                      >
-                        {c.status || "upcoming"}
-                      </span>
+              </thead>
+              <tbody>
+                {linhasFiltradas.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ fontSize: ".9rem", color: "#6B7280", paddingTop: "1rem" }}>
+                      Nenhuma consulta encontrada.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  linhasFiltradas.map((c) => (
+                    <tr key={c.id || `${c.patient_id}-${c.scheduled_at}`}>
+                      <td>{c.patient_name || "—"}</td>
+                      <td>{c.doctor_name || "—"}</td>
+                      <td>{formatDateTime(c.scheduled_at)}</td>
+                      <td>{c.duration_minutes ? `${c.duration_minutes} min` : "—"}</td>
+                      <td>
+                        <span className={
+                          "status-pill " +
+                          (c.status === "cancelled" ? "status-cancel" :
+                           c.status === "done" ? "status-done" :
+                           c.status === "requested" ? "status-requested" :
+                           c.status === "confirmed" ? "status-confirmed" :
+                           c.status === "pending" ? "status-pending" :
+                           "status-upcoming")
+                        }>
+                          {c.status || "upcoming"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
       {showModal && (
         <div className="overlay" onClick={fecharModal}>
-          <div
-            className="modal-card"
-            onClick={(e) => e.stopPropagation()} // não fecha se clicar dentro
-          >
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Nova Consulta</h3>
-              <button
-                className="close-btn"
-                onClick={fecharModal}
-                disabled={submitting}
-              >
+              <button className="close-btn" onClick={fecharModal} disabled={submitting}>
                 <FaTimes />
               </button>
             </div>
@@ -568,78 +331,31 @@ export default function AppointmentsPage() {
             <form onSubmit={handleCreateConsulta}>
               <div className="form-field">
                 <label>Médico</label>
-                <select
-                  value={formConsulta.doctor_id}
-                  onChange={(e) =>
-                    setFormConsulta((f) => ({ ...f, doctor_id: e.target.value }))
-                  }
-                  required
-                >
+                <select value={formConsulta.doctor_id} onChange={(e)=>setFormConsulta(f=>({...f, doctor_id:e.target.value}))} required>
                   <option value="">Selecione um médico</option>
                   {medicos.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.full_name}
-                    </option>
+                    <option key={m.id} value={m.id}>{m.full_name}</option>
                   ))}
                 </select>
               </div>
-
               <div className="form-field">
                 <label>Paciente</label>
-                <select
-                  value={formConsulta.patient_id}
-                  onChange={(e) =>
-                    setFormConsulta((f) => ({ ...f, patient_id: e.target.value }))
-                  }
-                  required
-                >
+                <select value={formConsulta.patient_id} onChange={(e)=>setFormConsulta(f=>({...f, patient_id:e.target.value}))} required>
                   <option value="">Selecione um paciente</option>
                   {pacientes.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.full_name}
-                    </option>
+                    <option key={p.id} value={p.id}>{p.full_name}</option>
                   ))}
                 </select>
               </div>
-
               <div className="form-field">
                 <label>Data e hora</label>
-                <input
-                  type="datetime-local"
-                  value={formConsulta.scheduled_at}
-                  onChange={(e) =>
-                    setFormConsulta((f) => ({
-                      ...f,
-                      scheduled_at: e.target.value,
-                    }))
-                  }
-                  required
-                />
+                <input type="datetime-local" value={formConsulta.scheduled_at} onChange={(e)=>setFormConsulta(f=>({...f, scheduled_at:e.target.value}))} required />
               </div>
-
               <div className="form-field">
                 <label>Duração (minutos)</label>
-                <input
-                  type="number"
-                  min={5}
-                  max={180}
-                  value={formConsulta.duration_minutes}
-                  onChange={(e) =>
-                    setFormConsulta((f) => ({
-                      ...f,
-                      duration_minutes: e.target.value,
-                    }))
-                  }
-                />
+                <input type="number" min={5} max={180} value={formConsulta.duration_minutes} onChange={(e)=>setFormConsulta(f=>({...f, duration_minutes:e.target.value}))} />
               </div>
-
-              <button
-                className="submit-btn"
-                type="submit"
-                disabled={submitting}
-              >
-                {submitting ? "Salvando..." : "Salvar Consulta"}
-              </button>
+              <button className="submit-btn" type="submit" disabled={submitting}>{submitting ? "Salvando..." : "Salvar Consulta"}</button>
             </form>
           </div>
         </div>

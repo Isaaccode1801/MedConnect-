@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import medLogo from '@/assets/Medconnect.logo.png';
 import './dashboard.css';
@@ -24,6 +24,10 @@ interface PerfilPaciente {
 export default function PatientDashboard() {
   const navigate = useNavigate();
   const [currentMonth] = useState(new Date());
+  // Garante que nenhum filtro global (modo daltônico) afete a logo nesta tela
+  useEffect(() => {
+    document.body.classList.remove('modo-daltonico');
+  }, []);
   
   // Dados mockados do perfil do paciente
   const [perfil] = useState<PerfilPaciente>({

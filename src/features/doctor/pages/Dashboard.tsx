@@ -242,9 +242,9 @@ export default function DoctorDashboard() {
             <button
               onClick={() => navigate("/")}
               className="nav-link"
-              title="Voltar ao início"
+              title="Voltar para a tela inicial"
             >
-              Voltar ao Início
+              Voltar para a tela inicial
             </button>
           </nav>
 

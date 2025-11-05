@@ -455,13 +455,14 @@ export default function AgendamentoPage() {
     const [modoDaltonico, setModoDaltonico] = useState(false);
 
     useEffect(() => {
+        // Garante que o modo daltônico NÃO fique preso no <body> de outras telas
+        document.body.classList.remove('modo-daltonico');
+        // Mantém somente o modo escuro no body
         document.body.classList.toggle('modo-escuro', modoEscuro);
-        document.body.classList.toggle('modo-daltonico', modoDaltonico);
         return () => {
             document.body.classList.remove('modo-escuro');
-            document.body.classList.remove('modo-daltonico');
         }
-    }, [modoEscuro, modoDaltonico]);
+    }, [modoEscuro]);
 
     return (
         <div>
@@ -484,7 +485,7 @@ export default function AgendamentoPage() {
             </div>
 
             {/* --- Main --- */}
-            <main className="wrap">
+            <main className={`wrap ${modoDaltonico ? 'modo-daltonico' : ''}`}>
                 <div className="toolbar">
                     <div className="field">
                         <span><FaSearch /></span>
