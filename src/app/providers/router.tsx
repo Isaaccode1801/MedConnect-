@@ -1,4 +1,4 @@
-// src/app/providers/router.tsx (LIMPO)
+// src/app/providers/router.tsx (ATUALIZADO)
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 
 // Páginas principais (públicas)
@@ -7,6 +7,7 @@ import Login from "@/features/auth/pages/Login";
 
 // Médico
 import DoctorDashboard from "@/features/doctor/pages/Dashboard";
+import DoctorProfile from "@/features/doctor/pages/DoctorProfile"; 
 import LaudosPage from "@/features/doctor/pages/laudos/LaudosPage";
 import NovoLaudoPage from "@/features/doctor/pages/laudos/NovoLaudoPage";
 import RevisarLaudoPage from "@/features/doctor/pages/laudos/RevisarLaudoPage";
@@ -97,6 +98,7 @@ export const router = createBrowserRouter([
 
       // ÁREA DO MÉDICO
       { path: "/doctor/dashboard", element: <DoctorDashboard /> },
+      { path: "/doctor/perfil", element: <DoctorProfile /> }, // ✅ NOVA ROTA
       // laudos
       { path: "/doctor/laudos", element: <LaudosPage /> },
       { path: "/doctor/laudos/novo", element: <NovoLaudoPage /> },

@@ -1,4 +1,4 @@
-// src/features/doctor/pages/Dashboard.tsx (INTELIGENTE E CORRIGIDO)
+// src/features/doctor/pages/Dashboard.tsx (COM BOLA DE PERFIL)
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Stethoscope,
   Clock4,
+  User, // ✅ NOVO ÍCONE IMPORTADO
 } from "lucide-react";
 // ✅ NOVOS IMPORTS
 import { DayPicker } from "react-day-picker";
@@ -20,7 +21,7 @@ import "react-day-picker/dist/style.css"; // CSS do Calendário
 import "./Dashboard.css";
 import medicaImg from "/medica.jpeg";
 
-// --- Tipos de Dados ---
+// --- Tipos de Dados (sem alterações) ---
 interface ProximaConsulta {
   id: string;
   scheduled_at: string;
@@ -42,21 +43,19 @@ function Card({
 }: React.PropsWithChildren<{ className?: string }>) {
   return <div className={`dashboard-card ${className}`}>{children}</div>;
 }
-
+// ... (outros componentes primitivos: CardHeader, CardContent, etc. - sem alterações)
 function CardHeader({
   className = "",
   children,
 }: React.PropsWithChildren<{ className?: string }>) {
   return <div className={`dashboard-card-content ${className}`}>{children}</div>;
 }
-
 function CardContent({
   className = "",
   children,
 }: React.PropsWithChildren<{ className?: string }>) {
   return <div className={`dashboard-card-content ${className}`}>{children}</div>;
 }
-
 function CardTitle({
   className = "",
   children,
@@ -65,7 +64,6 @@ function CardTitle({
     <h3 className={`text-xl font-semibold tracking-tight ${className}`}>{children}</h3>
   );
 }
-
 function CardDescription({
   className = "",
   children,
@@ -73,25 +71,24 @@ function CardDescription({
   return <p className={`dashboard-soft text-sm ${className}`}>{children}</p>;
 }
 
+
 // --- Componente Principal ---
 export default function DoctorDashboard() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   // =================================================================
-  // LÓGICA E ESTADOS DA PÁGINA (ATUALIZADOS)
+  // LÓGICA E ESTADOS DA PÁGINA (sem alterações)
   // =================================================================
   const [searchTerm, setSearchTerm] = useState("");
   const [doctorName, setDoctorName] = useState("Médico(a)");
   const [loading, setLoading] = useState(true);
-
-  // ✅ NOVOS ESTADOS PARA OS DADOS
   const [kpiCounts, setKpiCounts] = useState<KpiCounts>({ patients: 0, laudos: 0, consultas: 0 });
   const [proximasConsultas, setProximasConsultas] = useState<ProximaConsulta[]>([]);
   const [diasComConsulta, setDiasComConsulta] = useState<Date[]>([]);
   
-  // ✅ FUNÇÃO DE CARREGAMENTO ATUALIZADA
-const carregarDados = useCallback(async () => {
+  // ✅ FUNÇÃO DE CARREGAMENTO (sem alterações)
+  const carregarDados = useCallback(async () => {
     setLoading(true);
     try {
       // 1. Descobrir o ID do usuário e do médico
@@ -117,21 +114,14 @@ const carregarDados = useCallback(async () => {
         patientCountRes,
         laudosCountRes,
         completedCountRes,
-        upcomingApptsRes // O tipo inferido disto está errado (patients: [])
+        upcomingApptsRes
       ] = await Promise.all([
-        // KPI 1: Contagem de Pacientes
         supabase.from('patients').select('*', { count: 'exact', head: true }),
-        
-        // KPI 2: Contagem de Laudos
         supabase.from('reports').select('*', { count: 'exact', head: true })
           .eq('created_by', user.id),
-          
-        // KPI 3: Contagem de Consultas Realizadas
         supabase.from('appointments').select('*', { count: 'exact', head: true })
           .eq('doctor_id', doctorId)
           .eq('status', 'completed'),
-          
-        // Query 4: Próximas Consultas
         supabase.from('appointments')
           .select('id, scheduled_at, patients(full_name)')
           .eq('doctor_id', doctorId)
@@ -145,32 +135,16 @@ const carregarDados = useCallback(async () => {
         laudos: laudosCountRes.count || 0,
         consultas: completedCountRes.count || 0,
       });
-
-      // =================================================================
-      // ✅ CORREÇÃO AQUI (Linha 150)
-      // =================================================================
-      // O Supabase retorna 'patients' como um array []. Nossa interface espera um objeto {}.
-      // Vamos "achatar" (flatten) os dados para que correspondam à interface.
       
-      // 1. Pegamos os dados brutos (que o TS acha que estão errados)
       const rawUpcomingData = upcomingApptsRes.data || [];
-      
-      // 2. Mapeamos e corrigimos o tipo
       const upcomingData: ProximaConsulta[] = rawUpcomingData.map(consulta => ({
           ...consulta,
-          // Se 'patients' for um array, pega o primeiro item.
-          // Se não for (ou estiver vazio), usa 'null'.
           patients: Array.isArray(consulta.patients) 
             ? (consulta.patients[0] || null) 
             : (consulta.patients || null),
       }));
-      // =================================================================
-      // FIM DA CORREÇÃO
-      // =================================================================
 
-      setProximasConsultas(upcomingData.slice(0, 3)); // Pega só as 3 primeiras para a lista
-
-      // Mapeia *todas* as datas futuras para o calendário
+      setProximasConsultas(upcomingData.slice(0, 3));
       setDiasComConsulta(upcomingData.map(a => new Date(a.scheduled_at)));
 
     } catch (err: any) {
@@ -184,8 +158,30 @@ const carregarDados = useCallback(async () => {
   useEffect(() => {
     carregarDados();
   }, [carregarDados]);
+  
   // =================================================================
-  // FIM DA LÓGICA
+  // ✅ NOVOS ESTILOS PARA A BOLA DE PERFIL
+  // =================================================================
+  const profileButtonStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '40px',          // Largura da bola
+    height: '40px',         // Altura da bola
+    borderRadius: '50%',    // A "bola" (círculo)
+    backgroundColor: '#e2e8f0', // Um cinza claro (slate-200)
+    color: '#1e293b',          // Um cinza escuro (slate-800)
+    border: 'none',
+    cursor: 'pointer',
+    marginLeft: '16px',     // Espaçamento da nav
+  };
+
+  const profileIconStyle: React.CSSProperties = {
+    width: '20px',          // Tamanho do ícone
+    height: '20px',
+  };
+  // =================================================================
+  // FIM DA LÓGICA E ESTILOS
   // =================================================================
 
   return (
@@ -243,7 +239,6 @@ const carregarDados = useCallback(async () => {
             >
               Consultas
             </button>
-            {/* Botão para voltar à página inicial do site */}
             <button
               onClick={() => navigate("/")}
               className="nav-link"
@@ -252,13 +247,29 @@ const carregarDados = useCallback(async () => {
               Voltar ao Início
             </button>
           </nav>
+
+          {/* ================================================= */}
+          {/* ✅ BOLA DE PERFIL ADICIONADA AQUI                 */}
+          {/* ================================================= */}
+          <div className="doctor-header__profile">
+            <button
+              onClick={() => navigate("/doctor/perfil")} // Navega para a página de perfil
+              style={profileButtonStyle}
+              title="Ver o meu perfil"
+            >
+              <User style={profileIconStyle} />
+            </button>
+          </div>
+          {/* ================================================= */}
+
         </div>
       </header>
 
       <main>
+        {/* ... (Todo o resto do conteúdo <main> permanece igual) ... */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
           <div className="lg:col-span-9 space-y-8">
-            {/* HERO (sem alterações) */}
+            {/* HERO */}
             <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-lg">
               <div className="bg-gradient-to-r from-teal-500 via-cyan-500 to-teal-400">
                 <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr] items-center">
@@ -296,7 +307,7 @@ const carregarDados = useCallback(async () => {
               </div>
             </div>
 
-            {/* ✅ KPIs (3 colunas) - AGORA SÃO DINÂMICOS */}
+            {/* KPIs */}
             <div className="dashboard-grid">
               <KpiCard 
                 title="Pacientes (Total)" 
@@ -315,7 +326,7 @@ const carregarDados = useCallback(async () => {
               />
             </div>
 
-            {/* Desempenho (gráfico fantasma - sem alterações) */}
+            {/* Desempenho (gráfico fantasma) */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -331,10 +342,10 @@ const carregarDados = useCallback(async () => {
             </Card>
           </div>
 
-          {/* COLUNA DIREITA (lg: 3 colunas) */}
+          {/* COLUNA DIREITA (Agenda) */}
           <aside className="lg:col-span-3 space-y-8">
             
-            {/* ✅ CALENDÁRIO ATUALIZADO */}
+            {/* CALENDÁRIO */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -343,24 +354,22 @@ const carregarDados = useCallback(async () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex justify-center">
-                {/* Substituímos o MiniCalendar pelo DayPicker real */}
                 <DayPicker
                   mode="single"
                   locale={ptBR}
                   modifiers={{ consulta: diasComConsulta }}
                   modifiersClassNames={{
-                    consulta: 'rdp-day_consulta' // Classe CSS para destacar o dia
+                    consulta: 'rdp-day_consulta'
                   }}
-                  disabled={{ before: new Date() }} // Desabilita dias passados
-                  className="dashboard-calendar" // Classe para ajustar o tamanho se necessário
+                  disabled={{ before: new Date() }}
+                  className="dashboard-calendar"
                 />
               </CardContent>
             </Card>
             
-            {/* ✅ LISTA DE PRÓXIMAS CONSULTAS */}
+            {/* PRÓXIMAS CONSULTAS */}
             <Card>
               <CardHeader>
-                {/* Título atualizado */}
                 <CardTitle>Próximas Consultas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -374,9 +383,8 @@ const carregarDados = useCallback(async () => {
                   <UpcomingAppointmentItem 
                     key={consulta.id}
                     name={consulta.patients?.full_name || "Paciente"}
-                    // Formata a data e hora
                     date={format(new Date(consulta.scheduled_at), "dd/MM 'às' HH:mm")}
-                    color="from-cyan-400 to-emerald-400" // Cor estática por enquanto
+                    color="from-cyan-400 to-emerald-400"
                   />
                 ))}
               </CardContent>
@@ -385,13 +393,13 @@ const carregarDados = useCallback(async () => {
           </aside>
         </div>
       </main>
-    </div>
+  </div>
   );
 }
 
-/* ---------- componentes locais ---------- */
+/* ---------- componentes locais (sem alterações) ---------- */
 
-// KpiCard (sem alterações)
+// KpiCard
 function KpiCard({
   title,
   value,
@@ -420,8 +428,7 @@ function KpiCard({
   );
 }
 
-// ✅ Componente 'LastVisit' renomeado para 'UpcomingAppointmentItem' para clareza
-// (A lógica interna é a mesma, só mudam os nomes das props)
+// UpcomingAppointmentItem
 function UpcomingAppointmentItem({
   name,
   date,
@@ -443,7 +450,7 @@ function UpcomingAppointmentItem({
   );
 }
 
-// BarGhost (sem alterações)
+// BarGhost
 function BarGhost() {
   const bars = [60, 90, 50, 80, 45, 70, 55];
   return (
@@ -458,6 +465,3 @@ function BarGhost() {
     </div>
   );
 }
-
-// ⛔ Componente MiniCalendar (REMOVIDO)
-// Não precisamos mais dele, pois foi substituído pelo DayPicker
