@@ -91,7 +91,7 @@ export default function DoctorDashboard() {
   const [diasComConsulta, setDiasComConsulta] = useState<Date[]>([]);
   
   // ✅ FUNÇÃO DE CARREGAMENTO ATUALIZADA
-  const carregarDados = useCallback(async () => {
+const carregarDados = useCallback(async () => {
     setLoading(true);
     try {
       // 1. Descobrir o ID do usuário e do médico
@@ -117,27 +117,26 @@ export default function DoctorDashboard() {
         patientCountRes,
         laudosCountRes,
         completedCountRes,
-        upcomingApptsRes
+        upcomingApptsRes // O tipo inferido disto está errado (patients: [])
       ] = await Promise.all([
-        // KPI 1: Contagem de Pacientes (todos os pacientes do sistema)
-        // Nota: Mude para 'doctor_id' se a tabela 'patients' tiver essa coluna
+        // KPI 1: Contagem de Pacientes
         supabase.from('patients').select('*', { count: 'exact', head: true }),
         
-        // KPI 2: Contagem de Laudos (criados pelo user_id do médico)
+        // KPI 2: Contagem de Laudos
         supabase.from('reports').select('*', { count: 'exact', head: true })
           .eq('created_by', user.id),
           
-        // KPI 3: Contagem de Consultas Realizadas (do doctor_id)
+        // KPI 3: Contagem de Consultas Realizadas
         supabase.from('appointments').select('*', { count: 'exact', head: true })
           .eq('doctor_id', doctorId)
           .eq('status', 'completed'),
           
-        // Query 4: Próximas Consultas (para a lista e calendário)
+        // Query 4: Próximas Consultas
         supabase.from('appointments')
           .select('id, scheduled_at, patients(full_name)')
           .eq('doctor_id', doctorId)
-          .gte('scheduled_at', today) // Apenas consultas de hoje em diante
-          .order('scheduled_at', { ascending: true }) // Mais próximas primeiro
+          .gte('scheduled_at', today) 
+          .order('scheduled_at', { ascending: true })
       ]);
 
       // 4. Atualizar os estados
@@ -147,7 +146,28 @@ export default function DoctorDashboard() {
         consultas: completedCountRes.count || 0,
       });
 
-      const upcomingData = (upcomingApptsRes.data as ProximaConsulta[] | null) || [];
+      // =================================================================
+      // ✅ CORREÇÃO AQUI (Linha 150)
+      // =================================================================
+      // O Supabase retorna 'patients' como um array []. Nossa interface espera um objeto {}.
+      // Vamos "achatar" (flatten) os dados para que correspondam à interface.
+      
+      // 1. Pegamos os dados brutos (que o TS acha que estão errados)
+      const rawUpcomingData = upcomingApptsRes.data || [];
+      
+      // 2. Mapeamos e corrigimos o tipo
+      const upcomingData: ProximaConsulta[] = rawUpcomingData.map(consulta => ({
+          ...consulta,
+          // Se 'patients' for um array, pega o primeiro item.
+          // Se não for (ou estiver vazio), usa 'null'.
+          patients: Array.isArray(consulta.patients) 
+            ? (consulta.patients[0] || null) 
+            : (consulta.patients || null),
+      }));
+      // =================================================================
+      // FIM DA CORREÇÃO
+      // =================================================================
+
       setProximasConsultas(upcomingData.slice(0, 3)); // Pega só as 3 primeiras para a lista
 
       // Mapeia *todas* as datas futuras para o calendário
