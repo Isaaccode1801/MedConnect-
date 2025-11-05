@@ -10,11 +10,14 @@ export default function Home() {
   const nav = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [acessOpen, setAcessOpen] = useState(false);
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(() => JSON.parse(localStorage.getItem("modoEscuro") || "false"));
+  const [daltonico, setDaltonico] = useState(() => JSON.parse(localStorage.getItem("modoDaltonico") || "false"));
+
 
   // Foco em fidlidade visual: fonte base + dark-mode só quando o usuário clicar
   useEffect(() => {
     document.body.classList.toggle("modo-escuro", dark);
+    localStorage.setItem("modoEscuro", JSON.stringify(dark));
   }, [dark]);
 
   // Ações do menu de acessibilidade
@@ -28,10 +31,12 @@ export default function Home() {
     const cur = parseFloat(getComputedStyle(html).fontSize);
     html.style.fontSize = Math.max(cur - 1, 12) + "px";
   };
-  const toggleContrast = () => document.body.classList.toggle("alto-contraste");
+  const toggleDaltonico = () => {
+  document.body.classList.toggle("modo-daltonico");
+  };
   const resetA11y = () => {
     document.documentElement.style.fontSize = "";
-    document.body.classList.remove("alto-contraste");
+    document.body.classList.remove("modo-daltonico");
     setDark(false);
   };
 
@@ -122,7 +127,9 @@ export default function Home() {
         <h4>Acessibilidade</h4>
         <button className="menu-item" onClick={incFont}>Aumentar fonte</button>
         <button className="menu-item" onClick={decFont}>Diminuir fonte</button>
-        <button className="menu-item" onClick={toggleContrast}>Alto contraste</button>
+        <button className="menu-item" onClick={toggleDaltonico}>
+          Modo daltônico
+        </button>
         <button className="menu-item" onClick={() => setDark(v => !v)}>
           {dark ? "Modo claro" : "Modo escuro"}
         </button>

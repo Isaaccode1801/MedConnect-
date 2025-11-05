@@ -26,6 +26,7 @@ body, html, #root {
   background: var(--bg);
 }
 
+
 /* Topbar - apenas barra azul sem texto */
 .topbar {
   background: var(--brand);
@@ -296,46 +297,59 @@ button:hover { transform: translateY(-3px); }
 }
 
 /* Dark Mode */
+
 body.modo-escuro {
-  background: #0f1419;
-  color: #e0e0e0;
-  transition: background 0.3s, color 0.3s;
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
 }
-body.modo-escuro .header {
-  background: #1a1f26;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+
+/* Remove fundos claros e ajusta as seções */
+body.modo-escuro section,
+body.modo-escuro .starter-section,
+body.modo-escuro .starter-logo-wrap,
+body.modo-escuro .role-strip {
+  background: none !important;
+  background-color: #121212 !important;
 }
-body.modo-escuro .topbar {
-  background: #2a3441;
+
+/* Remove retângulos pretos que ficaram atrás dos botões */
+body.modo-escuro .role-strip {
+  box-shadow: none !important;
 }
-body.modo-escuro .starter-section {
-  background: linear-gradient(135deg, #1a1f26 0%, #232930 100%);
+
+/* Ajusta os botões para não ficarem com sombra preta */
+body.modo-escuro .role-strip > div,
+body.modo-escuro button {
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
-body.modo-escuro .menu-acessibilidade {
-  background: #1e2329;
-  color: #fff;
-  border-color: #2a3441;
+
+/* Ajuste dos textos e títulos */
+body.modo-escuro h1,
+body.modo-escuro h2,
+body.modo-escuro h3,
+body.modo-escuro p,
+body.modo-escuro span {
+  color: #e0e0e0 !important;
 }
-body.modo-escuro .menu-acessibilidade h4 {
-  color: #e0e0e0;
-  border-bottom-color: #2a3441;
+
+/* Mantém o logo central visível em fundo escuro */
+body.modo-escuro .starter-logo-wrap img {
+  filter: brightness(1.2) contrast(1.1);
 }
-body.modo-escuro .menu-item {
-  background: #2a3441;
-  border-color: #3a4451;
-  color: #e0e0e0;
+
+body.modo-escuro .branding {
+  background: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
-body.modo-escuro .menu-item:hover {
-  background: #3a4451;
-  border-color: var(--brand);
-  color: var(--brand);
-}
-body.modo-escuro .brand-title {
-  color: #f5f5f5;
-}
+
+/* Garante que o texto da logo continue legível */
+body.modo-escuro .brand-title,
 body.modo-escuro .brand-sub {
-  color: #9ca3af;
+  color: #e0e0e0 !important;
 }
+
 /* ====== Ajustes visuais para ficar 1:1 com o HTML enviado ====== */
 
 /* Contêiner central de botões grandes - EXTRA COMPACTO */
@@ -440,10 +454,36 @@ body.modo-escuro .brand-sub {
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08));
 }
 
-/* Alto contraste (opção de acessibilidade) */
-body.alto-contraste {
-  filter: contrast(1.25) saturate(1.05);
+/* Modo daltonico (opção de acessibilidade) */
+body.modo-daltonico {
+  filter: hue-rotate(45deg) saturate(110%);
 }
+
+/* Quando modo escuro e modo daltônico estão ativos juntos */
+body.modo-escuro.modo-daltonico {
+  filter: hue-rotate(30deg) saturate(115%) brightness(0.9);
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+
+/* Mantém cabeçalho e topbar escuros */
+body.modo-escuro.modo-daltonico .topbar,
+body.modo-escuro.modo-daltonico #header,
+body.modo-escuro.modo-daltonico .branding {
+  background-color: #1c1c1c !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Mantém botões e menus coerentes */
+body.modo-escuro.modo-daltonico .menu-acessibilidade,
+body.modo-escuro.modo-daltonico .btn,
+body.modo-escuro.modo-daltonico .card {
+  background-color: #1f1f1f !important;
+  color: #fafafa !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+
 
 /* Responsivo: quebra de linha dos botões */
 @media (max-width: 1200px) {
