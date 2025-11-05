@@ -368,7 +368,8 @@ async function listarPacientes({ forceRemote = false } = {}) {
   // render
   // -------------------------------------------------
   return (
-    <div className="main-content">
+    // Removido 'main-content' para evitar margem lateral duplicada do layout
+    <div>
       <h1>Gerenciamento de Pacientes</h1>
 
       <div className="app">

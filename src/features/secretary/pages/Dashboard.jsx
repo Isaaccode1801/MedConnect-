@@ -15,8 +15,9 @@ export default function Dashboard() {
           {
             label: "Consultas agendadas",
             data: [3, 4, 2, 5, 1],
-            backgroundColor: "rgba(59,130,246,0.5)",
-            borderColor: "rgba(59,130,246,1)",
+            // verde claro (Tailwind green): fundo suave e borda mais intensa
+            backgroundColor: "rgba(134, 239, 172, 0.6)", // green-300 ~ #86efac
+            borderColor: "rgba(34, 197, 94, 0.9)",      // green-500 ~ #22c55e
             borderWidth: 1,
             borderRadius: 5,
           },

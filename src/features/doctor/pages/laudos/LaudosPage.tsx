@@ -217,30 +217,30 @@ export default function LaudosPage() {
                 </div>
 
                 <nav className="doctor-header__nav">
-                    <button
-                        onClick={() => nav("/doctor/dashboard")}
-                        className={pathname === '/doctor/dashboard' ? 'nav-link active' : 'nav-link'}
-                    >
-                        Início
-                    </button>
-                    <button
-                        onClick={() => nav("/doctor/laudos")}
-                        className={pathname.startsWith('/doctor/laudos') ? 'nav-link active' : 'nav-link'}
-                    >
-                        Laudos
-                    </button>
-                    <button
-                        onClick={() => nav("/doctor/pacientes")} 
-                        className={pathname.startsWith('/doctor/pacientes') ? 'nav-link active' : 'nav-link'}
-                    >
-                        Pacientes
-                    </button>
-                    <button
-                        onClick={() => nav("/doctor/consultas")} 
-                        className={pathname.startsWith('/doctor/consultas') ? 'nav-link active' : 'nav-link'}
-                    >
-                        Consultas
-                    </button>
+          <button
+            onClick={() => nav("/doctor/dashboard")}
+            className={pathname === '/doctor/dashboard' ? 'nav-link active' : 'nav-link'}
+          >
+            Início
+          </button>
+          <button
+            onClick={() => nav("/doctor/laudos")}
+            className={pathname.startsWith('/doctor/laudos') ? 'nav-link active' : 'nav-link'}
+          >
+            Laudos
+          </button>
+          <button
+            onClick={() => nav("/doctor/pacientes")} 
+            className={pathname.startsWith('/doctor/pacientes') ? 'nav-link active' : 'nav-link'}
+          >
+            Pacientes
+          </button>
+          <button
+            onClick={() => nav("/doctor/consultas")} 
+            className={pathname.startsWith('/doctor/consultas') ? 'nav-link active' : 'nav-link'}
+          >
+            Consultas
+          </button>
                 </nav>
             </div>
         </header>

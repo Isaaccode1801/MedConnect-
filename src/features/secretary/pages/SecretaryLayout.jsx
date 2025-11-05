@@ -32,7 +32,7 @@ export default function SecretaryLayout() {
         className="secretary-sidebar"
         style={{
           width: collapsed ? "80px" : "240px",
-          backgroundColor: "#111827",
+          backgroundColor: "#0d9488",
           color: "#9CA3AF",
           transition: "width 0.25s ease",
           display: "flex",
@@ -42,16 +42,16 @@ export default function SecretaryLayout() {
       >
         {/* topo / branding */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "2rem", paddingLeft: collapsed ? 0 : "0.5rem" }}>
-          <FaCalendarCheck style={{ color: "#3B82F6", fontSize: "1.5rem" }} />
+          <FaCalendarCheck style={{ color: "#fff", fontSize: "1.5rem" }} />
           {!collapsed && (
             <div style={{ color: "#fff", fontWeight: 600, fontSize: "1rem", lineHeight: 1.2 }}>
-              Secretaria <div style={{ fontSize: "0.8rem", fontWeight: 400, color: "#9CA3AF" }}>MedConnect</div>
+              Secretaria <div style={{ fontSize: "0.8rem", fontWeight: 400, color: "#e0f7fa" }}>MedConnect</div>
             </div>
           )}
         </div>
 
         {/* links */}
-        <nav style={{ flex: 1 }}>
+        <nav style={{ flex: 0, marginBottom: "1.5rem" }}>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             <li>
               <NavLink
@@ -65,8 +65,8 @@ export default function SecretaryLayout() {
                   alignItems: "center",
                   gap: "0.75rem",
                   textDecoration: "none",
-                  color: isActive ? "#fff" : "#9CA3AF",
-                  backgroundColor: isActive ? "#3B82F6" : "transparent",
+                  color: isActive ? "#0d9488" : "#fff",
+                  backgroundColor: isActive ? "#fff" : "transparent",
                   borderRadius: "0.5rem",
                   padding: "0.75rem 1rem",
                   fontWeight: 500,
@@ -89,8 +89,8 @@ export default function SecretaryLayout() {
                   alignItems: "center",
                   gap: "0.75rem",
                   textDecoration: "none",
-                  color: isActive ? "#fff" : "#9CA3AF",
-                  backgroundColor: isActive ? "#3B82F6" : "transparent",
+                  color: isActive ? "#0d9488" : "#fff",
+                  backgroundColor: isActive ? "#fff" : "transparent",
                   borderRadius: "0.5rem",
                   padding: "0.75rem 1rem",
                   fontWeight: 500,
@@ -110,8 +110,8 @@ export default function SecretaryLayout() {
                   alignItems: "center",
                   gap: "0.75rem",
                   textDecoration: "none",
-                  color: isActive ? "#fff" : "#9CA3AF",
-                  backgroundColor: isActive ? "#3B82F6" : "transparent",
+                  color: isActive ? "#0d9488" : "#fff",
+                  backgroundColor: isActive ? "#fff" : "transparent",
                   borderRadius: "0.5rem",
                   padding: "0.75rem 1rem",
                   fontWeight: 500,
@@ -131,8 +131,8 @@ export default function SecretaryLayout() {
                   alignItems: "center",
                   gap: "0.75rem",
                   textDecoration: "none",
-                  color: isActive ? "#fff" : "#9CA3AF",
-                  backgroundColor: isActive ? "#3B82F6" : "transparent",
+                  color: isActive ? "#0d9488" : "#fff",
+                  backgroundColor: isActive ? "#fff" : "transparent",
                   borderRadius: "0.5rem",
                   padding: "0.75rem 1rem",
                   fontWeight: 500,
@@ -152,8 +152,8 @@ export default function SecretaryLayout() {
                   alignItems: "center",
                   gap: "0.75rem",
                   textDecoration: "none",
-                  color: isActive ? "#fff" : "#9CA3AF",
-                  backgroundColor: isActive ? "#3B82F6" : "transparent",
+                  color: isActive ? "#0d9488" : "#fff",
+                  backgroundColor: isActive ? "#fff" : "transparent",
                   borderRadius: "0.5rem",
                   padding: "0.75rem 1rem",
                   fontWeight: 500,
@@ -173,8 +173,8 @@ export default function SecretaryLayout() {
                   alignItems: "center",
                   gap: "0.75rem",
                   textDecoration: "none",
-                  color: isActive ? "#fff" : "#9CA3AF",
-                  backgroundColor: isActive ? "#3B82F6" : "transparent",
+                  color: isActive ? "#0d9488" : "#fff",
+                  backgroundColor: isActive ? "#fff" : "transparent",
                   borderRadius: "0.5rem",
                   padding: "0.75rem 1rem",
                   fontWeight: 500,
@@ -192,10 +192,10 @@ export default function SecretaryLayout() {
         <button
           onClick={handleLogout}
           style={{
-            marginTop: "auto",
+            marginTop: "1rem",
             background: "none",
             border: "none",
-            color: "#9CA3AF",
+            color: "#fff",
             cursor: "pointer",
             textAlign: "left",
             display: "flex",
@@ -213,11 +213,11 @@ export default function SecretaryLayout() {
         <button
           onClick={() => setCollapsed(!collapsed)}
           style={{
-            marginTop: "1rem",
-            background: "#1F2937",
-            border: "1px solid #374151",
+            marginTop: "0.5rem",
+            background: "transparent",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
             borderRadius: "0.5rem",
-            color: "#9CA3AF",
+            color: "#fff",
             padding: "0.5rem 0.75rem",
             cursor: "pointer",
             fontSize: "0.8rem",
