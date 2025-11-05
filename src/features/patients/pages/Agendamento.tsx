@@ -13,7 +13,7 @@ import {
 // IMPORTA O CLIENTE SUPABASE
 import { supabase } from '@/lib/supabase'; 
 
-import { DayPicker } from 'react-day-picker';
+import { DayPicker, type Matcher } from 'react-day-picker';
 import { ptBR } from 'date-fns/locale';
 import { format } from 'date-fns';
 import 'react-day-picker/dist/style.css'; 
@@ -21,6 +21,7 @@ import 'react-day-picker/dist/style.css';
 import "./agendamento.css"; 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { FaSearch, FaWheelchair, FaRegCalendarAlt, FaClock } from 'react-icons/fa';
+
 
 // --- Interface de Tipos ---
 interface Medico {
@@ -140,15 +141,16 @@ function ModalAgendamento({ medico, onClose }: ModalAgendamentoProps) {
 
 
     // Lógica para desabilitar dias no DayPicker (Sem alterações)
-    const disabledDays = useMemo(() => {
-        const daysToDisable = [{ before: new Date() }]; // Sempre desabilita o passado
+const disabledDays = useMemo(() => {
+        // 2. APLICA O TIPO 'Matcher[]' AQUI
+        const daysToDisable: Matcher[] = [{ before: new Date() }]; // <-- CORRIGIDO
 
         if (hasAvailability) {
             const availableWeekdays = availabilityRules.map(r => r.weekday);
             const disabledWeekdays = [0, 1, 2, 3, 4, 5, 6].filter(
                 day => !availableWeekdays.includes(day)
             );
-            daysToDisable.push({ dayOfWeek: disabledWeekdays });
+            daysToDisable.push({ dayOfWeek: disabledWeekdays }); // <-- Agora isto é válido
         }
         
         return daysToDisable;
