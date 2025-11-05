@@ -243,6 +243,14 @@ const carregarDados = useCallback(async () => {
             >
               Consultas
             </button>
+            {/* Botão para voltar à página inicial do site */}
+            <button
+              onClick={() => navigate("/")}
+              className="nav-link"
+              title="Voltar ao início"
+            >
+              Voltar ao Início
+            </button>
           </nav>
         </div>
       </header>
