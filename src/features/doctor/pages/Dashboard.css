@@ -174,3 +174,20 @@ header nav {
   position: relative;
   z-index: 10;
 }
+/* Adicione isto ao seu ficheiro Dashboard.css ou global */
+
+/* Destaca os dias com consulta no DayPicker */
+.rdp-day_consulta {
+  font-weight: bold;
+  background-color: #f0fdfa; /* Um verde-claro (tailwind: emerald-50) */
+  color: #0d9488; /* Um verde-escuro (tailwind: emerald-600) */
+  border-radius: 50%;
+  border: 1px solid #0d9488;
+}
+
+/* Ajusta o tamanho do calendário (opcional) */
+.dashboard-calendar {
+  width: 100%;
+  max-width: 280px; /* Ajuste conforme necessário */
+  margin: 0 auto;
+}

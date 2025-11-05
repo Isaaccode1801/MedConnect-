@@ -1,6 +1,7 @@
-// src/features/doctor/pages/Dashboard.tsx
-import * as React from "react";
-import { useNavigate } from "react-router-dom";
+// src/features/doctor/pages/Dashboard.tsx (INTELIGENTE E CORRIGIDO)
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 import {
   Activity,
   CalendarDays,
@@ -11,10 +12,30 @@ import {
   Stethoscope,
   Clock4,
 } from "lucide-react";
+// ✅ NOVOS IMPORTS
+import { DayPicker } from "react-day-picker";
+import { ptBR } from "date-fns/locale";
+import { format } from "date-fns";
+import "react-day-picker/dist/style.css"; // CSS do Calendário
 import "./Dashboard.css";
 import medicaImg from "/medica.jpeg";
 
-// --- Basic Card primitives scoped to this page ---
+// --- Tipos de Dados ---
+interface ProximaConsulta {
+  id: string;
+  scheduled_at: string;
+  patients: {
+    full_name: string;
+  } | null;
+}
+
+interface KpiCounts {
+  patients: number;
+  laudos: number;
+  consultas: number;
+}
+
+// --- Componentes Primitivos (sem alterações) ---
 function Card({
   className = "",
   children,
@@ -36,7 +57,6 @@ function CardContent({
   return <div className={`dashboard-card-content ${className}`}>{children}</div>;
 }
 
-// Add local shadcn-like helpers so JSX <CardTitle/> works
 function CardTitle({
   className = "",
   children,
@@ -53,77 +73,167 @@ function CardDescription({
   return <p className={`dashboard-soft text-sm ${className}`}>{children}</p>;
 }
 
+// --- Componente Principal ---
 export default function DoctorDashboard() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  // =================================================================
+  // LÓGICA E ESTADOS DA PÁGINA (ATUALIZADOS)
+  // =================================================================
+  const [searchTerm, setSearchTerm] = useState("");
+  const [doctorName, setDoctorName] = useState("Médico(a)");
+  const [loading, setLoading] = useState(true);
+
+  // ✅ NOVOS ESTADOS PARA OS DADOS
+  const [kpiCounts, setKpiCounts] = useState<KpiCounts>({ patients: 0, laudos: 0, consultas: 0 });
+  const [proximasConsultas, setProximasConsultas] = useState<ProximaConsulta[]>([]);
+  const [diasComConsulta, setDiasComConsulta] = useState<Date[]>([]);
+  
+  // ✅ FUNÇÃO DE CARREGAMENTO ATUALIZADA
+  const carregarDados = useCallback(async () => {
+    setLoading(true);
+    try {
+      // 1. Descobrir o ID do usuário e do médico
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error("Sessão não encontrada.");
+
+      const { data: doctorData, error: doctorError } = await supabase
+          .from('doctors')
+          .select('id, full_name') // Pega o ID e o nome
+          .eq('user_id', user.id)
+          .single(); 
+
+      if (doctorError || !doctorData) throw new Error("Registro de médico não encontrado.");
+      
+      setDoctorName(doctorData.full_name || "Médico(a)");
+      const doctorId = doctorData.id;
+
+      // 2. Definir a data de hoje para filtrar consultas futuras
+      const today = new Date().toISOString();
+
+      // 3. Executar todas as buscas de dados em paralelo
+      const [
+        patientCountRes,
+        laudosCountRes,
+        completedCountRes,
+        upcomingApptsRes
+      ] = await Promise.all([
+        // KPI 1: Contagem de Pacientes (todos os pacientes do sistema)
+        // Nota: Mude para 'doctor_id' se a tabela 'patients' tiver essa coluna
+        supabase.from('patients').select('*', { count: 'exact', head: true }),
+        
+        // KPI 2: Contagem de Laudos (criados pelo user_id do médico)
+        supabase.from('reports').select('*', { count: 'exact', head: true })
+          .eq('created_by', user.id),
+          
+        // KPI 3: Contagem de Consultas Realizadas (do doctor_id)
+        supabase.from('appointments').select('*', { count: 'exact', head: true })
+          .eq('doctor_id', doctorId)
+          .eq('status', 'completed'),
+          
+        // Query 4: Próximas Consultas (para a lista e calendário)
+        supabase.from('appointments')
+          .select('id, scheduled_at, patients(full_name)')
+          .eq('doctor_id', doctorId)
+          .gte('scheduled_at', today) // Apenas consultas de hoje em diante
+          .order('scheduled_at', { ascending: true }) // Mais próximas primeiro
+      ]);
+
+      // 4. Atualizar os estados
+      setKpiCounts({
+        patients: patientCountRes.count || 0,
+        laudos: laudosCountRes.count || 0,
+        consultas: completedCountRes.count || 0,
+      });
+
+      const upcomingData = (upcomingApptsRes.data as ProximaConsulta[] | null) || [];
+      setProximasConsultas(upcomingData.slice(0, 3)); // Pega só as 3 primeiras para a lista
+
+      // Mapeia *todas* as datas futuras para o calendário
+      setDiasComConsulta(upcomingData.map(a => new Date(a.scheduled_at)));
+
+    } catch (err: any) {
+      console.error("Erro ao carregar dados do dashboard:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Carrega dados na montagem inicial
+  useEffect(() => {
+    carregarDados();
+  }, [carregarDados]);
+  // =================================================================
+  // FIM DA LÓGICA
+  // =================================================================
+
   return (
     <div className="doctor-dashboard min-h-screen bg-[#F5F7FA] text-slate-900">
-      <header className="doctor-header">
-        <div className="doctor-header__inner">
-          {/* Marca + Saudação */}
-          <div className="doctor-header__left">
-            <div className="brand-logo">
-              <div className="logo-circle">
-                <div className="inner">
-                  <Stethoscope className="brand-icon" />
-                </div>
+          <header className="doctor-header">
+              <div className="doctor-header__inner">
+                  <div className="doctor-header__brand">
+                      <div className="brand-icon">
+                          <div className="brand-icon__inner">
+                              <Stethoscope className="brand-icon__svg" />
+                          </div>
+                      </div>
+                      <span className="brand-name">Medconnect</span>
+                      <h1 className="doctor-greeting">
+                          Olá, Dr(a). <span className="highlight">{loading ? "..." : doctorName}</span> 👋
+                      </h1>
+                  </div>
+
+                  <div className="doctor-header__search">
+                      <div className="search-wrapper">
+                          <Search className="search-icon" />
+                          <input
+                              name="q"
+                              autoComplete="off"
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                              placeholder="Buscar paciente, exame, laudo…"
+                              className="search-input"
+                          />
+                      </div>
+                  </div>
+
+                  <nav className="doctor-header__nav">
+                      <button
+                          onClick={() => navigate("/doctor/dashboard")}
+                          className={pathname === '/doctor/dashboard' ? 'nav-link active' : 'nav-link'}
+                      >
+                          Início
+                      </button>
+                      <button
+                          onClick={() => navigate("/doctor/laudos")}
+                          className={pathname.startsWith('/doctor/laudos') ? 'nav-link active' : 'nav-link'}
+                      >
+                          Laudos
+                      </button>
+                      <button
+                          onClick={() => navigate("/doctor/pacientes")} 
+                          className={pathname.startsWith('/doctor/pacientes') ? 'nav-link active' : 'nav-link'}
+                      >
+                          Pacientes
+                      </button>
+                      <button
+                          onClick={() => navigate("/doctor/consultas")} 
+                          className={pathname.startsWith('/doctor/consultas') ? 'nav-link active' : 'nav-link'}
+                      >
+                          Consultas
+                      </button>
+                  </nav>
               </div>
-              <span className="brand-name">Medconnect</span>
-            </div>
-            <h1 className="doctor-greeting">
-              Olá, Dr(a). <span className="highlight">Camilla Millene</span> <span aria-hidden>👋</span>
-            </h1>
-          </div>
-
-          {/* Busca centralizada */}
-          <div className="doctor-header__search" role="search">
-            <div className="search-wrapper">
-              <Search className="search-icon" aria-hidden />
-              <input
-                placeholder="Buscar paciente, exame, laudo…"
-                className="search-input"
-                aria-label="Buscar"
-              />
-            </div>
-          </div>
-
-          {/* Navegação à direita */}
-          <nav className="doctor-header__nav" aria-label="Navegação principal">
-            <button
-              type="button"
-              onClick={() => navigate('/doctor/dashboard')}
-              className="nav-link active"
-              aria-current="page"
-            >
-              Início
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/doctor/laudos')}
-              className="nav-link"
-            >
-              Laudos
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/doctor/pacientes')}
-              className="nav-link hidden-lg"
-            >
-              Gerenciamento de Pacientes
-            </button>
-          </nav>
-        </div>
-      </header>
+          </header>
 
       <main>
-        {/* GRID raiz -> conteúdo + coluna direita */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
-          {/* COLUNA PRINCIPAL (lg: 9 colunas) */}
           <div className="lg:col-span-9 space-y-8">
-            {/* HERO (degradê teal com foto) */}
+            {/* HERO (sem alterações) */}
             <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-lg">
               <div className="bg-gradient-to-r from-teal-500 via-cyan-500 to-teal-400">
                 <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr] items-center">
-                  {/* texto */}
                   <div className="dashboard-card-content">
                     <h2 className="text-white text-2xl md:text-3xl font-semibold leading-tight">
                       Já olhou sua tabela de pacientes hoje?
@@ -146,7 +256,6 @@ export default function DoctorDashboard() {
                       </a>
                     </div>
                   </div>
-                  {/* foto */}
                   <div className="relative dashboard-card-content flex items-center justify-center">
                     <div className="absolute inset-0 bg-white/10 blur-2xl rounded-full" />
                     <img
@@ -159,14 +268,26 @@ export default function DoctorDashboard() {
               </div>
             </div>
 
-            {/* KPIs (3 colunas) */}
+            {/* ✅ KPIs (3 colunas) - AGORA SÃO DINÂMICOS */}
             <div className="dashboard-grid">
-              <KpiCard title="Pacientes" value="320 pessoas" icon={<Users className="h-5 w-5 text-teal-600" />} />
-              <KpiCard title="Laudos Emitidos" value="450" icon={<FileText className="h-5 w-5 text-cyan-600" />} />
-              <KpiCard title="Consultas Realizadas" value="920" icon={<Activity className="h-5 w-5 text-emerald-600" />} />
+              <KpiCard 
+                title="Pacientes (Total)" 
+                value={loading ? "..." : `${kpiCounts.patients} pessoas`} 
+                icon={<Users className="h-5 w-5 text-teal-600" />} 
+              />
+              <KpiCard 
+                title="Laudos Emitidos" 
+                value={loading ? "..." : kpiCounts.laudos.toString()} 
+                icon={<FileText className="h-5 w-5 text-cyan-600" />} 
+              />
+              <KpiCard 
+                title="Consultas Realizadas" 
+                value={loading ? "..." : kpiCounts.consultas.toString()} 
+                icon={<Activity className="h-5 w-5 text-emerald-600" />} 
+              />
             </div>
 
-            {/* Desempenho (gráfico fantasma) */}
+            {/* Desempenho (gráfico fantasma - sem alterações) */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -184,27 +305,55 @@ export default function DoctorDashboard() {
 
           {/* COLUNA DIREITA (lg: 3 colunas) */}
           <aside className="lg:col-span-3 space-y-8">
+            
+            {/* ✅ CALENDÁRIO ATUALIZADO */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-slate-500" />
-                  Próximas consultas
+                  Agenda
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <MiniCalendar />
+              <CardContent className="flex justify-center">
+                {/* Substituímos o MiniCalendar pelo DayPicker real */}
+                <DayPicker
+                  mode="single"
+                  locale={ptBR}
+                  modifiers={{ consulta: diasComConsulta }}
+                  modifiersClassNames={{
+                    consulta: 'rdp-day_consulta' // Classe CSS para destacar o dia
+                  }}
+                  disabled={{ before: new Date() }} // Desabilita dias passados
+                  className="dashboard-calendar" // Classe para ajustar o tamanho se necessário
+                />
               </CardContent>
             </Card>
+            
+            {/* ✅ LISTA DE PRÓXIMAS CONSULTAS */}
             <Card>
               <CardHeader>
-                <CardTitle>Últimas Consultas</CardTitle>
+                {/* Título atualizado */}
+                <CardTitle>Próximas Consultas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <LastVisit color="from-cyan-400 to-emerald-400" name="Alves Diamante" date="Hoje, 08:20" />
-                <LastVisit color="from-fuchsia-400 to-cyan-400" name="Isaac Kauã" date="Ontem, 15:10" />
-                <LastVisit color="from-emerald-400 to-teal-400" name="João Silva" date="Ontem, 10:00" />
+                {loading && (
+                  <p className="dashboard-soft text-sm">Buscando agenda...</p>
+                )}
+                {!loading && proximasConsultas.length === 0 && (
+                  <p className="dashboard-soft text-sm">Nenhuma consulta futura encontrada.</p>
+                )}
+                {!loading && proximasConsultas.map((consulta) => (
+                  <UpcomingAppointmentItem 
+                    key={consulta.id}
+                    name={consulta.patients?.full_name || "Paciente"}
+                    // Formata a data e hora
+                    date={format(new Date(consulta.scheduled_at), "dd/MM 'às' HH:mm")}
+                    color="from-cyan-400 to-emerald-400" // Cor estática por enquanto
+                  />
+                ))}
               </CardContent>
             </Card>
+
           </aside>
         </div>
       </main>
@@ -214,6 +363,7 @@ export default function DoctorDashboard() {
 
 /* ---------- componentes locais ---------- */
 
+// KpiCard (sem alterações)
 function KpiCard({
   title,
   value,
@@ -242,29 +392,16 @@ function KpiCard({
   );
 }
 
-function NextItem({ time, name, desc }: { time: string; name: string; desc: string }) {
-  return (
-    <div className="next-item flex items-start gap-4">
-      <span className="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-slate-100 text-slate-600">
-        <Clock4 className="h-4 w-4" />
-      </span>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate text-slate-900">{name}</p>
-        <p className="text-xs text-slate-500 truncate">{desc}</p>
-      </div>
-      <span className="text-xs text-slate-600 ml-2">{time}</span>
-    </div>
-  );
-}
-
-function LastVisit({
+// ✅ Componente 'LastVisit' renomeado para 'UpcomingAppointmentItem' para clareza
+// (A lógica interna é a mesma, só mudam os nomes das props)
+function UpcomingAppointmentItem({
   name,
   date,
   color,
 }: {
   name: string;
   date: string;
-  color: string; // ex: "from-emerald-400 to-teal-400"
+  color: string;
 }) {
   return (
     <div className="last-visit flex items-center gap-4">
@@ -278,6 +415,7 @@ function LastVisit({
   );
 }
 
+// BarGhost (sem alterações)
 function BarGhost() {
   const bars = [60, 90, 50, 80, 45, 70, 55];
   return (
@@ -293,33 +431,5 @@ function BarGhost() {
   );
 }
 
-function MiniCalendar() {
-  const days = ["S", "T", "Q", "Q", "S", "S", "D"];
-  const grid = Array.from({ length: 35 }, (_, i) => i + 1);
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-sm font-medium text-slate-700">Jan 2022</span>
-        <div className="h-2 w-2 rounded-full bg-slate-300" />
-      </div>
-      <div className="grid grid-cols-7 gap-2 text-center text-[11px] text-slate-500 mb-2">
-        {days.map((d, i) => (
-          <span key={`${d}-${i}`}>{d}</span>
-        ))}
-      </div>
-      <div className="grid grid-cols-7 gap-2">
-        {grid.map((n) => (
-          <button
-            key={n}
-            className={`h-9 rounded-lg border text-xs
-              ${[10, 11, 18].includes(n)
-                ? "bg-teal-600 text-white border-teal-600"
-                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"}`}
-          >
-            {n}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
+// ⛔ Componente MiniCalendar (REMOVIDO)
+// Não precisamos mais dele, pois foi substituído pelo DayPicker

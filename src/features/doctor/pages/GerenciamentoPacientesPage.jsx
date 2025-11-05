@@ -1,35 +1,62 @@
-// src/features/doctor/pages/GerenciamentoPacientesPage.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+// src/features/doctor/pages/GerenciamentoPacientesPage.jsx (LIMPO)
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-// Importe as funções do SEU service
-import { listPacientes, deletePaciente, getPaciente } from '@/lib/pacientesService';
-// Importe os estilos CSS (ajuste o caminho se necessário)
-import '@/styles/GerenciamentoPacientesPage.css'; // Ou importe no seu CSS global principal
-// Importe os ícones se quiser usá-los em React (opcional, pode manter os do CSS)
+import { supabase } from '@/lib/supabase';
+import { listPacientes, deletePaciente } from '@/lib/pacientesService';
+import '@/styles/GerenciamentoPacientesPage.css'; 
 import { FaSearch, FaPlus, FaEye, FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
 import { Stethoscope, Search } from 'lucide-react';
-// --- Funções Auxiliares (movidas de crudPatiMed.js) ---
+
+// --- Funções Auxiliares ---
 function formatCPF(v) {
     if (!v) return "—";
     const only = String(v).replace(/\D/g, '').padStart(11, '0').slice(-11);
     return only.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 }
-// (Pode adicionar outras helpers como formatData, calcIdade, iniciais se precisar para o modal)
 
 // --- Componente Principal ---
 export default function GerenciamentoPacientesPage() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
-    const [pacientes, setPacientes] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [q, setQ] = useState("");
-    // Estados para o Modal (se decidir implementá-lo em React depois)
-    // const [isModalOpen, setIsModalOpen] = useState(false);
-    // const [selectedPacienteModal, setSelectedPacienteModal] = useState(null);
 
-    // Função para carregar os dados
+    // --- Estados ---
+    const [pacientes, setPacientes] = useState([]);
+    const [loading, setLoading] = useState(true); 
+    const [headerLoading, setHeaderLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [doctorName, setDoctorName] = useState("Médico(a)");
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // --- Lógica de Dados ---
+
+    // Busca o nome do médico (apenas 1 vez)
+    useEffect(() => {
+        async function fetchDoctorName() {
+            setHeaderLoading(true);
+            try {
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+                if (authError || !user) throw new Error("Sessão não encontrada.");
+
+                const { data: doctorData, error: doctorError } = await supabase
+                    .from('doctors')
+                    .select('full_name')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (doctorError) throw new Error("Registro de médico não encontrado.");
+                if (doctorData?.full_name) {
+                    setDoctorName(doctorData.full_name);
+                }
+            } catch (err) {
+                console.warn("Não foi possível carregar o nome do médico:", err.message);
+            } finally {
+                setHeaderLoading(false);
+            }
+        }
+        fetchDoctorName();
+    }, []);
+
+    // Busca a lista de pacientes
     const carregarPacientes = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -39,26 +66,22 @@ export default function GerenciamentoPacientesPage() {
         } catch (err) {
             console.error("Erro ao carregar pacientes:", err);
             setError(err.message || 'Falha ao carregar a lista.');
-            setPacientes([]); // Limpa a lista em caso de erro
+            setPacientes([]);
         } finally {
             setLoading(false);
         }
-    }, []); // Sem dependências, carrega uma vez ou quando chamado manualmente
+    }, []);
 
-    // Carrega dados na montagem inicial
+    // Carrega pacientes na montagem inicial
     useEffect(() => {
         carregarPacientes();
-    }, [carregarPacientes]); // Executa quando carregarPacientes muda (só na montagem devido ao useCallback)
+    }, [carregarPacientes]);
 
     // --- Handlers de Ação ---
     const handleEdit = (id) => {
         if (!id) return;
-        // Navega para a página de edição/cadastro (ajuste a rota conforme seu router)
-        // Pode usar sessionStorage como no original se a página de cadastro não usar useParams
         try { sessionStorage.setItem('edit_patient_id', id); } catch {}
-        navigate(`/doctor/pacientes/editar/${id}`); // Ou a rota definida no seu router
-        // Alternativa: Se a página de cadastro usa a URL:
-        // navigate(`/doctor/pacientes/cadastro?id=${id}`);
+        navigate(`/doctor/pacientes/editar/${id}`);
     };
 
     const handleDelete = async (id) => {
@@ -69,44 +92,39 @@ export default function GerenciamentoPacientesPage() {
         const ok = window.confirm(`Tem certeza que deseja excluir o paciente "${pacienteParaDeletar.full_name || id}"?`);
         if (!ok) return;
 
-        // Idealmente, desabilitar o botão aqui (requer mais state)
         try {
             await deletePaciente(id);
-            // Atualiza a lista local removendo o paciente deletado
             setPacientes(prevPacientes => prevPacientes.filter(p => p.id !== id));
-            alert('Paciente excluído com sucesso.'); // Ou use um toast
+            alert('Paciente excluído com sucesso.');
         } catch (err) {
             console.error('Falha ao excluir paciente:', err);
             setError(`Falha ao excluir: ${err.message || 'erro desconhecido'}`);
             alert(`Falha ao excluir: ${err.message || 'erro desconhecido'}`);
-        } finally {
-            // Reabilitar o botão aqui
         }
     };
 
     const handleView = (id) => {
-        // Implementar a lógica do modal aqui, se desejar
-        // 1. Buscar dados completos do paciente com getPaciente(id)
-        // 2. Armazenar em selectedPacienteModal
-        // 3. Abrir o modal (setIsModalOpen(true))
         console.log("Visualizar paciente com ID:", id);
         alert("Funcionalidade de visualizar carteirinha a implementar.");
     };
 
-    // --- Filtragem (Client-Side Simples) ---
-    const filteredPacientes = pacientes.filter(p => {
-        const lowerSearch = searchTerm.toLowerCase();
-        return (
-            (p.full_name && p.full_name.toLowerCase().includes(lowerSearch)) ||
-            (p.cpf && formatCPF(p.cpf).includes(lowerSearch)) ||
-            (p.phone_mobile && p.phone_mobile.toLowerCase().includes(lowerSearch)) ||
-            (p.email && p.email.toLowerCase().includes(lowerSearch))
-        );
-    });
+    // --- Filtragem ---
+    const filteredPacientes = useMemo(() => {
+        return pacientes.filter(p => {
+            const lowerSearch = searchTerm.toLowerCase();
+            return (
+                (p.full_name && p.full_name.toLowerCase().includes(lowerSearch)) ||
+                (p.cpf && formatCPF(p.cpf).includes(lowerSearch)) ||
+                (p.phone_mobile && p.phone_mobile.toLowerCase().includes(lowerSearch)) ||
+                (p.email && p.email.toLowerCase().includes(lowerSearch))
+            );
+        });
+    }, [pacientes, searchTerm]);
 
     return (
         <>
-<header className="doctor-header">
+            {/* Header Limpo */}
+            <header className="doctor-header">
                 <div className="doctor-header__inner">
                     <div className="doctor-header__brand">
                         <div className="brand-icon">
@@ -116,8 +134,7 @@ export default function GerenciamentoPacientesPage() {
                         </div>
                         <span className="brand-name">Medconnect</span>
                         <h1 className="doctor-greeting">
-                            {/* Idealmente, o nome viria de dados do usuário logado */}
-                            Olá, Dr(a). <span className="highlight">Camilla Millene</span> 👋
+                            Olá, Dr(a). <span className="highlight">{headerLoading ? "..." : doctorName}</span> 👋
                         </h1>
                     </div>
 
@@ -127,19 +144,17 @@ export default function GerenciamentoPacientesPage() {
                             <input
                                 name="q"
                                 autoComplete="off"
-                                value={q} // Usa o estado 'q'
-                                onChange={(e) => setQ(e.target.value)} // Usa o setter 'setQ'
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder="Buscar paciente, exame, laudo…"
                                 className="search-input"
                             />
                         </div>
                     </div>
 
-                    {/* 6. Links de navegação ajustados */}
                     <nav className="doctor-header__nav">
                         <button
                             onClick={() => navigate("/doctor/dashboard")}
-                            // Define classe 'active' se o pathname corresponder
                             className={pathname === '/doctor/dashboard' ? 'nav-link active' : 'nav-link'}
                         >
                             Início
@@ -150,16 +165,23 @@ export default function GerenciamentoPacientesPage() {
                         >
                             Laudos
                         </button>
-                        {/* Botão para a página atual */}
                         <button
-                            onClick={() => navigate("/doctor/pacientes")} // Navega para a própria página (ou pode desabilitar)
+                            onClick={() => navigate("/doctor/pacientes")} 
                             className={pathname.startsWith('/doctor/pacientes') ? 'nav-link active' : 'nav-link'}
                         >
-                            Gerenciamento de Pacientes
+                            Pacientes
+                        </button>
+                        <button
+                            onClick={() => navigate("/doctor/consultas")} 
+                            className={pathname.startsWith('/doctor/consultas') ? 'nav-link active' : 'nav-link'}
+                        >
+                            Consultas
                         </button>
                     </nav>
                 </div>
             </header>
+            
+            {/* Conteúdo da Página */}
             <main className="container">
                 <section className="card">
                     <div className="head">
@@ -169,23 +191,21 @@ export default function GerenciamentoPacientesPage() {
                         </div>
                         <div className="toolbar">
                             <div className="search">
-                                <FaSearch style={{ color: '#6b7a88', marginRight: '8px' }}/> {/* Ícone React */}
+                                <FaSearch style={{ color: '#6b7a88', marginRight: '8px' }}/>
                                 <input
-                                    id="q"
+                                    id="q_table"
                                     placeholder="Buscar por nome, CPF, telefone..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                            {/* Link para a página de cadastro/novo paciente */}
-                            <Link className="btn primary" to="/doctor/pacientes/novo"> {/* Ajuste a rota */}
-                                <FaPlus style={{ marginRight: '8px' }}/> {/* Ícone React */}
+                            <Link className="btn primary" to="/doctor/pacientes/novo">
+                                <FaPlus style={{ marginRight: '8px' }}/>
                                 Novo paciente
                             </Link>
                         </div>
                     </div>
 
-                    {/* Exibição de Erro */}
                     {error && (
                         <div style={{ padding: '1rem 1.2rem', color: 'red', background: '#ffebee' }}>
                             Erro: {error}
@@ -220,7 +240,6 @@ export default function GerenciamentoPacientesPage() {
                                             <td>{p.phone_mobile || '—'}</td>
                                             <td>{p.city ? `${p.city}/${p.state || ''}` : '—'}</td>
                                             <td className="col-actions">
-                                                {/* Botões usando ícones React */}
                                                 <button className="page-btn btn-view" onClick={() => handleView(p.id)} title="Ver carteirinha"><FaEye /></button>
                                                 <button className="page-btn btn-edit" onClick={() => handleEdit(p.id)} title="Editar"><FaPencilAlt /></button>
                                                 <button className="page-btn btn-del" onClick={() => handleDelete(p.id)} title="Excluir"><FaTrashAlt /></button>
@@ -237,21 +256,9 @@ export default function GerenciamentoPacientesPage() {
                             Mostrando {filteredPacientes.length} de {pacientes.length} paciente(s)
                             {searchTerm && ` (filtrado de ${pacientes.length})`}
                         </small>
-                        {/* A Paginação precisa ser implementada separadamente */}
-                        <nav className="pagination" id="pager"></nav>
                     </div>
                 </section>
             </main>
-
-            {/* Modal da Carteirinha (a implementar como componente React) */}
-            {/* {isModalOpen && <CarteirinhaModal paciente={selectedPacienteModal} onClose={() => setIsModalOpen(false)} />} */}
-
-            {/* Menu de Acessibilidade (a implementar como componente React) */}
-            {/* <AcessibilidadeMenu /> */}
         </>
     );
 }
-
-// TODO: Criar o componente CarteirinhaModal.jsx
-// TODO: Criar o componente AcessibilidadeMenu.jsx (se desejar manter a mesma funcionalidade)
-// TODO: Implementar a paginação (client-side ou server-side)

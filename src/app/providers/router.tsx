@@ -1,4 +1,4 @@
-// src/app/providers/router.tsx
+// src/app/providers/router.tsx (LIMPO)
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 
 // Páginas principais (públicas)
@@ -10,8 +10,9 @@ import DoctorDashboard from "@/features/doctor/pages/Dashboard";
 import LaudosPage from "@/features/doctor/pages/laudos/LaudosPage";
 import NovoLaudoPage from "@/features/doctor/pages/laudos/NovoLaudoPage";
 import RevisarLaudoPage from "@/features/doctor/pages/laudos/RevisarLaudoPage";
-import GerenciamentoPacientesPage from "@/features/doctor/pages/GerenciamentoPacientesPage";
+import GerenciamentoPacientesPage from "@/features/doctor/pages/GerenciamentoPacientesPage.jsx"; 
 import PaginaCadastroPaciente from "@/features/doctor/pages/PaginaCadastroPaciente";
+import GerenciamentoConsultasPage from "@/features/doctor/pages/GerenciamentoConsultas";
 
 // Admin
 import AdminPage from "@/features/admin/pages/App";
@@ -85,80 +86,61 @@ export const router = createBrowserRouter([
     element: <Root />,
     errorElement: <ErrorPage />,
     children: [
-      //
       // ROTAS PÚBLICAS / GERAIS
-      //
       { path: "/", element: <Home /> },
       { path: "/login", element: <Login /> },
 
-      //
       // REDIRECTS ÚTEIS
-      //
       { path: "/doctor", element: <Navigate to="/doctor/dashboard" replace /> },
       { path: "/dashboard", element: <Navigate to="/doctor/dashboard" replace /> },
       { path: "/laudos", element: <Navigate to="/doctor/laudos" replace /> },
 
-      //
       // ÁREA DO MÉDICO
-      //
       { path: "/doctor/dashboard", element: <DoctorDashboard /> },
-
       // laudos
       { path: "/doctor/laudos", element: <LaudosPage /> },
       { path: "/doctor/laudos/novo", element: <NovoLaudoPage /> },
       { path: "/doctor/laudos/:id/revisar", element: <RevisarLaudoPage /> },
       { path: "/doctor/laudos/:id/editar", element: <NovoLaudoPage /> },
-
       // pacientes
       { path: "/doctor/pacientes", element: <GerenciamentoPacientesPage /> },
       { path: "/doctor/pacientes/novo", element: <PaginaCadastroPaciente /> },
       { path: "/doctor/pacientes/editar/:id", element: <PaginaCadastroPaciente /> },
+      // Consultas
+      { path: "/doctor/consultas", element: <GerenciamentoConsultasPage /> },
 
-      //
       // ÁREA DO ADMIN
-      //
       {
         path: "/admin",
-        element: <AdminPage />, // esse componente PRECISA ter <Outlet />
+        element: <AdminPage />, 
         children: [
-          // /admin
           { index: true, element: <AdminDashboardContent /> },
-
-          // /admin/UsersList
           { path: "UsersList", element: <UsersList /> },
-
-          // /admin/CreateUser
           { path: "CreateUser", element: <CreateUser /> },
-
-          // /admin/AppointmentsPage
           { path: "AppointmentsPage", element: <AppointmentsPage /> },
         ],
       },
 
-      //
-  // ÁREA DO PACIENTE
-  //
-  { path: "/patient/dashboard", element: <PatientDashboard /> },
-  { path: "/patient/agendamento", element: <AgendamentoPacientePage /> },
-  { path: "/patient", element: <Navigate to="/patient/dashboard" replace /> },
+      // ÁREA DO PACIENTE
+      { path: "/patient/dashboard", element: <PatientDashboard /> },
+      { path: "/patient/agendamento", element: <AgendamentoPacientePage /> },
+      { path: "/patient", element: <Navigate to="/patient/dashboard" replace /> },
 
-      //
       // ÁREA DA SECRETARIA
-      //
-{
-  path: "/secretary",
-  element: <SecretaryLayout />, // já vamos criar esse layout
-  children: [
-    { index: true, element: <Dashboard /> },           // /secretary
-    { path: "medicos", element: <Medicos /> },         // /secretary/medicos
-    { path: "pacientes", element: <Pacientes /> },     // /secretary/pacientes
-    { path: "consultas", element: <Consultas /> },     // /secretary/consultas
-    { path: "relatorios", element: <Relatorios /> },   // /secretary/relatorios
-    { path: "configuracoes", element: <Configuracoes /> }, // /secretary/configuracoes
-  ],
-},
+      {
+        path: "/secretary",
+        element: <SecretaryLayout />,
+        children: [
+          { index: true, element: <Dashboard /> }, 
+          { path: "medicos", element: <Medicos /> }, 
+          { path: "pacientes", element: <Pacientes /> }, 
+          { path: "consultas", element: <Consultas /> }, 
+          { path: "relatorios", element: <Relatorios /> }, 
+          { path: "configuracoes", element: <Configuracoes /> }, 
+        ],
+      },
     ],
   },
-        // catch-all 404
-        { path: "*", element: <NotFound /> },
+  // catch-all 404
+  { path: "*", element: <NotFound /> },
 ]);
