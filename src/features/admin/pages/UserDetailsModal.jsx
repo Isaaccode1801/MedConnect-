@@ -1,7 +1,8 @@
 // admin-dashboard/src/pages/UserDetailsModal.jsx
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaTrash } from 'react-icons/fa';
 
-export default function UserDetailsModal({ open, onClose, loading, error, data }) {
+// 1. Recebemos 'onDelete' aqui nas props
+export default function UserDetailsModal({ open, onClose, loading, error, data, onDelete }) {
   if (!open) return null;
 
   const user = data?.user || {};
@@ -20,16 +21,22 @@ export default function UserDetailsModal({ open, onClose, loading, error, data }
       >
         <div className="modal-header">
           <h3 id="user-details-title">Detalhes do usuário</h3>
-          <button className="btn icon" onClick={onClose} aria-label="Fechar">
+          <button 
+            className="btn icon" 
+            onClick={onClose} 
+            aria-label="Fechar" 
+            disabled={loading} // Desabilitado durante o loading
+          >
             <FaTimes />
           </button>
         </div>
 
         <div className="modal-body">
           {loading && (
-            <div className="muted">Carregando informações…</div>
+            <div className="muted">Carregando...</div>
           )}
           {!loading && error && (
+            // Este 'error' agora também mostrará erros da exclusão
             <div className="alert error">{error}</div>
           )}
 
@@ -88,6 +95,27 @@ export default function UserDetailsModal({ open, onClose, loading, error, data }
             </>
           )}
         </div>
+
+        {/* 2. Adicionado o modal-footer para os botões de ação */}
+        <div className="modal-footer">
+          <button
+            className="btn danger" // 'danger' para o botão vermelho
+            onClick={onDelete}     // 3. O onClick chama a prop onDelete
+            disabled={loading || !data} // Desabilitado se estiver carregando ou se não houver dados
+          >
+            <FaTrash />
+            <span>Excluir Usuário</span> 
+          </button>
+          
+          <button 
+            className="btn secondary" 
+            onClick={onClose}
+            disabled={loading}
+          >
+            Fechar
+          </button>
+        </div>
+
       </div>
     </div>
   );

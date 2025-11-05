@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAuthHeaders, readUserToken } from "@/lib/pacientesService";
+import { supabase } from "@/lib/supabase" // Precisamos do supabase
 
-// monta headers pra chamar Edge Function autenticada
+// (função getFunctionHeaders - sem alterações)
 function getFunctionHeaders() {
   const bearer = readUserToken();
   const base = getAuthHeaders();
@@ -15,11 +16,7 @@ function getFunctionHeaders() {
 
 export default function CreateUser() {
   const navigate = useNavigate();
-
-  // qual aba/papel está selecionado
-  const [role, setRole] = useState("patient"); // 'patient' | 'medico' | 'secretaria' | 'admin'
-
-  // dados do formulário
+  const [role, setRole] = useState("paciente"); 
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -40,52 +37,67 @@ export default function CreateUser() {
     setForm((f) => ({ ...f, [name]: value }));
   }
 
+  // =================================================================
+  // 🚀 FUNÇÃO HANDLESUBMIT (LÓGICA DE PROCURA POR CPF)
+  // =================================================================
   async function handleSubmit(e) {
     e.preventDefault();
-
     setErr("");
     setOk("");
+    setLoading(true);
 
     const currentRole = role;
+    const isPatient = currentRole === "paciente";
 
-    // ---- validações front ----
+    // ---- 1. Validações (sem alterações) ----
     if (!currentRole) {
-      setErr("Selecione o tipo de usuário (médico, secretária, paciente ou admin) antes de criar.");
+      setErr("Selecione o tipo de usuário.");
+      setLoading(false);
       return;
     }
     if (!form.email || !form.password || !form.full_name) {
       setErr("Preencha pelo menos e-mail, senha e nome completo.");
+      setLoading(false);
       return;
     }
+    
+    // Limpa o CPF *antes* de o validar ou enviar
+    const cpfLimpo = form.cpf.replace(/[^\d]/g, '');
 
-    // sua Edge Function exige cpf e phone_mobile -> vamos continuar exigindo
-    if (!form.cpf) {
-      setErr("CPF é obrigatório.");
-      return;
+    if (isPatient) {
+        if (!cpfLimpo || cpfLimpo.length !== 11) {
+            setErr("CPF é obrigatório e deve ter 11 dígitos.");
+            setLoading(false);
+            return;
+        }
+         if (!form.phone_mobile) {
+            setErr("Celular (WhatsApp) é obrigatório para pacientes.");
+            setLoading(false);
+            return;
+        }
     }
-    if (!form.phone_mobile) {
-      setErr("Celular (WhatsApp) é obrigatório.");
-      return;
-    }
-
-    setLoading(true);
-
+    
     try {
       // =========================================================
-      // 1. CRIA O USUÁRIO VIA EDGE FUNCTION
+      // ETAPA 1: CHAMAR A FUNÇÃO DE BACKEND
+      // (Cria o Auth User E o Patient Record, mas não os liga)
       // =========================================================
-      const fnUrl = `${SUPABASE_URL}/functions/v1/create-user-with-password`;
+      const fnUrl = '/proxy/functions/v1/create-user-with-password';
 
       const bodyPayload = {
         email: form.email,
         password: form.password,
         full_name: form.full_name,
-        phone: form.phone,
-        role: currentRole, // "admin" | "medico" | "secretaria" | "patient"
-        create_patient_record: currentRole === "patient",
-        cpf: form.cpf,
-        phone_mobile: form.phone_mobile,
+        phone: form.phone || null,
+        role: currentRole, 
+        create_patient_record: isPatient, 
+        cpf: isPatient ? cpfLimpo : undefined,
+        phone_mobile: isPatient ? form.phone_mobile : undefined,
       };
+      
+      Object.keys(bodyPayload).forEach(key => {
+        if (bodyPayload[key] === undefined) delete bodyPayload[key];
+      });
 
       const r = await fetch(fnUrl, {
         method: "POST",
@@ -93,115 +105,57 @@ export default function CreateUser() {
         body: JSON.stringify(bodyPayload),
       });
 
-      if (!r.ok) {
-        const txt = await r.text();
-        throw new Error(`Função create-user falhou (${r.status}): ${txt}`);
-      }
-
       const data = await r.json();
-      const userId =
-        data?.user?.id ||
-        data?.id ||
-        null;
 
-      if (!userId) {
-        throw new Error("A Edge Function não retornou o ID do usuário.");
+      if (!r.ok) {
+        throw new Error(data.error || `Função create-user falhou (${r.status})`);
       }
-
+      
       // =========================================================
-      // 2. TENTA SINCRONIZAR PERFIL EM /profiles
-      //    MAS SEM ENVIAR COLUNAS QUE NÃO EXISTEM
+      // ETAPA 2: LIGAÇÃO MANUAL (COM A NOVA LÓGICA)
       // =========================================================
-
-      // Vamos montar dinamicamente um objeto só com colunas que
-      // provavelmente existem na tabela `profiles`.
-      // NÃO incluir cpf / phone_mobile pq deu erro.
-      const profileBody = {
-        full_name: form.full_name,
-        phone: form.phone,
-        role: currentRole,
-        email: form.email, // útil pro POST
-        created_at: new Date().toISOString(),
-      };
-
-      // Headers para o REST da tabela profiles
-      const baseHeaders = getAuthHeaders();
-      const restHeaders = {
-        ...baseHeaders,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal",
-      };
-
-      let profileSaved = false;
-
-      // ---- 2a. tenta PATCH pelo id ----
-      try {
-        const patchUrl = `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`;
-        const r1 = await fetch(patchUrl, {
-          method: "PATCH",
-          headers: restHeaders,
-          body: JSON.stringify(profileBody),
-        });
-
-        if (!r1.ok) {
-          // vamos só logar, não quebrar ainda
-          console.warn("[CreateUser] PATCH profiles falhou", r1.status);
-          throw new Error(`PATCH profiles => ${r1.status}`);
+      if (isPatient) {
+        const userId = data?.user?.id;
+        
+        if (!userId) {
+            console.error("API criou o usuário mas não retornou o user.id:", data);
+            throw new Error("Falha grave: A API não retornou o ID do usuário.");
         }
 
-        profileSaved = true;
-        console.log("✅ Perfil atualizado com PATCH!");
-      } catch (patchErr) {
-        // ---- 2b. se o PATCH falha (400/404 etc),
-        //          tenta criar via POST.
-        try {
-          const postUrl = `${SUPABASE_URL}/rest/v1/profiles`;
-          const r2 = await fetch(postUrl, {
-            method: "POST",
-            headers: restHeaders,
-            body: JSON.stringify({
-              id: userId,
-              ...profileBody,
-            }),
-          });
+        // ✅ CORREÇÃO: Procurar o paciente pelo CPF que acabámos de criar
+        const { data: patientData, error: findError } = await supabase
+            .from('patients')
+            .select('id')
+            .eq('cpf', cpfLimpo) // Procura pelo CPF limpo
+            .limit(1)
+            .single(); // .single() devolve um objeto ou um erro
 
-          if (!r2.ok) {
-            const txt = await r2.text();
-            console.error(
-              "[CreateUser] POST profiles falhou",
-              r2.status,
-              txt
-            );
-            // Se nem POST funcionou: vamos seguir SEM profileSaved
-          } else {
-            profileSaved = true;
-            console.log("✅ Perfil criado com POST!");
-          }
-        } catch (postErr) {
-          console.error("[CreateUser] Erro no POST profiles catch:", postErr);
+        if (findError || !patientData) {
+            console.error("Erro ao buscar paciente pelo CPF:", findError);
+            throw new Error("Usuário criado, mas não foi possível encontrar o registro de paciente pelo CPF para fazer a ligação.");
         }
+        
+        const patientId = patientData.id; // Encontrámos o ID do paciente!
+
+        // Agora, fazemos o UPDATE para ligar os dois
+        const { error: updateError } = await supabase
+            .from('patients')
+            .update({ user_id: userId }) // Define a coluna 'user_id'
+            .eq('id', patientId);        // No 'id' do paciente que encontrámos
+
+        if (updateError) {
+            console.error("Falha ao ligar paciente:", updateError);
+            throw new Error(`Usuário e paciente criados, mas falha ao ligar os registos: ${updateError.message}`);
+        }
+        
+        console.log("✅ Paciente e Auth ligados com sucesso!");
       }
 
       // =========================================================
       // 3. FEEDBACK PRO USUÁRIO
       // =========================================================
-      setOk(
-        `${
-          currentRole === "medico"
-            ? "Médico"
-            : currentRole === "secretaria"
-            ? "Secretária"
-            : currentRole === "admin"
-            ? "Admin"
-            : "Paciente"
-        } criado(a)${
-          profileSaved
-            ? " e perfil salvo"
-            : " (usuário criado, mas não consegui salvar o perfil)"
-        } com sucesso!`
-      );
+      setOk(data.message || "Usuário criado com sucesso!");
 
-      // limpa form
       setForm({
         email: "",
         password: "",
@@ -211,30 +165,21 @@ export default function CreateUser() {
         phone_mobile: "",
       });
 
-      // navega pra lista de usuários
-      navigate("/admin/UsersList");
+      setTimeout(() => {
+        navigate("/admin/UsersList");
+      }, 1000); 
+
     } catch (e2) {
       console.error("[CreateUser] erro:", e2);
-
-      const rawMsg = e2?.message || "Erro ao criar usuário";
-
-      // mensagens mais amigáveis
-      if (/signups? not allowed/i.test(rawMsg)) {
-        setErr(
-          "Cadastros por e-mail estão desabilitados no projeto (Auth → Providers → Email → Enable email signup)."
-        );
-      } else if (/already registered/i.test(rawMsg)) {
-        setErr("Este e-mail já está cadastrado.");
-      } else if (/password/i.test(rawMsg) && /weak|short|min/i.test(rawMsg)) {
-        setErr("Senha não atende a política. Tente uma senha mais forte/longa.");
-      } else {
-        setErr(rawMsg);
-      }
+      setErr(e2?.message || "Erro ao criar usuário");
     } finally {
       setLoading(false);
     }
   }
 
+  // =================================================================
+  // O RESTO DO SEU CÓDIGO JSX (LIMPO, SEM ERROS DE SINTAXE)
+  // =================================================================
   return (
     <div style={{ padding: 24 }}>
       {/* header da página */}
@@ -258,7 +203,7 @@ export default function CreateUser() {
       {/* abas de tipo de usuário */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
         {[
-          { k: "patient", label: "Paciente" },
+          { k: "paciente", label: "Paciente" },
           { k: "medico", label: "Médico" },
           { k: "secretaria", label: "Secretária" },
           { k: "admin", label: "Admin" },
@@ -343,29 +288,34 @@ export default function CreateUser() {
           />
         </label>
 
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Celular / WhatsApp</span>
-          <input
-            name="phone_mobile"
-            value={form.phone_mobile}
-            onChange={onChange}
-            placeholder="(11) 99999-8888"
-            required
-            style={inputStyle}
-          />
-        </label>
+        {/* Campos de Paciente Condicionais */}
+        {role === 'paciente' && (
+          <>
+            <label style={{ display: "grid", gap: 6 }}>
+              <span>Celular / WhatsApp (Obrigatório)</span>
+              <input
+                name="phone_mobile"
+                value={form.phone_mobile}
+                onChange={onChange}
+                placeholder="(11) 99999-8888"
+                required={role === 'paciente'}
+                style={inputStyle}
+              />
+            </label>
 
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>CPF</span>
-          <input
-            name="cpf"
-            value={form.cpf}
-            onChange={onChange}
-            placeholder="Só números"
-            required
-            style={inputStyle}
-          />
-        </label>
+            <label style={{ display: "grid", gap: 6 }}>
+              <span>CPF (Obrigatório, só números)</span>
+              <input
+                name="cpf"
+                value={form.cpf}
+                onChange={onChange}
+                placeholder="12345678901"
+                required={role === 'paciente'}
+                style={inputStyle}
+              />
+            </label>
+          </>
+        )}
 
         {err && (
           <div
@@ -408,6 +358,7 @@ export default function CreateUser() {
   );
 }
 
+// Estilos (limpos)
 const inputStyle = {
   padding: "10px 12px",
   borderRadius: 8,

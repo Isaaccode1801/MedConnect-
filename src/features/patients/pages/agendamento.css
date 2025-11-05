@@ -648,3 +648,130 @@ body, body *,
 .btn, .sidebar, .main-content { /* Garante que tudo transiciona */
   transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
+/* ================================================================ */
+/* 🚀 NOVO CSS PARA O MODAL DE AGENDAMENTO (adicione ao seu .css) */
+/* ================================================================ */
+
+/* --- Layout do Modal --- */
+.agendamento-container-flex {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.day-picker-container {
+  flex: 1.5; /* Calendário ocupa mais espaço */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 280px;
+  border-right: 1px solid var(--border-color);
+  padding-right: 20px;
+}
+
+.slots-container {
+  flex: 1; /* Horários ocupam menos espaço */
+  min-width: 180px;
+  max-height: 300px; /* Altura máxima para os slots */
+  overflow-y: auto; /* Adiciona scroll se houver muitos horários */
+}
+
+/* --- Estilo do react-day-picker --- */
+/* (Você pode customizar muito mais, veja a doc deles) */
+.rdp {
+  margin: 0;
+  --rdp-cell-size: 36px;
+  --rdp-caption-font-size: 1rem;
+  --rdp-accent-color: var(--primary);
+  --rdp-background-color: var(--primary-light);
+}
+.rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: var(--primary-light) !important;
+}
+
+/* --- Grid de Horários --- */
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 10px;
+}
+
+.slots-placeholder {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  padding: 10px;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  text-align: center;
+  grid-column: 1 / -1; /* Ocupa a linha inteira */
+}
+
+/* --- Botões de Horário --- */
+.slot-btn {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.slot-btn:hover {
+  background-color: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.slot-btn.selected {
+  background-color: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px -2px var(--primary-shadow);
+}
+
+.slot-btn:disabled {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+/* --- Media query para telas pequenas --- */
+@media (max-width: 600px) {
+  .agendamento-container-flex {
+    flex-direction: column;
+  }
+  .day-picker-container {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding-right: 0;
+    padding-bottom: 15px;
+    align-items: center;
+  }
+  .slots-container {
+    max-height: 200px; /* Reduz altura em telas menores */
+  }
+}
+.free-time-container {
+  padding-top: 10px;
+}
+
+.time-input {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  padding: 8px 10px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  background-color: #fff;
+  color: var(--text-primary);
+}
+
+.time-input:disabled {
+  background-color: var(--bg-secondary);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
