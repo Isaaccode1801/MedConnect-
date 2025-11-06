@@ -28,6 +28,7 @@ import AdminReportsList from "@/features/admin/pages/AdminReportsList";
 // Paciente
 import AgendamentoPacientePage from "@/features/patients/pages/Agendamento";
 import PatientDashboard from "@/features/patients/pages/Dashboard";
+import PatientAppointments from "@/features/patients/pages/PatientAppointments";
 
 // Secretaria
 import SecretaryLayout from "@/features/secretary/pages/SecretaryLayout";
@@ -136,6 +137,7 @@ export const router = createBrowserRouter([
       // ÁREA DO PACIENTE
       { path: "/patient/dashboard", element: <PatientDashboard /> },
       { path: "/patient/agendamento", element: <AgendamentoPacientePage /> },
+      { path: "/patient/consultas", element: <PatientAppointments /> },
       { path: "/patient", element: <Navigate to="/patient/dashboard" replace /> },
 
       // ÁREA DA SECRETARIA
