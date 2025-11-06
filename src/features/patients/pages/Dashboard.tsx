@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import medLogo from '@/assets/Medconnect.logo.png';
 import './dashboard.css';
 
 interface Consulta {
@@ -134,9 +133,6 @@ export default function PatientDashboard() {
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-left">
-          <div className="logo" aria-label="MedConnect">
-            <img src={medLogo} alt="MedConnect" className="logo-image" />
-          </div>
           <div className="user-greeting">
             <div className="user-avatar">IK</div>
             <span className="user-name">{perfil.nome}</span>

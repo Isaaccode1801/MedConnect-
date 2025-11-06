@@ -29,8 +29,9 @@ export default function Sidebar() {
         style={{ position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 1000 }}
       >
         <div className="sidebar-header">
-          <i className="fa-solid fa-building"></i>
-          <span>Medconnect</span>
+          <i className="fa-solid fa-calendar-check"></i>
+          <span>Secretaria</span>
+          <small style={{ display: sidebarOpen ? 'block' : 'none', opacity: 0.85, fontSize: 12 }}>MedConnect</small>
         </div>
 
         <div className="nav-links">
@@ -42,7 +43,7 @@ export default function Sidebar() {
               isActive ? "active" : undefined
             }
           >
-            <i className="fa-solid fa-gauge" /> Dashboard
+            <i className="fa-solid fa-house" /> <span style={{ display: sidebarOpen ? 'inline' : 'none' }}>Dashboard</span>
           </NavLink>
 
           {/* Médicos */}
@@ -50,7 +51,7 @@ export default function Sidebar() {
             to="/secretary/medicos"
             className={({ isActive }) => (isActive ? "active" : undefined)}
           >
-            Gerenciar Médicos
+            <i className="fa-solid fa-user-doctor" /> <span style={{ display: sidebarOpen ? 'inline' : 'none' }}>Médicos</span>
           </NavLink>
 
           {/* Pacientes */}
@@ -58,7 +59,7 @@ export default function Sidebar() {
             to="/secretary/pacientes"
             className={({ isActive }) => (isActive ? "active" : undefined)}
           >
-            Gerenciar Pacientes
+            <i className="fa-solid fa-users" /> <span style={{ display: sidebarOpen ? 'inline' : 'none' }}>Pacientes</span>
           </NavLink>
 
           {/* Consultas */}
@@ -66,7 +67,7 @@ export default function Sidebar() {
             to="/secretary/consultas"
             className={({ isActive }) => (isActive ? "active" : undefined)}
           >
-            Gerenciar Consultas
+            <i className="fa-regular fa-clipboard" /> <span style={{ display: sidebarOpen ? 'inline' : 'none' }}>Consultas</span>
           </NavLink>
 
           {/* Relatórios */}
@@ -74,7 +75,7 @@ export default function Sidebar() {
             to="/secretary/relatorios"
             className={({ isActive }) => (isActive ? "active" : undefined)}
           >
-            Gerenciar Relatórios
+            <i className="fa-regular fa-file-lines" /> <span style={{ display: sidebarOpen ? 'inline' : 'none' }}>Relatórios</span>
           </NavLink>
 
           {/* Configurações */}
@@ -82,26 +83,26 @@ export default function Sidebar() {
             to="/secretary/configuracoes"
             className={({ isActive }) => (isActive ? "active" : undefined)}
           >
-            <i className="fa-solid fa-gear" /> Configurações
+            <i className="fa-solid fa-gear" /> <span style={{ display: sidebarOpen ? 'inline' : 'none' }}>Configurações</span>
           </NavLink>
         </div>
 
         <div className="sidebar-footer">
           <a href="#" onClick={handleLogout}>
-            <i className="fa-solid fa-right-from-bracket"></i> Sair
+            <i className="fa-solid fa-right-from-bracket"></i> <span style={{ display: sidebarOpen ? 'inline' : 'none' }}>Sair</span>
           </a>
+          {/* Botão de recolher no rodapé (estilo semelhante ao do Admin) */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="collapse-btn"
+            title="Recolher menu"
+          >
+            <i className="fa-solid fa-bars" /> <span style={{ display: sidebarOpen ? 'inline' : 'none' }}>Recolher menu</span>
+          </button>
         </div>
       </nav>
 
-      {/* Botão hamburguer */}
-      <button
-        id="toggle-sidebar-btn"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        title="Abrir/Fechar Menu"
-        style={{ position: 'fixed', top: '1rem', left: sidebarOpen ? '260px' : '88px', zIndex: 1100 }}
-      >
-        <i className={`fa-solid ${sidebarOpen ? "fa-bars" : "fa-xmark"}`} />
-      </button>
+      {/* Botão hamburguer removido em favor do botão no rodapé */}
     </div>
   );
 }

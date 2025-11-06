@@ -470,9 +470,7 @@ export default function AgendamentoPage() {
             <div className="appbar">
                 <div className="appbar-inner">
                     <div className="brand">
-                        <Link to="/" className="logo-link">
-                            <img src="/Medconnect.logo.png" alt="Logo MedConnect" className="logo" />
-                        </Link>
+                        {/* Logo removida */}
                     </div>
                     <div>
                         <h1>Diretório de Médicos</h1>
