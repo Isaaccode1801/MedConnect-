@@ -1,25 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './dashboard.css';
 import { MdOutlineAccessibilityNew } from "react-icons/md";
 
-interface Consulta {
-  id: string;
-  tipo: string;
-  data: string;
-  horario: string;
-  medico: string;
-  especialidade: string;
+import { supabase } from '@/lib/supabase';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+// (Helpers: calculateAge, initials... sem mudanças)
+function calculateAge(birthDateString: string | null): number | string {
+  if (!birthDateString) return 'N/A';
+  try {
+    const birthDate = new Date(birthDateString);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  } catch (e) {
+    return 'N/A';
+  }
+}
+function initials(name = "") {
+  const parts = String(name).trim().split(/\s+/).slice(0, 2);
+  return parts.map((s) => s[0]?.toUpperCase() || "").join("") || "P";
 }
 
-interface PerfilPaciente {
-  nome: string;
-  cpf: string;
-  idade: number;
-  tipoSanguineo: string;
-  altura: number;
-  peso: number;
-}
 
 export default function PatientDashboard() {
   const navigate = useNavigate();
@@ -64,35 +72,99 @@ export default function PatientDashboard() {
   // FIM DA LÓGICA DE ACESSIBILIDADE
   // ==========================================================
 
+  // (Estados dinâmicos... sem mudanças)
+  const [perfil, setPerfil] = useState<any>(null);
+  const [userInitials, setUserInitials] = useState('P');
+  const [patientName, setPatientName] = useState('Paciente');
+  const [proximasConsultas, setProximasConsultas] = useState<any[]>([]);
+  const [diasComConsultas, setDiasComConsultas] = useState<number[]>([]);
+  const [frequenciaPresenca, setFrequenciaPresenca] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // (useEffect principal... sem mudanças)
   useEffect(() => {
     document.body.classList.remove('modo-daltonico');
-  }, []);
-  
-  // (Dados mockados... sem mudanças)
-  const [perfil] = useState<PerfilPaciente>({
-    nome: 'Isaac Kauã',
-    cpf: '862.346.645-47',
-    idade: 18,
-    tipoSanguineo: 'O+',
-    altura: 1.90,
-    peso: 100
-  });
-  const [proximasConsultas] = useState<Consulta[]>([
-    {
-      id: '1',
-      tipo: 'Dentista',
-      data: 'Quarta',
-      horario: '09:00',
-      medico: 'Dra. Gorex Mathew',
-      especialidade: 'Odontologia'
-    },
-    // ... (mais consultas mockadas)
-  ]);
-  const saudeGeral = 75;
-  const frequenciaPresenca = 83;
-  const taxaMelhora = [65, 75, 70, 85, 72, 68, 78];
-  const condicoesSaude = [65, 68, 70, 72, 75, 73, 74, 78, 76, 74, 82, 70];
+    
+    async function loadDashboardData() {
+      setLoading(true);
+      setError('');
+      try {
+        // --- 1. Buscar Usuário e Perfil ---
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) throw new Error("Sessão não encontrada.");
 
+        const { data: patientProfile, error: profileError } = await supabase
+          .from('patients')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profileError || !patientProfile) {
+          throw new Error("Não foi possível encontrar seu perfil de paciente.");
+        }
+        
+        setPerfil(patientProfile);
+        setPatientName(patientProfile.full_name || 'Paciente');
+        setUserInitials(initials(patientProfile.full_name));
+
+        // --- 2. Buscar TODOS os agendamentos ---
+        const { data: allAppointments, error: appointmentsError } = await supabase
+          .from('appointments')
+          .select(`
+            id,
+            scheduled_at,
+            status,
+            doctors (
+              full_name,
+              specialty
+            )
+          `)
+          .eq('patient_id', patientProfile.id)
+          .order('scheduled_at', { ascending: true });
+
+        if (appointmentsError) throw appointmentsError;
+        if (!allAppointments) return;
+
+        // --- 3. Processar Dados ---
+        const hoje = new Date();
+        const inicioDoDia = new Date(hoje.setHours(0, 0, 0, 0));
+
+        // A. Próximas Consultas (agora pega 5)
+        const futuras = allAppointments
+          .filter(app => new Date(app.scheduled_at) >= inicioDoDia)
+          .slice(0, 5); // Pega as 5 primeiras
+        
+        setProximasConsultas(futuras);
+        
+        // B. Calendário
+        const diasNoMes = allAppointments
+          .map(app => new Date(app.scheduled_at))
+          .filter(date => date.getMonth() === currentMonth.getMonth() && date.getFullYear() === currentMonth.getFullYear())
+          .map(date => date.getDate());
+          
+        setDiasComConsultas(Array.from(new Set(diasNoMes)));
+
+        // C. Indicador de Frequência
+        const consultasPassadas = allAppointments.filter(app => new Date(app.scheduled_at) < inicioDoDia);
+        const totalPassadas = consultasPassadas.length;
+        const concluidas = consultasPassadas.filter(app => app.status === 'completed').length;
+        
+        const frequenciaCalc = (totalPassadas === 0) ? 100 : (concluidas / totalPassadas) * 100;
+        setFrequenciaPresenca(Math.round(frequenciaCalc));
+
+      } catch (err: any) {
+        console.error("Erro ao carregar dashboard:", err);
+        setError(err.message || "Falha ao carregar dados.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadDashboardData();
+  }, [currentMonth]);
+
+  
   // (Funções do calendário... sem mudanças)
   const generateCalendar = (): (number | null)[] => {
     const year = currentMonth.getFullYear();
@@ -112,8 +184,7 @@ export default function PatientDashboard() {
   };
   const calendar = generateCalendar();
   const monthName = currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  const diasComConsultas = [3, 10, 17, 24];
-  const hoje = new Date().getDate();
+  const todayDate = new Date().getDate();
   const getEmojiEspecialidade = (especialidade: string) => {
     const emojis: Record<string, string> = {
       'Odontologia': '🦷',
@@ -124,103 +195,95 @@ export default function PatientDashboard() {
     return emojis[especialidade] || '📋';
   };
 
+  // ==========================================================
+  // JSX (Atualizado com dados dinâmicos)
+  // ==========================================================
+
+  if (loading) {
+      return <div className="patient-dashboard-loading">Carregando seu dashboard...</div>
+  }
+  
+  if (error) {
+    return <div className="patient-dashboard-error">
+      <h3>Ops, algo deu errado</h3>
+      <p>{error}</p>
+      <button className="btn-inicio" onClick={() => window.location.reload()}>Tentar Novamente</button>
+    </div>
+  }
+
   return (
     <div className="patient-dashboard">
       
-      {/* Header */}
+      {/* Header (sem mudanças) */}
       <header className="dashboard-header">
         <div className="header-left">
           <div className="user-greeting">
-            <div className="user-avatar">IK</div>
-            <span className="user-name">{perfil.nome}</span>
+            <div className="user-avatar">{userInitials}</div>
+            <span className="user-name">{patientName}</span>
           </div>
         </div>
-        
-        {/* ================================================== */}
-        {/* ✅ BLOCO DE CONFLITO CORRIGIDO */}
-        {/* ================================================== */}
         <div className="header-right">
-          {/* 1. O botão que você queria do 'pull' (Voltar) */}
           <button className="btn-inicio" onClick={() => void navigate('/')}>Voltar para a tela inicial</button>
-          
-          {/* 2. O botão que você queria das 'suas mudanças' (Minhas Consultas) */}
           <button 
-            className="btn-inicio" // Reutilizando a classe 'btn-inicio'
+            className="btn-inicio"
             onClick={() => void navigate('/patient/consultas')}
           >
             Minhas Consultas
           </button>
-          
-          {/* 3. O botão que não estava em conflito */}
           <button className="btn-consulta" onClick={() => void navigate('/patient/agendamento')}>
             Ver lista de médicos
           </button>
         </div>
       </header>
 
-      {/* Main Content (sem mudanças) */}
+      {/* Main Content */}
       <main className="dashboard-main">
         <div className="welcome-section">
-          <h1 className="welcome-title">Olá, <span className="highlight-name">{perfil.nome}</span> 👋</h1>
+          <h1 className="welcome-title">Olá, <span className="highlight-name">{patientName}</span> 👋</h1>
         </div>
 
         <div className="dashboard-grid">
-          {/* Perfil do Paciente */}
+          
+          {/* Perfil do Paciente (sem mudanças) */}
           <div className="card perfil-card">
             <div className="card-header">
               <h2>Perfil do Paciente</h2>
             </div>
             <div className="card-body">
               <div className="perfil-avatar-container">
-                <div className="perfil-avatar-large">IK</div>
+                <div className="perfil-avatar-large">{userInitials}</div>
                 <div className="perfil-info">
-                  <h3>{perfil.nome}</h3>
-                  <p className="perfil-cpf">{perfil.cpf}</p>
+                  <h3>{perfil.full_name}</h3>
+                  <p className="perfil-cpf">{perfil.cpf || 'CPF não informado'}</p>
                 </div>
               </div>
               <div className="perfil-detalhes">
                 <div className="perfil-item">
                   <span className="label">Idade</span>
-                  <span className="value">{perfil.idade} anos</span>
+                  <span className="value">{calculateAge(perfil.birth_date)} anos</span>
                 </div>
                 <div className="perfil-item">
                   <span className="label">Tipo Sanguíneo</span>
-                  <span className="value">{perfil.tipoSanguineo}</span>
+                  <span className="value">{perfil.blood_type || 'N/A'}</span>
                 </div>
                 <div className="perfil-item">
                   <span className="label">Altura</span>
-                  <span className="value">{perfil.altura.toFixed(2)} m</span>
+                  <span className="value">{perfil.height ? `${perfil.height.toFixed(2)} m` : 'N/A'}</span>
                 </div>
                 <div className="perfil-item">
                   <span className="label">Peso</span>
-                  <span className="value">{perfil.peso} kg</span>
+                  <span className="value">{perfil.weight ? `${perfil.weight} kg` : 'N/A'}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Indicadores */}
+          {/* Indicadores (sem mudanças) */}
           <div className="card indicadores-card">
             <div className="card-header">
               <h2>Indicadores</h2>
             </div>
-            <div className="card-body indicadores-body">
-              <div className="indicador">
-                <div className="circular-progress pink">
-                  <svg viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" />
-                    <circle 
-                      cx="50" 
-                      cy="50" 
-                      r="40" 
-                      strokeDasharray={`${saudeGeral * 2.51} 251`}
-                      transform="rotate(-90 50 50)"
-                    />
-                  </svg>
-                  <div className="percentage">{saudeGeral}%</div>
-                </div>
-                <p className="indicador-label">Saúde Geral</p>
-              </div>
+            <div className="card-body indicadores-body" style={{ justifyContent: 'center' }}> 
               <div className="indicador">
                 <div className="circular-progress blue">
                   <svg viewBox="0 0 100 100">
@@ -240,7 +303,7 @@ export default function PatientDashboard() {
             </div>
           </div>
 
-          {/* Calendário */}
+          {/* Calendário (sem mudanças) */}
           <div className="card calendario-card">
             <div className="card-header">
               <h2>Consultas</h2>
@@ -249,20 +312,20 @@ export default function PatientDashboard() {
             <div className="card-body">
               <div className="calendario">
                 <div className="calendario-dias-semana">
+                  <div>D</div>
                   <div>S</div>
                   <div>T</div>
                   <div>Q</div>
                   <div>Q</div>
                   <div>S</div>
                   <div>S</div>
-                  <div>D</div>
                 </div>
                 <div className="calendario-dias">
                   {calendar.map((day, index) => (
                     <div
                       key={index}
                       className={`dia ${!day ? 'vazio' : ''} ${
-                        day === hoje ? 'hoje' : ''
+                        day === todayDate ? 'hoje' : ''
                       } ${day && diasComConsultas.includes(day) ? 'com-consulta' : ''}`}
                     >
                       {day ?? ''}
@@ -273,76 +336,92 @@ export default function PatientDashboard() {
             </div>
           </div>
 
-          {/* Taxa de Melhora */}
-          <div className="card taxa-card">
-            <div className="card-header">
-              <h2>Taxa de Melhora</h2>
-            </div>
-            <div className="card-body">
-              <div className="grafico-barras">
-                {taxaMelhora.map((valor, index) => (
-                  <div key={index} className="barra-container">
-                    <div 
-                      className="barra" 
-                      style={{ height: `${valor}%` }}
-                      title={`${valor}%`}
-                    />
-                  </div>
-                ))}
-              </div>
-              <p className="grafico-label">Durante Tratamento</p>
-            </div>
-          </div>
-
-          {/* Condições de Saúde */}
-          <div className="card condicoes-card">
-            <div className="card-header">
-              <h2>Condições de Saúde</h2>
-            </div>
-            <div className="card-body">
-              <div className="grafico-linha-container">
-                <svg className="grafico-linha" viewBox="0 0 400 150" preserveAspectRatio="none">
-                  <polyline
-                    points={condicoesSaude.map((val, i) => 
-                      `${(i / (condicoesSaude.length - 1)) * 400},${150 - (val * 1.5)}`
-                    ).join(' ')}
-                    fill="none"
-                    stroke="#3b82f6"
-                    strokeWidth="2"
-                  />
-                </svg>
-                <div className="meses-labels">
-                  <span>Jan</span>
-                  <span>Dez</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Próximas Consultas */}
-          <div className="card proximas-consultas-card">
+          {/* ================================================================ */}
+          {/* ✅ 6. GRÁFICOS REMOVIDOS */}
+          {/* ================================================================ */}
+          {/* O 'taxa-card' e 'condicoes-card' foram removidos daqui */}
+          
+          {/* ================================================================ */}
+          {/* ✅ 7. PRÓXIMAS CONSULTAS - NOVO LAYOUT HORIZONTAL */}
+          {/* ================================================================ */}
+          <div className="card proximas-consultas-card horizontal-consultas">
             <div className="card-header">
               <h2>Próximas Consultas</h2>
             </div>
-            <div className="card-body">
-              <div className="consultas-lista">
-                {proximasConsultas.map((consulta) => (
-                  <div key={consulta.id} className="consulta-item">
-                    <div className="consulta-icon">
-                      {getEmojiEspecialidade(consulta.especialidade)}
+            
+            {/* O 'card-body' agora tem o container de scroll */}
+            <div 
+              className="card-body"
+              style={{
+                overflowX: 'auto', // Permite scroll horizontal
+                display: 'flex',   // Faz os filhos ficarem em linha
+                paddingBottom: '24px' // Mais espaço para a barra de scroll
+              }}
+            >
+              <div 
+                className="consultas-lista-horizontal"
+                style={{
+                  display: 'flex', // Faz os 'consulta-item-horizontal' ficarem em linha
+                  flexDirection: 'row',
+                  gap: '16px', // Espaço entre os cartões
+                }}
+              >
+                {proximasConsultas.length === 0 ? (
+                  <p style={{ textAlign: 'center', color: '#6b7280', padding: '10px' }}>
+                    Nenhuma consulta futura agendada.
+                  </p>
+                ) : (
+                  proximasConsultas.map((consulta) => (
+                    // Cartão individual (agora horizontal)
+                    <div 
+                      key={consulta.id} 
+                      className="consulta-item-horizontal"
+                      style={{
+                        flexShrink: 0, // Impede que o cartão encolha
+                        width: '240px', // Largura fixa para cada cartão
+                        backgroundColor: '#F9FAFB',
+                        border: '1px solid #E5E7EB',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px',
+                      }}
+                    >
+                      <div 
+                        className="consulta-horario-horizontal"
+                        style={{
+                          fontSize: '18px',
+                          fontWeight: 700,
+                          color: '#111827',
+                        }}
+                      >
+                        {format(new Date(consulta.scheduled_at), "HH:mm")}
+                      </div>
+                      <div className="consulta-info-horizontal">
+                        <h4 style={{ margin: '0 0 4px 0', fontSize: '15px' }}>
+                          {consulta.doctors.specialty || 'Consulta'}
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#6B7280' }}>
+                          {format(new Date(consulta.scheduled_at), "eeee, dd/MM", { locale: ptBR })}
+                        </p>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#6B7280' }}>
+                          Dr(a). {consulta.doctors.full_name}
+                        </p>
+                      </div>
+                      <div 
+                        className="consulta-icon-horizontal"
+                        style={{ fontSize: '24px', textAlign: 'right', marginTop: 'auto' }}
+                      >
+                        {getEmojiEspecialidade(consulta.doctors.specialty)}
+                      </div>
                     </div>
-                    <div className="consulta-info">
-                      <h4>{consulta.tipo}</h4>
-                      <p>{consulta.data} - {consulta.medico}</p>
-                    </div>
-                    <div className="consulta-horario">
-                      {consulta.horario}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
+          
         </div>
       </main>
 
