@@ -1,10 +1,20 @@
 // src/features/home/pages/Home.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, CSSProperties } from "react"; // ✅ Importar CSSProperties
 import { Link, useNavigate } from "react-router-dom";
 import "./home.css";
 import medLogo from "../../../assets/Medconnect.logo.png";
 import { FaHeartbeat, FaUserAlt, FaEnvelope, FaUsersCog, FaCoins } from "react-icons/fa";
 import { MdOutlineAccessibilityNew } from "react-icons/md";
+
+// ✅ ADICIONAR OBJETO DE ESTILOS
+const styles: { [key: string]: CSSProperties } = {
+  headerInner: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'space-between', // <--- A MÁGICA ACONTECE AQUI
+    alignItems: 'center',
+  },
+};
 
 export default function Home() {
   const nav = useNavigate();
@@ -13,14 +23,11 @@ export default function Home() {
   const [dark, setDark] = useState(() => JSON.parse(localStorage.getItem("modoEscuro") || "false"));
   const [daltonico, setDaltonico] = useState(() => JSON.parse(localStorage.getItem("modoDaltonico") || "false"));
 
-
-  // Foco em fidlidade visual: fonte base + dark-mode só quando o usuário clicar
+  // ... (lógica do useEffect e funções de acessibilidade - sem mudanças) ...
   useEffect(() => {
     document.body.classList.toggle("modo-escuro", dark);
     localStorage.setItem("modoEscuro", JSON.stringify(dark));
   }, [dark]);
-
-  // Ações do menu de acessibilidade
   const incFont = () => {
     const html = document.documentElement;
     const cur = parseFloat(getComputedStyle(html).fontSize);
@@ -32,7 +39,7 @@ export default function Home() {
     html.style.fontSize = Math.max(cur - 1, 12) + "px";
   };
   const toggleDaltonico = () => {
-  document.body.classList.toggle("modo-daltonico");
+    document.body.classList.toggle("modo-daltonico");
   };
   const resetA11y = () => {
     document.documentElement.style.fontSize = "";
@@ -42,14 +49,15 @@ export default function Home() {
 
   return (
     <>
-      {/* TOPBAR - apenas cor de fundo, sem texto */}
+      {/* TOPBAR */}
       <div className="topbar">
         <div className="container"></div>
       </div>
 
       {/* HEADER */}
       <header className="header">
-        <div className="header-inner">
+        {/* ✅ APLICA O ESTILO INLINE AQUI */}
+        <div className="header-inner" style={styles.headerInner}>
           <div className="branding">
             <img src={medLogo} alt="Medconnect" className="brand-logo" />
             <div>
@@ -60,16 +68,15 @@ export default function Home() {
 
           <nav className="navmenu">
             <ul>
-              {/* Removido: CADASTRA-SE */}
-              {/* <li>
+              <li>
                 <Link to="/signup" className="btn-outline">Cadastra-se</Link>
-              </li> */}
+              </li>
             </ul>
           </nav>
         </div>
       </header>
 
-      {/* SEÇÃO DE BOTÕES GRANDES (Fidelidade 1:1) */}
+      {/* SEÇÃO DE BOTÕES GRANDES */}
       <section className="starter-section">
         <div className="role-strip">
           <button className="btn-card btn-med" onClick={() => nav("/login?role=doctor")}>
@@ -108,13 +115,12 @@ export default function Home() {
           </button>
         </div>
 
-        {/* (opcional) Logo central como no exemplo */}
         <div className="starter-logo-wrap">
           <img src={medLogo} alt="Medconnect" className="starter-logo" />
         </div>
       </section>
 
-      {/* BOTÃO DE ACESSIBILIDADE (canto inferior direito) */}
+      {/* BOTÃO DE ACESSIBILIDADE */}
       <button
         className="acessibilidade-btn"
         onClick={() => setAcessOpen(v => !v)}

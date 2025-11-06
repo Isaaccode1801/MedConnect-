@@ -4,6 +4,7 @@ import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 // Páginas principais (públicas)
 import Home from "@/features/home/pages/Home";
 import Login from "@/features/auth/pages/Login";
+import SignUp from "@/features/auth/pages/SignUp";
 
 // Médico
 import DoctorDashboard from "@/features/doctor/pages/Dashboard";
@@ -90,6 +91,7 @@ export const router = createBrowserRouter([
       // ROTAS PÚBLICAS / GERAIS
       { path: "/", element: <Home /> },
       { path: "/login", element: <Login /> },
+      { path: "/signup", element: <SignUp /> },
 
       // REDIRECTS ÚTEIS
       { path: "/doctor", element: <Navigate to="/doctor/dashboard" replace /> },

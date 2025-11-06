@@ -1,0 +1,205 @@
+/* src/features/auth/pages/SignUp.css */
+
+.signup-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  font-family: Arial, sans-serif;
+  background-color: #f4f7f6;
+}
+
+/* --- Painel Esquerdo (Azul) --- */
+.signup-panel-left {
+  flex: 1;
+  background-color: #2563eb; /* Azul (podes ajustar para o teu tom) */
+  color: #ffffff;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.signup-panel-left h1 {
+  font-size: 48px;
+  font-weight: 700;
+  margin-top: 24px;
+}
+
+.signup-panel-left p {
+  font-size: 18px;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.back-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 16px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+.back-link:hover {
+  opacity: 1;
+}
+
+.login-prompt {
+  margin-top: auto; /* Empurra para baixo */
+}
+
+.login-link-button {
+  display: inline-block;
+  background-color: transparent;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  padding: 12px 32px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  margin-top: 8px;
+  transition: background-color 0.2s, color 0.2s;
+}
+.login-link-button:hover {
+  background-color: #ffffff;
+  color: #2563eb;
+}
+
+/* --- Painel Direito (Formulário) --- */
+.signup-panel-right {
+  flex: 1.5; /* Um pouco maior que o da esquerda */
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px;
+  overflow-y: auto;
+}
+
+.signup-form-container {
+  max-width: 450px;
+  width: 100%;
+}
+
+.signup-form-container h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.signup-form-container .subtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin-bottom: 32px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.input-group input[type="text"],
+.input-group input[type="email"],
+.input-group input[type="date"] {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-sizing: border-box; /* Garante que o padding não quebre o layout */
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.checkbox-group label {
+  font-size: 14px;
+  color: #374151;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #2563eb;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #1d4ed8;
+}
+
+.submit-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* --- Mensagens de Feedback --- */
+.error-message {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  border: 1px solid #fecaca;
+}
+
+.success-message {
+  background-color: #dcfce7;
+  color: #166534;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 15px;
+  border: 1px solid #bbf7d0;
+  text-align: center;
+}
+
+.back-to-login-link {
+  display: block;
+  text-align: center;
+  font-size: 15px;
+  color: #2563eb;
+  text-decoration: none;
+  margin-top: 16px;
+}
+.m-4 {
+    margin: 10px;
+}
+
+/* --- Responsividade --- */
+@media (max-width: 900px) {
+  .signup-container {
+    flex-direction: column;
+  }
+  .signup-panel-left {
+    flex: none;
+    height: auto;
+    padding-bottom: 48px;
+  }
+  .login-prompt {
+    display: none; /* Esconde o "Já tem conta?" em telas pequenas */
+  }
+}
