@@ -1,0 +1,108 @@
+/* src/features/doctor/pages/laudos/RevisarLaudoPage.css */
+
+.revisao-laudo-container {
+  padding: 24px;
+  max-width: 900px; /* Limita a largura para melhor leitura */
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  color: var(--ink); /* Variável do UsersList.css */
+}
+
+.revisao-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.revisao-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--brand); /* Variável do UsersList.css */
+  font-weight: 600;
+  font-size: 15px;
+}
+.revisao-back-btn:hover {
+  color: var(--brand-600); /* Variável do UsersList.css */
+}
+
+.revisao-actions .btn.primary {
+  /* Estilo já vem de UsersList.css */
+  background-color: var(--success-fg); /* Verde para "Aprovar" */
+}
+.revisao-actions .btn.primary:hover {
+  background-color: #047857;
+}
+
+.revisao-actions .btn:disabled {
+  background-color: var(--muted);
+}
+
+.revisao-content-card {
+  /* 'card' já vem de UsersList.css */
+  padding: 24px 32px;
+}
+
+.revisao-content-card h2 {
+  margin-top: 0;
+  color: var(--ink);
+  font-size: 24px;
+}
+
+.revisao-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.revisao-meta p {
+  margin: 0;
+}
+.revisao-meta .badge {
+  font-size: 13px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.revisao-divider {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 24px 0;
+}
+
+/* Estilos para o conteúdo HTML do Laudo */
+.laudo-html-content {
+  line-height: 1.7;
+  color: #374151;
+}
+
+.laudo-html-content h1,
+.laudo-html-content h2,
+.laudo-html-content h3 {
+  color: var(--ink);
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.laudo-html-content p {
+  margin-bottom: 1em;
+}
+
+.laudo-html-content ul,
+.laudo-html-content ol {
+  padding-left: 2em;
+  margin-bottom: 1em;
+}
+
+.error-box {
+  color: var(--danger-fg);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-fg);
+  padding: 16px;
+  border-radius: 8px;
+}

@@ -22,6 +22,8 @@ import { AdminDashboardContent } from "@/features/admin/components/DashboardWidg
 import UsersList from "@/features/admin/pages/UsersList.jsx";
 import CreateUser from "@/features/admin/pages/CreateUser";
 import AppointmentsPage from "@/features/admin/pages/AppointmentsPage";
+// ✅ 1. IMPORTAR A NOVA PÁGINA DE LAUDOS DO ADMIN
+import AdminReportsList from "@/features/admin/pages/AdminReportsList";
 
 // Paciente
 import AgendamentoPacientePage from "@/features/patients/pages/Agendamento";
@@ -100,7 +102,7 @@ export const router = createBrowserRouter([
 
       // ÁREA DO MÉDICO
       { path: "/doctor/dashboard", element: <DoctorDashboard /> },
-      { path: "/doctor/perfil", element: <DoctorProfile /> }, // ✅ NOVA ROTA
+      { path: "/doctor/perfil", element: <DoctorProfile /> },
       // laudos
       { path: "/doctor/laudos", element: <LaudosPage /> },
       { path: "/doctor/laudos/novo", element: <NovoLaudoPage /> },
@@ -122,6 +124,12 @@ export const router = createBrowserRouter([
           { path: "UsersList", element: <UsersList /> },
           { path: "CreateUser", element: <CreateUser /> },
           { path: "AppointmentsPage", element: <AppointmentsPage /> },
+          
+          // ✅ 2. ROTA DA LISTA DE LAUDOS ADICIONADA
+          { path: "laudos", element: <AdminReportsList /> },
+          
+          // ✅ 3. ROTA PARA REVISÃO (USA A PÁGINA DO MÉDICO COMO PLACEHOLDER)
+          { path: "laudos/:id/revisar", element: <RevisarLaudoPage /> },
         ],
       },
 
@@ -140,7 +148,8 @@ export const router = createBrowserRouter([
           { path: "pacientes", element: <Pacientes /> }, 
           { path: "consultas", element: <Consultas /> }, 
           { path: "relatorios", element: <Relatorios /> }, 
-          { path: "configuracoes", element: <Configuracoes /> }, 
+          { path: "configuracoes", element: <Configuracoes /> },
+          { path: "relatorios/:id/revisar", element: <RevisarLaudoPage /> },
         ],
       },
     ],

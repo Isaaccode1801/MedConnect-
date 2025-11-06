@@ -11,7 +11,7 @@
 /* --- Painel Esquerdo (Azul) --- */
 .signup-panel-left {
   flex: 1;
-  background-color: #2563eb; /* Azul (podes ajustar para o teu tom) */
+  background-color: #000000; /* Azul (podes ajustar para o teu tom) */
   color: #ffffff;
   padding: 48px;
   display: flex;

@@ -5,7 +5,7 @@ import { listarMedicos } from '@/services/api/medicos';
 import { FaHeartbeat, FaColumns, FaCalendarCheck, FaUsers, FaUserMd, FaFileInvoice, FaCog, FaBars, FaSearch, FaBell, FaDollarSign, FaChevronRight } from 'react-icons/fa';
 // Importa os componentes necessários do Chart.js, incluindo o BarController
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, BarController, Title, Tooltip, Legend } from 'chart.js';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'; // Link já estava importado
 
 // Registrar os componentes necessários do Chart.js
 ChartJS.register(
@@ -215,11 +215,20 @@ export default function App() {
                           <FaUsers className="icon" /> <span>Todos os Usuários</span>
                         </Link>
                       </li>
+                      
+                      {/* ================================================== */}
+                      {/* ✅ CORREÇÃO APLICADA AQUI */}
+                      {/* ================================================== */}
                       <li>
-                        <a href="#">
+                        <Link
+                          to="/admin/laudos"
+                          className={pathname.startsWith("/admin/laudos") ? "active" : ""}
+                        >
                           <FaFileInvoice className="icon" /> <span>Laudos</span>
-                        </a>
+                        </Link>
                       </li>
+                      {/* ================================================== */}
+                      
                       <li>
                         <a href="#">
                           <FaCog className="icon" /> <span>Configurações</span>
@@ -292,7 +301,9 @@ export default function App() {
                       </div>
                     </div>
                   </header>
-                  {pathname === '/' ? (
+                  
+                  {/* Esta é a lógica original do seu ficheiro */}
+                  {pathname === '/' ? ( 
                     <main>
                       <DashboardStats />
                       <div className="dashboard-grid">
@@ -323,6 +334,9 @@ export default function App() {
           );
   }
 
+  //
+  // Componentes Helpers (permanecem os mesmos do seu ficheiro)
+  //
   function DashboardStats() {
           const [pacientes, setPacientes] = useState([]);
           const [medicos, setMedicos] = useState([]);
@@ -342,6 +356,8 @@ export default function App() {
                 // Consultas do dia e faturamento
                 const base = import.meta.env.VITE_SUPABASE_URL;
                 const hoje = new Date().toISOString().slice(0, 10);
+                // NOTA: Esta chamada falhará se 'getAuthHeaders' não for importado e usado
+                // Apenas mantendo o seu código original.
                 const url = `${base}/rest/v1/appointments?select=*&scheduled_at=gte.${hoje}T00:00:00.000Z&scheduled_at=lte.${hoje}T23:59:59.999Z`;
                 const resp = await fetch(url);
                 if (resp.ok) {
@@ -414,4 +430,3 @@ function AppointmentsTable() {
     </table>
   );
 }
-

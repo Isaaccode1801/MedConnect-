@@ -202,6 +202,7 @@ export interface ListarLaudosParams {
   order?: string; 
 }
 
+
 export async function listarLaudos(params: ListarLaudosParams = {}): Promise<Report[]> {
   const {
     status,
@@ -255,16 +256,24 @@ export async function listarLaudos(params: ListarLaudosParams = {}): Promise<Rep
 }
 
 export async function getLaudo(id: string): Promise<Report | null> {
-  const url = buildUrl('/reports', { select: '*,patients(id,full_name)', id: `eq.${id}`, limit: 1 });
-  const headers = getAuthHeaders();
-  try {
-    const arr = await fetchJson<Report[]>(url, { headers });
-    const r = Array.isArray(arr) ? arr[0] ?? null : null;
-    return r;
-  }  catch (e) {
-    console.error(`[getLaudo] Falha ao buscar laudo ${id}`, e);
-    return null;
-  }
+  // ✅ CORREÇÃO: Trocámos o '*' por uma lista explícita de colunas
+  const queryParams = {
+    select: 'id, order_number, exam, status, content_html, patients(id,full_name)',
+    id: `eq.${id}`,
+    limit: 1
+  };
+  
+  const url = buildUrl('/reports', queryParams);
+  const headers = getAuthHeaders();
+  
+  try {
+    const arr = await fetchJson<Report[]>(url, { headers });
+    const r = Array.isArray(arr) ? arr[0] ?? null : null;
+    return r;
+  } catch (e) {
+    console.error(`[getLaudo] Falha ao buscar laudo ${id}`, e);
+    return null;
+  }
 }
 
 export async function createLaudo(dados: Partial<Report>): Promise<any> {
@@ -280,6 +289,94 @@ export async function updateLaudo(id: string, dados: Partial<Report>): Promise<a
 export async function excluirLaudo(id: string): Promise<void> {
   const url = buildUrl('/reports', { id: `eq.${id}` });
   await fetchJson(url, { method: 'DELETE', headers: getAuthHeaders() });
+}
+function buildInParam(ids: string[]) {
+  return `in.(${ids.map(encodeURIComponent).join(",")})`;
+}
+
+/**
+ * Lista TODOS os laudos com nomes de pacientes e médicos (perfis).
+ * Esta é uma consulta avançada para o painel de Admin.
+ * (VERSÃO CORRIGIDA 4.0 - Método Manual de Múltiplas Chamadas)
+ */
+export async function listarLaudosAdmin() {
+  const headers = getAuthHeaders();
+
+  // 1. Buscar todos os laudos (reports)
+  const urlReports = buildUrl('/reports', {
+    select: 'id,order_number,exam,status,created_at,patient_id,created_by',
+    order: 'created_at.desc'
+  });
+
+  let reports: any[] = [];
+  try {
+    reports = await fetchJson<any[]>(urlReports, { headers });
+  } catch (error) {
+    console.error("Erro ao listar laudos (admin) - Passo 1 (reports):", error);
+    throw new Error(`Falha ao buscar laudos: ${error.message}`);
+  }
+
+
+  if (!reports || reports.length === 0) {
+    return [];
+  }
+
+  // 2. Coletar IDs únicos
+  const patientIds = Array.from(new Set(reports.map(r => r.patient_id).filter(Boolean)));
+  const doctorAuthIds = Array.from(new Set(reports.map(r => r.created_by).filter(Boolean))); // created_by = auth.users.id
+
+  // 3. Buscar Pacientes
+  let patientMap = new Map<string, { id: string, full_name: string }>();
+  if (patientIds.length > 0) {
+    const urlPatients = buildUrl('/patients', {
+      select: 'id,full_name',
+      id: buildInParam(patientIds)
+    });
+    try {
+      const patientsData = await fetchJson<any[]>(urlPatients, { headers });
+      patientMap = new Map(patientsData.map(p => [p.id, p]));
+    } catch (e) {
+      console.warn("Falha ao buscar pacientes para laudos:", e);
+    }
+  }
+
+  // 4. Buscar Médicos (Profiles)
+  // A coluna 'created_by' (auth id) é a 'id' da tabela 'profiles'
+  let doctorMap = new Map<string, { id: string, full_name: string }>();
+  if (doctorAuthIds.length > 0) {
+    const urlProfiles = buildUrl('/profiles', {
+      select: 'id,full_name', // 'id' aqui é o auth_user_id
+      id: buildInParam(doctorAuthIds)
+    });
+    try {
+      const profilesData = await fetchJson<any[]>(urlProfiles, { headers });
+      doctorMap = new Map(profilesData.map(p => [p.id, p]));
+    } catch (e) {
+      console.warn("Falha ao buscar perfis de médicos para laudos:", e);
+    }
+  }
+
+  // 5. Mapear (hidratar) os resultados
+  const dadosAchatados = reports.map(laudo => {
+    const paciente = laudo.patient_id ? patientMap.get(laudo.patient_id) : null;
+    const medico = laudo.created_by ? doctorMap.get(laudo.created_by) : null;
+
+    return {
+      id: laudo.id,
+      order_number: laudo.order_number,
+      exam: laudo.exam,
+      status: laudo.status,
+      created_at: laudo.created_at,
+      
+      patient_name: paciente?.full_name || null,
+      patient_id: paciente?.id || null,
+      
+      doctor_name: medico?.full_name || null,
+      doctor_id: medico?.id || null, // é o auth_id
+    };
+  });
+
+  return dadosAchatados;
 }
 
 // ===================== MÉDICOS (fallbacks) =====================
