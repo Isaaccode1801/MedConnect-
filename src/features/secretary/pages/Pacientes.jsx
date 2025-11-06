@@ -222,63 +222,113 @@ async function listarPacientes({ forceRemote = false } = {}) {
     return createdPacientes[0] || null;
   }
 
-  // -------------------------------------------------
-  // ATUALIZAR PACIENTE (PATCH /patients?id=eq.{id})
-  // -------------------------------------------------
-  async function atualizarPacienteAPI(id, payload) {
-    await ensureLogin();
-
-    const bodyDB = {
-      full_name: payload.nome,
-      cpf: payload.cpf,
-      email: payload.email,
-      phone: payload.telefone,
-      birth_date: payload.data_nascimento || null,
-    };
-
-    const res = await fetch(`${API_BASE}/patients?id=eq.${id}`, {
-      method: "PATCH",
-      headers: getHeaders({ Prefer: "return=representation" }),
-      body: JSON.stringify(bodyDB),
+ // =========================================
+// CRIAR PACIENTE
+// =========================================
+async function criarPacienteAPI(body) {
+  try {
+    const res = await fetch("https://mock.apidog.io/m1/1053378-0-default/rest/v1/patients", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
     });
 
-    if (!res.ok) {
-      throw new Error(`PATCH /patients falhou ${res.status}`);
-    }
+    const txt = await res.text();
+    console.log("[POST /patients] resposta:", res.status, txt);
 
-    const data = await res.json();
-    const updated = Array.isArray(data) ? data[0] : data;
-    const normalized = normalizePaciente(updated);
+    if (!res.ok) throw new Error("Falha ao criar paciente");
+    alert("Paciente criado com sucesso!");
+  } catch (err) {
+    console.error("Erro ao criar paciente:", err);
+    alert("Erro ao criar paciente (ver console).");
+  }
+}
 
-    // atualiza no estado/localStorage
-    setPacientes((prev) => {
-      const novo = prev.map((p) => (p.id === id ? normalized : p));
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(novo));
-      return novo;
-    });
+// =========================================
+// ATUALIZAR PACIENTE
+// =========================================
+async function atualizarPacienteAPI(id, payload) {
+  await ensureLogin();
+
+  const bodyDB = {
+    full_name: payload.nome,
+    cpf: payload.cpf,
+    email: payload.email,
+    phone_mobile: payload.telefone,
+    birth_date: payload.data_nascimento || null,
+  };
+
+  console.log("[PATCH /patients?id=eq." + id + "] body enviado:", bodyDB);
+
+  const res = await fetch(`${API_BASE}/patients?id=eq.${id}`, {
+    method: "PATCH",
+    headers: getHeaders({ Prefer: "return=representation" }),
+    body: JSON.stringify(bodyDB),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    console.error("Erro ao atualizar paciente:", msg);
+    throw new Error(`PATCH /patients falhou ${res.status}`);
   }
 
-  // -------------------------------------------------
-  // REMOVER PACIENTE (DELETE /patients?id=eq.{id})
-  // -------------------------------------------------
-  async function removerPacienteAPI(id) {
-    await ensureLogin();
+  const data = await res.json();
+  const updated = Array.isArray(data) ? data[0] : data;
+  const normalized = normalizePaciente(updated);
 
-    const res = await fetch(`${API_BASE}/patients?id=eq.${id}`, {
-      method: "DELETE",
-      headers: getHeaders(),
-    });
+  setPacientes((prev) => {
+    const novo = prev.map((p) => (p.id === id ? normalized : p));
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(novo));
+    return novo;
+  });
+}
 
-    if (!res.ok) {
-      throw new Error(`DELETE /patients falhou ${res.status}`);
-    }
+// =======================================================
+// 🔹 EXCLUIR PACIENTE (DELETE)
+// =======================================================
+async function removerPacienteAPI(id) {
+  try {
+    if (!window.confirm("Deseja realmente excluir este paciente?")) return;
 
-    setPacientes((prev) => {
-      const novo = prev.filter((p) => p.id !== id);
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(novo));
-      return novo;
-    });
+    // 🔸 Token e API key da sua API Apidog:
+    const token = "mollit eu commodo"; // coloque seu token aqui
+    const apiKey = "laboris reprehenderit"; // coloque sua api-key aqui
+
+    console.log(`[DELETE] Tentando excluir paciente id=${id}...`);
+
+    const res = await fetch(
+      `https://mock.apidog.com/m1/1053378-0-default/rest/v1/patients?id=eq.${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          apikey: apiKey,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const txt = await res.text();
+    console.log("[DELETE resposta]", res.status, txt);
+
+    if (!res.ok) throw new Error(`Falha ao excluir paciente (${res.status})`);
+
+    // Remove o paciente da lista localmente:
+    setPacientes((antigos) => antigos.filter((p) => p.id !== id));
+
+    alert("✅ Paciente excluído com sucesso!");
+  } catch (err) {
+    console.error("[Pacientes] Erro ao excluir:", err);
+    alert("❌ Erro ao excluir paciente (ver console).");
   }
+}
+
+// Função usada pelo botão da tabela
+async function handleRemover(id) {
+  await removerPacienteAPI(id);
+}
 
   // -------------------------------------------------
   // modal / form handlers
