@@ -580,3 +580,293 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ========================================================== */
+/* ESTILOS DE ACESSIBILIDADE (BASEADO EM HOME.CSS) */
+/* ========================================================== */
+
+/* Variável de cor do tema do Dashboard (verde-água) */
+:root {
+  --brand-dash: #14b8a6;
+  --bg-dash: #f5f7fa;
+  --text-dash: #1f2937;
+  --card-bg-dash: #ffffff;
+  --shadow-dash: 0 10px 25px -10px rgba(2, 6, 23, 0.25);
+  --radius-dash: 14px;
+}
+
+/* Accessibility Button */
+.acessibilidade-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  /* Usando a cor primária do dashboard */
+  background: linear-gradient(135deg, var(--brand-dash), #0d9488);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4), 0 2px 8px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  z-index: 1000;
+}
+.acessibilidade-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 8px 24px rgba(20, 184, 166, 0.5), 0 4px 12px rgba(0,0,0,0.25);
+}
+.acessibilidade-btn:active {
+  transform: scale(1.02);
+}
+
+.menu-acessibilidade {
+  position: fixed;
+  bottom: 98px;
+  right: 24px;
+  background: var(--card-bg-dash);
+  border-radius: var(--radius-dash);
+  box-shadow: var(--shadow-dash);
+  padding: 16px;
+  width: 240px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999;
+  border: 1px solid #eef2f7;
+}
+.menu-acessibilidade.active { 
+  display: flex;
+  animation: slideUp 0.2s ease-out;
+}
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-acessibilidade h4 {
+  margin-bottom: 10px;
+  text-align: center;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+  color: var(--text-dash);
+  font-weight: 700;
+  font-size: 16px;
+}
+.menu-item {
+  background: #f8fafb;
+  border: 1px solid #eef2f7;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-dash);
+  transition: all 0.2s;
+  text-align: center;
+}
+.menu-item:hover { 
+  background: #ecfeff;
+  border-color: var(--brand-dash);
+  color: var(--brand-dash);
+  transform: translateX(2px);
+}
+
+/* Dark Mode Logic */
+
+
+
+body.modo-escuro {
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+
+/* Ajusta as cores de fundo */
+body.modo-escuro .patient-dashboard,
+body.modo-escuro .dashboard-header {
+  background: #1c1c1c !important; /* Fundo do Dashboard */
+  color: #e0e0e0 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Ajusta os cards */
+body.modo-escuro .card,
+body.modo-escuro .consulta-item,
+body.modo-escuro .menu-acessibilidade {
+  background: #252525 !important;
+  border: 1px solid #333 !important;
+  box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Ajusta os cabeçalhos dos cards e subitens */
+body.modo-escuro .card-header {
+  background: linear-gradient(180deg, rgba(30, 30, 30, 0.55) 0%, rgba(37, 37, 37, 0.4) 100%) !important;
+  border-bottom: 1px solid #333 !important;
+}
+
+/* Ajuste de textos */
+body.modo-escuro h1,
+body.modo-escuro h2,
+body.modo-escuro h3,
+body.modo-escuro h4,
+body.modo-escuro .user-name,
+body.modo-escuro .perfil-item .value,
+body.modo-escuro .circular-progress .percentage, /* Adicionado: Garante que a porcentagem fique clara */
+body.modo-escuro .consulta-horario {
+  color: #e0e0e0 !important;
+}
+
+/* Ajuste de textos secundários (cinza claro para legibilidade, como labels e cpf) */
+body.modo-escuro p,
+body.modo-escuro span,
+body.modo-escuro .perfil-item .label,
+body.modo-escuro .perfil-cpf,
+body.modo-escuro .indicador-label,
+body.modo-escuro .consulta-info p,
+body.modo-escuro .grafico-label,
+body.modo-escuro .meses-labels,
+body.modo-escuro .calendario-dias-semana div { /* Dias da semana */
+  color: #a0a0a0 !important; 
+}
+
+/* Itens que precisam de cores claras ou ajustes específicos */
+body.modo-escuro .logo-image {
+  /* Pode ser necessário um pequeno ajuste para visibilidade em fundo escuro */
+  filter: brightness(1.1) contrast(1.1); 
+}
+body.modo-escuro .user-avatar,
+body.modo-escuro .perfil-avatar-large {
+  /* Mantém o gradiente original, ou ajusta para contraste */
+  background: linear-gradient(135deg, #0f766e, #0d9488) !important;
+  color: #fff !important;
+}
+
+/* Indicadores de cores claras para o Calendário */
+body.modo-escuro .dia:not(.vazio):hover { background: #333 !important; }
+body.modo-escuro .dia.hoje {
+  background: #0f766e !important;
+  color: #fff !important;
+  box-shadow: inset 0 0 0 2px #14b8a6 !important;
+}
+body.modo-escuro .dia.com-consulta { color: #5eead4 !important; }
+
+/* Menu de Acessibilidade em Dark Mode */
+body.modo-escuro .menu-item {
+  background: #333 !important;
+  border: 1px solid #444 !important;
+  color: #e0e0e0 !important;
+}
+body.modo-escuro .menu-item:hover { 
+  background: #444 !important;
+  border-color: #14b8a6 !important;
+  color: #14b8a6 !important;
+}
+body.modo-escuro .menu-acessibilidade h4 {
+  border-bottom: 2px solid #333 !important;
+}
+
+/* Modo daltônico (opção de acessibilidade) */
+body.modo-daltonico {
+  filter: hue-rotate(45deg) saturate(110%);
+}
+body.modo-escuro.modo-daltonico {
+  filter: hue-rotate(30deg) saturate(115%) brightness(0.9);
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+/* Garante que o menu em modo misto fique visível */
+body.modo-escuro.modo-daltonico .menu-acessibilidade {
+  background: #1f1f1f !important;
+  color: #fafafa !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* NOVO: Ajuste de botões no Header */
+body.modo-escuro .btn-inicio {
+  background: #0d9488 !important;
+  color: #fff !important;
+}
+body.modo-escuro .btn-inicio:hover {
+  background: #0f766e !important;
+}
+body.modo-escuro .btn-consulta {
+  background: #1e1e1e !important;
+  color: #5eead4 !important;
+  border: 1px solid #0f766e !important;
+  box-shadow: 0 6px 12px rgba(20, 184, 166, 0.2) !important;
+}
+body.modo-escuro .btn-consulta:hover {
+  background: #252525 !important;
+}
+
+/* NOVO: Indicadores Circulares */
+body.modo-escuro .circular-progress circle:first-child {
+  stroke: #333 !important; /* Cor de fundo escura do círculo de progresso */
+}
+
+/* NOVO: Taxa de Melhora (Gráfico de Barras) */
+body.modo-escuro .grafico-label {
+  background: #333 !important; /* Fundo escuro para a label */
+  color: #e0e0e0 !important;
+}
+
+/* NOVO: Próximas Consultas */
+body.modo-escuro .consulta-item:hover {
+  background: #333 !important;
+  box-shadow: 0 10px 18px -10px rgba(0, 0, 0, 0.5) !important;
+}
+/* Cores dos ícones de consulta (para alto contraste) */
+body.modo-escuro .consulta-item:nth-child(1) .consulta-icon { background: #6f114c !important; }
+body.modo-escuro .consulta-item:nth-child(2) .consulta-icon { background: #3b2a6f !important; }
+body.modo-escuro .consulta-item:nth-child(3) .consulta-icon { background: #7f5518 !important; }
+body.modo-escuro .consulta-item:nth-child(4) .consulta-icon { background: #1a4d33 !important; }
+
+/* Corrigindo os Rótulos dos dias da Semana ("SEG", "TER", etc.) */
+body.modo-escuro .calendario-dias-semana div {
+  color: #a0a0a0 !important; /* Cor cinza que contrasta com o fundo escuro */
+  /* NOVO: garante que o fundo não seja o do CSS original (.calendario-dias-semana div) */
+  background: transparent !important; 
+}
+
+/* Corrigindo os Números dos Dias (o `.dia` em si) */
+body.modo-escuro .dia {
+  color: #e0e0e0 !important; /* Cor clara para o número do dia */
+  background: transparent !important; /* Fundo transparente ou escuro do cartão */
+}
+
+/* Corrigindo o Hover (quando o mouse passa por cima) */
+body.modo-escuro .dia:not(.vazio):hover { 
+  background: #333 !important; /* Fundo levemente mais claro que o cartão para indicar hover */
+}
+
+/* Corrigindo o Dia Atual (.dia.hoje) */
+body.modo-escuro .dia.hoje {
+  background: #0f766e !important; /* Fundo escuro da sua marca para o dia atual */
+  color: #fff !important; /* Texto branco */
+  box-shadow: inset 0 0 0 2px #14b8a6 !important; /* Borda da cor da sua marca */
+}
+
+/* Corrigindo Dia com Consulta (.dia.com-consulta) */
+body.modo-escuro .dia.com-consulta { 
+  color: #5eead4 !important; /* Cor clara da sua marca para dia com consulta */
+}
+
+/* Corrigindo a label de fundo do calendário (mês/ano) */
+body.modo-escuro .mes-ano {
+  color: #5eead4 !important; /* Cor da marca para destaque no topo */
+}
+
+/* Garante que o indicador de consulta (.dia.com-consulta::after) tenha contraste */
+body.modo-escuro .dia.com-consulta::after {
+  background: #5eead4 !important; /* Ponto de cor clara da marca */
+}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './dashboard.css';
+import { MdOutlineAccessibilityNew } from "react-icons/md";
 
 interface Consulta {
   id: string;
@@ -23,6 +24,49 @@ interface PerfilPaciente {
 export default function PatientDashboard() {
   const navigate = useNavigate();
   const [currentMonth] = useState(new Date());
+
+  // ==========================================================
+  // LÓGICA DE ACESSIBILIDADE ADICIONADA AQUI
+  // ==========================================================
+  const [acessOpen, setAcessOpen] = useState(false);
+  const [dark, setDark] = useState(() => JSON.parse(localStorage.getItem("modoEscuro") || "false"));
+  const [daltonico, setDaltonico] = useState(() => JSON.parse(localStorage.getItem("modoDaltonico") || "false"));
+
+  // Aplica/Remove modo escuro ao body e salva no localStorage
+  useEffect(() => {
+    document.body.classList.toggle("modo-escuro", dark);
+    localStorage.setItem("modoEscuro", JSON.stringify(dark));
+  }, [dark]);
+  
+  // Aplica/Remove modo daltônico ao body e salva no localStorage
+  useEffect(() => {
+    document.body.classList.toggle("modo-daltonico", daltonico);
+    localStorage.setItem("modoDaltonico", JSON.stringify(daltonico));
+  }, [daltonico]);
+  
+  // Ações do menu de acessibilidade
+  const incFont = () => {
+    const html = document.documentElement;
+    const cur = parseFloat(getComputedStyle(html).fontSize || '16'); // Valor padrão
+    html.style.fontSize = Math.min(cur + 1, 22) + "px";
+  };
+  const decFont = () => {
+    const html = document.documentElement;
+    const cur = parseFloat(getComputedStyle(html).fontSize || '16'); // Valor padrão
+    html.style.fontSize = Math.max(cur - 1, 12) + "px";
+  };
+  const toggleDaltonico = () => {
+    setDaltonico(v => !v);
+  };
+  const resetA11y = () => {
+    document.documentElement.style.fontSize = ""; // Remove estilo inline da fonte
+    setDark(false);
+    setDaltonico(false);
+  };
+  // ==========================================================
+  // FIM DA LÓGICA DE ACESSIBILIDADE
+  // ==========================================================
+
   // Garante que nenhum filtro global (modo daltônico) afete a logo nesta tela
   useEffect(() => {
     document.body.classList.remove('modo-daltonico');
@@ -333,6 +377,35 @@ export default function PatientDashboard() {
           </div>
         </div>
       </main>
+
+      {/* BOTÃO E MENU DE ACESSIBILIDADE: LOCALIZAÇÃO EXATA */
+      /* Deve estar *dentro* do return, mas *fora* do <main> */
+      /* ========================================================== */}
+      <button
+        className="acessibilidade-btn"
+        onClick={() => setAcessOpen(v => !v)}
+        aria-label="Abrir menu de acessibilidade"
+      >
+        <MdOutlineAccessibilityNew size={28} />
+      </button>
+
+      <div className={`menu-acessibilidade ${acessOpen ? "active" : ""}`}>
+        <h4>Acessibilidade</h4>
+        <button className="menu-item" onClick={incFont}>Aumentar fonte</button>
+        <button className="menu-item" onClick={decFont}>Diminuir fonte</button>
+        <button className="menu-item" onClick={toggleDaltonico}>
+          {daltonico ? "Modo normal" : "Modo daltônico"}
+        </button>
+        <button className="menu-item" onClick={() => setDark(v => !v)}>
+          {dark ? "Modo claro" : "Modo escuro"}
+        </button>
+        <button className="menu-item" onClick={resetA11y}>Resetar</button>
+      </div>
+      {/* FIM: BOTÃO E MENU DE ACESSIBILIDADE */}
+
     </div>
+
+                
+
   );
 }
