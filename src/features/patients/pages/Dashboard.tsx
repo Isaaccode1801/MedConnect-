@@ -174,6 +174,7 @@ export default function PatientDashboard() {
 
   return (
     <div className="patient-dashboard">
+      
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-left">
@@ -183,7 +184,7 @@ export default function PatientDashboard() {
           </div>
         </div>
         <div className="header-right">
-          <button className="btn-inicio" onClick={() => void navigate('/')}>Início</button>
+          <button className="btn-inicio" onClick={() => void navigate('/')}>Voltar para a tela inicial</button>
           <button className="btn-consulta" onClick={() => void navigate('/patient/agendamento')}>
             Ver lista de médicos
           </button>

@@ -478,6 +478,7 @@ export default function AgendamentoPage() {
                     </div>
                     <nav className="tabs">
                         <Link to="/patient/dashboard">Início</Link>
+                        <Link to="/">Voltar para a tela inicial</Link>
                     </nav>
                 </div>
             </div>
