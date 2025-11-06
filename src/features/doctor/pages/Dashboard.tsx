@@ -1,24 +1,20 @@
-// src/features/doctor/pages/Dashboard.tsx (COM BOLA DE PERFIL)
+// src/features/doctor/pages/Dashboard.tsx (VERSÃO SIMPLIFICADA)
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+// REMOVEMOS: useNavigate, useLocation, Menu, X, Stethoscope, Search, User
 import { supabase } from "@/lib/supabase";
 import {
   Activity,
   CalendarDays,
   FileText,
-  Search,
   Users,
   ChevronRight,
-  Stethoscope,
-  Clock4,
-  User, // ✅ NOVO ÍCONE IMPORTADO
 } from "lucide-react";
-// ✅ NOVOS IMPORTS
 import { DayPicker } from "react-day-picker";
 import { ptBR } from "date-fns/locale";
 import { format } from "date-fns";
-import "react-day-picker/dist/style.css"; // CSS do Calendário
-import "./Dashboard.css";
+import "react-day-picker/dist/style.css"; 
+// O CSS é importado no DoctorLayout.tsx, mas podemos deixar aqui por segurança
+import "./Dashboard.css"; 
 import medicaImg from "/medica.jpeg";
 
 // --- Tipos de Dados (sem alterações) ---
@@ -43,7 +39,6 @@ function Card({
 }: React.PropsWithChildren<{ className?: string }>) {
   return <div className={`dashboard-card ${className}`}>{children}</div>;
 }
-// ... (outros componentes primitivos: CardHeader, CardContent, etc. - sem alterações)
 function CardHeader({
   className = "",
   children,
@@ -61,7 +56,9 @@ function CardTitle({
   children,
 }: React.PropsWithChildren<{ className?: string }>) {
   return (
-    <h3 className={`text-xl font-semibold tracking-tight ${className}`}>{children}</h3>
+    <h3 className={`text-xl font-semibold tracking-tight ${className}`}>
+      {children}
+    </h3>
   );
 }
 function CardDescription({
@@ -74,30 +71,23 @@ function CardDescription({
 
 // --- Componente Principal ---
 export default function DoctorDashboard() {
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-
-  // =================================================================
-  // LÓGICA E ESTADOS DA PÁGINA (sem alterações)
-  // =================================================================
-  const [searchTerm, setSearchTerm] = useState("");
+  // Estados apenas para esta página
   const [doctorName, setDoctorName] = useState("Médico(a)");
   const [loading, setLoading] = useState(true);
   const [kpiCounts, setKpiCounts] = useState<KpiCounts>({ patients: 0, laudos: 0, consultas: 0 });
   const [proximasConsultas, setProximasConsultas] = useState<ProximaConsulta[]>([]);
   const [diasComConsulta, setDiasComConsulta] = useState<Date[]>([]);
   
-  // ✅ FUNÇÃO DE CARREGAMENTO (sem alterações)
+  // Função de carregamento (sem alterações)
   const carregarDados = useCallback(async () => {
     setLoading(true);
     try {
-      // 1. Descobrir o ID do usuário e do médico
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) throw new Error("Sessão não encontrada.");
 
       const { data: doctorData, error: doctorError } = await supabase
           .from('doctors')
-          .select('id, full_name') // Pega o ID e o nome
+          .select('id, full_name') 
           .eq('user_id', user.id)
           .single(); 
 
@@ -105,11 +95,8 @@ export default function DoctorDashboard() {
       
       setDoctorName(doctorData.full_name || "Médico(a)");
       const doctorId = doctorData.id;
-
-      // 2. Definir a data de hoje para filtrar consultas futuras
       const today = new Date().toISOString();
 
-      // 3. Executar todas as buscas de dados em paralelo
       const [
         patientCountRes,
         laudosCountRes,
@@ -129,7 +116,6 @@ export default function DoctorDashboard() {
           .order('scheduled_at', { ascending: true })
       ]);
 
-      // 4. Atualizar os estados
       setKpiCounts({
         patients: patientCountRes.count || 0,
         laudos: laudosCountRes.count || 0,
@@ -154,251 +140,144 @@ export default function DoctorDashboard() {
     }
   }, []);
 
-  // Carrega dados na montagem inicial
   useEffect(() => {
     carregarDados();
   }, [carregarDados]);
-  
-  // =================================================================
-  // ✅ NOVOS ESTILOS PARA A BOLA DE PERFIL
-  // =================================================================
-  const profileButtonStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '40px',          // Largura da bola
-    height: '40px',         // Altura da bola
-    borderRadius: '50%',    // A "bola" (círculo)
-    backgroundColor: '#e2e8f0', // Um cinza claro (slate-200)
-    color: '#1e293b',          // Um cinza escuro (slate-800)
-    border: 'none',
-    cursor: 'pointer',
-    marginLeft: '16px',     // Espaçamento da nav
-  };
 
-  const profileIconStyle: React.CSSProperties = {
-    width: '20px',          // Tamanho do ícone
-    height: '20px',
-  };
-  // =================================================================
-  // FIM DA LÓGICA E ESTILOS
-  // =================================================================
-
+  // O componente agora retorna APENAS o <main>
   return (
-  <div className="doctor-dashboard min-h-screen bg-[#F5F7FA] text-slate-900">
-      <header className="doctor-header">
-        <div className="doctor-header__inner">
-          <div className="doctor-header__brand">
-            <div className="brand-icon">
-              <div className="brand-icon__inner">
-                <Stethoscope className="brand-icon__svg" />
-              </div>
-            </div>
-            <span className="brand-name">Medconnect</span>
-            <h1 className="doctor-greeting">
-              Olá, Dr(a). <span className="highlight">{loading ? "..." : doctorName}</span> 👋
-            </h1>
-          </div>
-
-          <div className="doctor-header__search">
-            <div className="search-wrapper">
-              <Search className="search-icon" />
-              <input
-                name="q"
-                autoComplete="off"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar paciente, exame, laudo…"
-                className="search-input"
-              />
-            </div>
-          </div>
-
-          <nav className="doctor-header__nav">
-            <button
-              onClick={() => navigate("/doctor/dashboard")}
-              className={pathname === '/doctor/dashboard' ? 'nav-link active' : 'nav-link'}
-            >
-              Início
-            </button>
-            <button
-              onClick={() => navigate("/doctor/laudos")}
-              className={pathname.startsWith('/doctor/laudos') ? 'nav-link active' : 'nav-link'}
-            >
-              Laudos
-            </button>
-            <button
-              onClick={() => navigate("/doctor/pacientes")} 
-              className={pathname.startsWith('/doctor/pacientes') ? 'nav-link active' : 'nav-link'}
-            >
-              Pacientes
-            </button>
-            <button
-              onClick={() => navigate("/doctor/consultas")} 
-              className={pathname.startsWith('/doctor/consultas') ? 'nav-link active' : 'nav-link'}
-            >
-              Consultas
-            </button>
-            <button
-              onClick={() => navigate("/")}
-              className="nav-link"
-              title="Voltar para a tela inicial"
-            >
-              Voltar para a tela inicial
-            </button>
-          </nav>
-
-          {/* ================================================= */}
-          {/* ✅ BOLA DE PERFIL ADICIONADA AQUI                 */}
-          {/* ================================================= */}
-          <div className="doctor-header__profile">
-            <button
-              onClick={() => navigate("/doctor/perfil")} // Navega para a página de perfil
-              style={profileButtonStyle}
-              title="Ver o meu perfil"
-            >
-              <User style={profileIconStyle} />
-            </button>
-          </div>
-          {/* ================================================= */}
-
-        </div>
-      </header>
-
-      <main>
-        {/* ... (Todo o resto do conteúdo <main> permanece igual) ... */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
-          <div className="lg:col-span-9 space-y-8">
-            {/* HERO */}
-            <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-lg">
-              <div className="bg-gradient-to-r from-teal-500 via-cyan-500 to-teal-400">
-                <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr] items-center">
-                  <div className="dashboard-card-content">
-                    <h2 className="text-white text-2xl md:text-3xl font-semibold leading-tight">
-                      Já olhou sua tabela de pacientes hoje?
-                    </h2>
-                    <CardDescription className="text-white/90 mt-3">
-                      Organize sua semana em poucos cliques
-                    </CardDescription>
-                    <div className="mt-6 flex flex-wrap items-center gap-3">
-                      <a
-                        href="#"
-                        className="inline-flex items-center gap-2 rounded-lg bg-white text-slate-900 text-sm font-medium px-4 py-2 shadow hover:brightness-95 transition"
-                      >
-                        Olhar a Tabela <ChevronRight className="h-4 w-4" />
-                      </a>
-                      <a
-                        href="#"
-                        className="inline-flex items-center gap-2 rounded-lg bg-white/15 text-white ring-1 ring-white/40 text-sm font-medium px-4 py-2 hover:bg-white/20 transition"
-                      >
-                        Ver laudos
-                      </a>
-                    </div>
-                  </div>
-                  <div className="relative dashboard-card-content flex items-center justify-center">
-                    <div className="absolute inset-0 bg-white/10 blur-2xl rounded-full" />
-                    <img
-                      src={medicaImg}
-                      alt="Médica"
-                      className="relative h-48 w-48 md:h-56 md:w-56 rounded-2xl object-cover ring-4 ring-white/30 shadow-xl"
-                    />
+    <main>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
+        <div className="lg:col-span-9 space-y-8">
+          {/* HERO */}
+          <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-lg">
+            <div className="bg-gradient-to-r from-teal-500 via-cyan-500 to-teal-400">
+              <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr] items-center">
+                <div className="dashboard-card-content">
+                  {/* Saudação "Olá Dr(a)" movida para aqui, dentro do conteúdo da página */}
+                  <h2 className="text-white text-2xl md:text-3xl font-semibold leading-tight">
+                    Olá, Dr(a). <span className="highlight">{loading ? "..." : doctorName}</span> 👋
+                  </h2>
+                  <CardDescription className="text-white/90 mt-3">
+                    Organize sua semana em poucos cliques
+                  </CardDescription>
+                  <div className="mt-6 flex flex-wrap items-center gap-3">
+                    <a
+                      href="#"
+                      className="inline-flex items-center gap-2 rounded-lg bg-white text-slate-900 text-sm font-medium px-4 py-2 shadow hover:brightness-95 transition"
+                    >
+                      Olhar a Tabela <ChevronRight className="h-4 w-4" />
+                    </a>
+                    <a
+                      href="#"
+                      className="inline-flex items-center gap-2 rounded-lg bg-white/15 text-white ring-1 ring-white/40 text-sm font-medium px-4 py-2 hover:bg-white/20 transition"
+                    >
+                      Ver laudos
+                    </a>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* KPIs */}
-            <div className="dashboard-grid">
-              <KpiCard 
-                title="Pacientes (Total)" 
-                value={loading ? "..." : `${kpiCounts.patients} pessoas`} 
-                icon={<Users className="h-5 w-5 text-teal-600" />} 
-              />
-              <KpiCard 
-                title="Laudos Emitidos" 
-                value={loading ? "..." : kpiCounts.laudos.toString()} 
-                icon={<FileText className="h-5 w-5 text-cyan-600" />} 
-              />
-              <KpiCard 
-                title="Consultas Realizadas" 
-                value={loading ? "..." : kpiCounts.consultas.toString()} 
-                icon={<Activity className="h-5 w-5 text-emerald-600" />} 
-              />
-            </div>
-
-            {/* Desempenho (gráfico fantasma) */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Desempenho no Trabalho</CardTitle>
-                  <span className="text-xs rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5 border border-emerald-200">
-                    +3.5%
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <BarGhost />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* COLUNA DIREITA (Agenda) */}
-          <aside className="lg:col-span-3 space-y-8">
-            
-            {/* CALENDÁRIO */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4 text-slate-500" />
-                  Agenda
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex justify-center">
-                <DayPicker
-                  mode="single"
-                  locale={ptBR}
-                  modifiers={{ consulta: diasComConsulta }}
-                  modifiersClassNames={{
-                    consulta: 'rdp-day_consulta'
-                  }}
-                  disabled={{ before: new Date() }}
-                  className="dashboard-calendar"
-                />
-              </CardContent>
-            </Card>
-            
-            {/* PRÓXIMAS CONSULTAS */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Próximas Consultas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {loading && (
-                  <p className="dashboard-soft text-sm">Buscando agenda...</p>
-                )}
-                {!loading && proximasConsultas.length === 0 && (
-                  <p className="dashboard-soft text-sm">Nenhuma consulta futura encontrada.</p>
-                )}
-                {!loading && proximasConsultas.map((consulta) => (
-                  <UpcomingAppointmentItem 
-                    key={consulta.id}
-                    name={consulta.patients?.full_name || "Paciente"}
-                    date={format(new Date(consulta.scheduled_at), "dd/MM 'às' HH:mm")}
-                    color="from-cyan-400 to-emerald-400"
+                <div className="relative dashboard-card-content flex items-center justify-center">
+                  <div className="absolute inset-0 bg-white/10 blur-2xl rounded-full" />
+                  <img
+                    src={medicaImg}
+                    alt="Médica"
+                    className="relative h-48 w-48 md:h-56 md:w-56 rounded-2xl object-cover ring-4 ring-white/30 shadow-xl"
                   />
-                ))}
-              </CardContent>
-            </Card>
+                </div>
+              </div>
+            </div>
+          </div>
 
-          </aside>
+          {/* KPIs */}
+          <div className="dashboard-grid">
+            <KpiCard 
+              title="Pacientes (Total)" 
+              value={loading ? "..." : `${kpiCounts.patients} pessoas`} 
+              icon={<Users className="h-5 w-5 text-teal-600" />} 
+            />
+            <KpiCard 
+              title="Laudos Emitidos" 
+              value={loading ? "..." : kpiCounts.laudos.toString()} 
+              icon={<FileText className="h-5 w-5 text-cyan-600" />} 
+            />
+            <KpiCard 
+              title="Consultas Realizadas" 
+              value={loading ? "..." : kpiCounts.consultas.toString()} 
+              icon={<Activity className="h-5 w-5 text-emerald-600" />} 
+            />
+          </div>
+
+          {/* Desempenho (gráfico fantasma) */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Desempenho no Trabalho</CardTitle>
+                <span className="text-xs rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5 border border-emerald-200">
+                  +3.5%
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <BarGhost />
+            </CardContent>
+          </Card>
         </div>
-      </main>
-  </div>
+
+        {/* COLUNA DIREITA (Agenda) */}
+        <aside className="lg:col-span-3 space-y-8">
+          
+          {/* CALENDÁRIO */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-slate-500" />
+                Agenda
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center">
+              <DayPicker
+                mode="single"
+                locale={ptBR}
+                modifiers={{ consulta: diasComConsulta }}
+                modifiersClassNames={{
+                  consulta: 'rdp-day_consulta'
+                }}
+                disabled={{ before: new Date() }}
+                className="dashboard-calendar"
+              />
+            </CardContent>
+          </Card>
+          
+          {/* PRÓXIMAS CONSULTAS */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Próximas Consultas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {loading && (
+                <p className="dashboard-soft text-sm">Buscando agenda...</p>
+              )}
+              {!loading && proximasConsultas.length === 0 && (
+                <p className="dashboard-soft text-sm">Nenhuma consulta futura encontrada.</p>
+              )}
+              {!loading && proximasConsultas.map((consulta) => (
+                <UpcomingAppointmentItem 
+                  key={consulta.id}
+                  name={consulta.patients?.full_name || "Paciente"}
+                  date={format(new Date(consulta.scheduled_at), "dd/MM 'às' HH:mm")}
+                  color="from-cyan-400 to-emerald-400"
+                />
+              ))}
+            </CardContent>
+          </Card>
+
+        </aside>
+      </div>
+    </main>
   );
 }
 
 /* ---------- componentes locais (sem alterações) ---------- */
-
 // KpiCard
 function KpiCard({
   title,

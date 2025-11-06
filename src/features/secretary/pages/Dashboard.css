@@ -276,3 +276,111 @@ body.sidebar-fechada #toggle-sidebar-btn {
   background: var(--cor-acento-healthone-claro);
   font-weight: bold;
 }
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 88px; /* Largura da sidebar encolhida */
+  }
+  
+  /* Esconde todos os textos dentro da sidebar */
+  .sidebar-header span,
+  .nav-links a span,        /* Oculta texto dos links */
+  .sidebar-footer a span,   /* Oculta texto "Sair" */
+  .collapse-btn span {     /* Oculta texto "Recolher" */
+    display: none;
+  }
+
+  /* Centraliza os ícones que sobraram */
+  .sidebar-header {
+    padding: 0 20px 20px 20px;
+    justify-content: center;
+  }
+  .nav-links a {
+    padding: 15px 20px;
+    justify-content: center;
+  }
+  .sidebar-footer {
+    align-items: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .sidebar-footer a {
+    justify-content: center;
+  }
+  .collapse-btn {
+    width: auto;
+  }
+
+  /* Ajusta o conteúdo principal para o novo tamanho da sidebar */
+  .main-content {
+    margin-left: 88px;
+  }
+  
+  /* Ajusta o botão de 'toggle' (se estiver usando a lógica de 88px) */
+  body:not(.sidebar-fechada) #toggle-sidebar-btn {
+     left: 88px;
+  }
+}
+
+
+/*
+ * 2. Telas Pequenas (ex: Telemóveis)
+ * A sidebar desaparece (off-canvas) e o conteúdo ocupa 100%.
+ */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 260px;  /* Quando abrir, terá a largura total */
+    left: -260px; /* Começa escondida fora da tela */
+    z-index: 2000; /* Fica por cima de todo o conteúdo */
+  }
+
+  /* Força o conteúdo principal a ocupar 100% da largura */
+  .main-content {
+    margin-left: 0;
+    padding: 15px; /* Padding menor em telas pequenas */
+  }
+
+  /* Quando a sidebar NÃO estiver fechada (ex: JS adiciona/remove classe) */
+  body:not(.sidebar-fechada) .sidebar {
+     left: 0; /* Faz a sidebar aparecer */
+  }
+
+  /* * Faz o botão de toggle (hamburguer) aparecer.
+   * (O seu CSS estava a esconder este botão em '#toggle-sidebar-btn')
+  */
+  #toggle-sidebar-btn {
+    display: block !important; /* Força a aparição */
+    position: fixed;
+    top: 15px;
+    left: 15px; /* Posição inicial (fechado) */
+    z-index: 2001; /* Acima da sidebar */
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    border: 1px solid rgba(255,255,255,0.3);
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    box-shadow: var(--sombra);
+    transition: left 0.3s ease-in-out;
+  }
+
+  /* Move o botão de toggle junto com a sidebar quando ela abre */
+  body:not(.sidebar-fechada) #toggle-sidebar-btn {
+    left: 275px; /* 260px (largura) + 15px (margem) */
+  }
+
+  /* Ajustes de layout para o conteúdo principal */
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .header .profile {
+    align-self: flex-end; /* Joga o perfil para o canto */
+    width: 100%;
+  }
+  
+  .cards, .dashboard-widgets {
+    grid-template-columns: 1fr; /* Força 1 coluna */
+  }
+}

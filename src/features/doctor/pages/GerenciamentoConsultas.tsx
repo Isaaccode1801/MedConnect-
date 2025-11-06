@@ -184,63 +184,7 @@ export default function GerenciamentoConsultasPage() {
 
     return (
         <>
-            <header className="doctor-header">
-                <div className="doctor-header__inner">
-                    <div className="doctor-header__brand">
-                        <div className="brand-icon">
-                            <div className="brand-icon__inner">
-                                <Stethoscope className="brand-icon__svg" />
-                            </div>
-                        </div>
-                        <span className="brand-name">Medconnect</span>
-                        <h1 className="doctor-greeting">
-                            Olá, Dr(a). <span className="highlight">{doctorName}</span> 👋
-                        </h1>
-                    </div>
 
-                    <div className="doctor-header__search">
-                        <div className="search-wrapper">
-                            <Search className="search-icon" />
-                            <input
-                                name="q"
-                                autoComplete="off"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Buscar paciente, exame, laudo…"
-                                className="search-input"
-                            />
-                        </div>
-                    </div>
-
-                    {/* ✅ CORREÇÃO: 'nav' foi substituído por 'navigate' */}
-                    <nav className="doctor-header__nav">
-                        <button
-                            onClick={() => navigate("/doctor/dashboard")}
-                            className={pathname === '/doctor/dashboard' ? 'nav-link active' : 'nav-link'}
-                        >
-                            Início
-                        </button>
-                        <button
-                            onClick={() => navigate("/doctor/laudos")}
-                            className={pathname.startsWith('/doctor/laudos') ? 'nav-link active' : 'nav-link'}
-                        >
-                            Laudos
-                        </button>
-                        <button
-                            onClick={() => navigate("/doctor/pacientes")} 
-                            className={pathname.startsWith('/doctor/pacientes') ? 'nav-link active' : 'nav-link'}
-                        >
-                            Pacientes
-                        </button>
-                        <button
-                            onClick={() => navigate("/doctor/consultas")} 
-                            className={pathname.startsWith('/doctor/consultas') ? 'nav-link active' : 'nav-link'}
-                        >
-                            Consultas
-                        </button>
-                    </nav>
-                </div>
-            </header>
             
             {/* 2. Conteúdo Principal */}
             <main className="container">

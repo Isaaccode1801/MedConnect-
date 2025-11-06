@@ -1,4 +1,4 @@
-/* Dashboard.css – VERSÃO APRIMORADA: Responsividade, Tipografia, Consistência */
+/* Dashboard.css – VERSÃO COMPLETA (CORREÇÃO SAUDAÇÃO) */
 
 /* Page wrapper com variáveis CSS otimizadas */
 .doctor-dashboard {
@@ -7,13 +7,13 @@
   min-height: 100vh;
   
   /* Brand colors */
-  --brand-teal: #0d9488;   /* teal-600 */
-  --brand-cyan: #06b6d4;   /* cyan-500 */
+  --brand-teal: #0d9488;    /* teal-600 */
+  --brand-cyan: #06b6d4;    /* cyan-500 */
   --brand-emerald: #10b981;
   
   /* Text colors */
-  --ink-900: #0f172a;      /* slate-900 */
-  --ink-700: #334155;      /* slate-700 */
+  --ink-900: #0f172a;        /* slate-900 */
+  --ink-700: #334155;        /* slate-700 */
   --ink-600: #475569;
   --muted-500: #64748b;    /* slate-500 */
   --muted-400: #94a3b8;
@@ -24,7 +24,7 @@
   --bg-lighter: #f8fafc;
   
   /* Borders */
-  --line-200: #e2e8f0;     /* slate-200 */
+  --line-200: #e2e8f0;      /* slate-200 */
   --line-300: #cbd5e1;
   
   /* Shadows otimizadas */
@@ -262,34 +262,34 @@ aside .dashboard-card-content {
   box-shadow: var(--shadow-sm);
 }
 
+/* Header estático em mobile/tablet */
+@media (max-width: 1024px) {
+  .doctor-header {
+    position: static; 
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--bg-white); 
+  }
+}
+
+/* Layout do Header (Desktop) */
 .doctor-header__inner {
   max-width: clamp(900px, 95vw, 1600px);
   margin: 0 auto;
   padding: clamp(0.875rem, 1.5vw, 1.25rem) clamp(1rem, 2vw, 2rem);
   display: grid;
+  /* Desktop: [Brand] [Busca] [Nav] */
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: clamp(1rem, 2vw, 2rem);
 }
 
-@media (max-width: 1024px) {
-  .doctor-header__inner {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
-  }
-}
 
 .doctor-header__brand {
   display: flex;
   align-items: center;
   gap: clamp(0.75rem, 1.5vw, 1rem);
   flex-wrap: nowrap;
-}
-
-@media (max-width: 1024px) {
-  .doctor-header__brand {
-    justify-content: center;
-  }
 }
 
 .brand-icon {
@@ -336,11 +336,71 @@ aside .dashboard-card-content {
   font-weight: 700;
 }
 
-@media (max-width: 640px) {
-  .doctor-greeting {
-    display: none; /* Oculta saudação em mobile */
-  }
+/* ----- ESTILOS DA BARRA DE BUSCA ----- */
+.doctor-header__search {
+  position: relative;
+  width: 100%;
+  max-width: 480px; 
+  margin: 0; 
 }
+
+.search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.125rem; 
+  height: 1.125rem;
+  color: var(--muted-500);
+  pointer-events: none; 
+}
+
+.search-input {
+  width: 100%;
+  height: 2.75rem; 
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line-300);
+  background: var(--bg-soft);
+  padding: 0 var(--spacing-md) 0 2.75rem; 
+  font-size: 0.9375rem; 
+  color: var(--ink-700);
+  transition: all 0.2s ease;
+}
+
+.search-input::placeholder {
+  color: var(--muted-500);
+}
+
+.search-input:focus {
+  outline: none;
+  background: var(--bg-white);
+  border-color: var(--brand-teal);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+}
+
+/* ----- ESTILOS DA NAVEGAÇÃO DESKTOP ----- */
+
+.doctor-header__nav-container-desktop {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.doctor-header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.doctor-header__nav-container-desktop .doctor-header__profile .profile-button-wrapper {
+  margin-left: var(--spacing-sm);
+}
+
 .nav-link {
   display: inline-flex;
   align-items: center;
@@ -363,7 +423,6 @@ aside .dashboard-card-content {
   background: var(--bg-soft);
 }
 
-/* Active pill — refinado */
 .nav-link.active {
   color: #fff;
   background: linear-gradient(90deg, var(--brand-teal) 0%, var(--brand-cyan) 100%);
@@ -377,33 +436,204 @@ aside .dashboard-card-content {
   filter: brightness(1.05); 
 }
 
-/* Focus states para acessibilidade */
 .nav-link:focus-visible { 
   outline: 3px solid rgba(6,182,212,.35); 
   outline-offset: 2px; 
 }
 
-@media (max-width: 640px) {
-  .nav-link {
-    flex: 1 1 auto;
-    justify-content: center;
-    min-width: 80px;
-  }
-}
-/* Adicione isto ao seu ficheiro Dashboard.css ou global */
 
-/* Destaca os dias com consulta no DayPicker */
+/* ----- ESTILOS DO CALENDÁRIO ----- */
 .rdp-day_consulta {
   font-weight: bold;
-  background-color: #f0fdfa; /* Um verde-claro (tailwind: emerald-50) */
-  color: #0d9488; /* Um verde-escuro (tailwind: emerald-600) */
+  background-color: #f0fdfa; 
+  color: #0d9488; 
   border-radius: 50%;
   border: 1px solid #0d9488;
 }
 
-/* Ajusta o tamanho do calendário (opcional) */
 .dashboard-calendar {
   width: 100%;
-  max-width: 280px; /* Ajuste conforme necessário */
+  max-width: 100%; 
   margin: 0 auto;
+  font-size: 0.875rem; /* 14px */
+}
+
+@media (min-width: 1024px) {
+  .dashboard-calendar {
+    font-size: 1rem; /* 16px */
+    max-width: 300px; 
+  }
+}
+
+
+/* ================================================================
+   HEADER MÓVEL E SIDEBAR
+================================================================
+*/
+
+/* --- 1. MODIFICAÇÕES NO HEADER PARA MOBILE --- */
+
+@media (max-width: 1024px) {
+  /* Layout mobile/tablet: [Brand] [Hamburger] (2 colunas) */
+  .doctor-header__inner {
+    grid-template-columns: 1fr auto; 
+    gap: var(--spacing-sm);
+    padding: 0 var(--spacing-md); 
+  }
+
+  /* Esconde a busca em mobile/tablet */
+  .doctor-header__search {
+    display: none;
+  }
+  
+  /* Esconde a navegação e o perfil do DESKTOP em telemóveis */
+  .doctor-header__nav-container-desktop {
+    display: none;
+  }
+  
+  /* Garante que a marca fica alinhada à esquerda */
+  .doctor-header__brand {
+    justify-content: flex-start;
+  }
+  
+  /* --- CORREÇÃO: Saudação some em mobile/tablet --- */
+  .doctor-greeting {
+    display: none;
+  }
+}
+
+/* --- 2. O BOTÃO HAMBURGER --- */
+
+.mobile-menu-toggle {
+  display: none; 
+  background: none;
+  border: none;
+  color: var(--ink-700);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s ease;
+}
+
+.mobile-menu-toggle:hover {
+  background-color: var(--bg-soft);
+}
+
+@media (max-width: 1024px) {
+  .mobile-menu-toggle {
+    display: block; /* Aparece em telemóveis/tablets */
+  }
+}
+
+
+/* --- 3. O OVERLAY (FUNDO ESCURO) --- */
+
+.mobile-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(9, 30, 66, 0.4);
+  z-index: 90;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Impede o scroll da página quando o menu está aberto */
+.doctor-dashboard.mobile-menu-is-open {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* --- 4. A SIDEBAR MÓVEL --- */
+
+.mobile-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 300px; 
+  max-width: 90vw;
+  background: var(--bg-white);
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+  transform: translateX(-100%); 
+  transition: transform 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-sidebar.is-open {
+  transform: translateX(0);
+}
+
+.mobile-sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(0.875rem, 1.5vw, 1.25rem) clamp(1rem, 2vw, 2rem);
+  border-bottom: 1px solid var(--line-200);
+  flex-shrink: 0;
+}
+
+.mobile-sidebar__close {
+  background: none;
+  border: none;
+  color: var(--ink-700);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s ease;
+}
+
+.mobile-sidebar__close:hover {
+  background-color: var(--bg-soft);
+}
+
+.mobile-sidebar__content {
+  padding: var(--spacing-md);
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- 5. A NAVEGAÇÃO DENTRO DA SIDEBAR --- */
+
+.mobile-sidebar .doctor-header__nav {
+  flex-direction: column;
+  align-items: stretch; 
+  gap: var(--spacing-xs);
+}
+
+.mobile-sidebar .nav-link {
+  justify-content: flex-start; 
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 1rem; 
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+.mobile-sidebar .nav-link.active {
+  color: var(--brand-teal);
+  background: var(--bg-soft);
+  box-shadow: none;
+  font-weight: 600;
+}
+.mobile-sidebar .nav-link.active:hover {
+  filter: none;
+}
+
+.mobile-sidebar .doctor-header__profile {
+  margin-top: auto; 
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--line-200);
+  display: flex;
+  justify-content: center;
+}
+
+.mobile-sidebar .profile-button-wrapper {
+  margin-left: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

@@ -1,4 +1,4 @@
-// src/app/providers/router.tsx (ATUALIZADO)
+// src/app/providers/router.tsx (AJUSTADO COM DOCTOR LAYOUT)
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 
 // Páginas principais (públicas)
@@ -7,6 +7,8 @@ import Login from "@/features/auth/pages/Login";
 import SignUp from "@/features/auth/pages/SignUp";
 
 // Médico
+// ✅ 1. IMPORTAR O LAYOUT PAI
+import DoctorLayout from '@/features/doctor/pages/DoctorLayout';
 import DoctorDashboard from "@/features/doctor/pages/Dashboard";
 import DoctorProfile from "@/features/doctor/pages/DoctorProfile"; 
 import LaudosPage from "@/features/doctor/pages/laudos/LaudosPage";
@@ -22,7 +24,6 @@ import { AdminDashboardContent } from "@/features/admin/components/DashboardWidg
 import UsersList from "@/features/admin/pages/UsersList.jsx";
 import CreateUser from "@/features/admin/pages/CreateUser";
 import AppointmentsPage from "@/features/admin/pages/AppointmentsPage";
-// ✅ 1. IMPORTAR A NOVA PÁGINA DE LAUDOS DO ADMIN
 import AdminReportsList from "@/features/admin/pages/AdminReportsList";
 
 // Paciente
@@ -97,24 +98,39 @@ export const router = createBrowserRouter([
       { path: "/signup", element: <SignUp /> },
 
       // REDIRECTS ÚTEIS
-      { path: "/doctor", element: <Navigate to="/doctor/dashboard" replace /> },
+      // (Removemos o redirect /doctor, pois agora é uma rota pai)
       { path: "/dashboard", element: <Navigate to="/doctor/dashboard" replace /> },
       { path: "/laudos", element: <Navigate to="/doctor/laudos" replace /> },
 
-      // ÁREA DO MÉDICO
-      { path: "/doctor/dashboard", element: <DoctorDashboard /> },
-      { path: "/doctor/perfil", element: <DoctorProfile /> },
-      // laudos
-      { path: "/doctor/laudos", element: <LaudosPage /> },
-      { path: "/doctor/laudos/novo", element: <NovoLaudoPage /> },
-      { path: "/doctor/laudos/:id/revisar", element: <RevisarLaudoPage /> },
-      { path: "/doctor/laudos/:id/editar", element: <NovoLaudoPage /> },
-      // pacientes
-      { path: "/doctor/pacientes", element: <GerenciamentoPacientesPage /> },
-      { path: "/doctor/pacientes/novo", element: <PaginaCadastroPaciente /> },
-      { path: "/doctor/pacientes/editar/:id", element: <PaginaCadastroPaciente /> },
-      // Consultas
-      { path: "/doctor/consultas", element: <GerenciamentoConsultasPage /> },
+      // ===============================================
+      // ✅ 2. ÁREA DO MÉDICO (REESTRUTURADA)
+      // ===============================================
+      {
+        path: "/doctor",
+        element: <DoctorLayout />, // O Layout Pai
+        children: [
+          // A rota "index" redireciona /doctor para /doctor/dashboard
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          
+          // As rotas filhas agora usam caminhos relativos (sem "/doctor")
+          { path: "dashboard", element: <DoctorDashboard /> },
+          { path: "perfil", element: <DoctorProfile /> },
+          // laudos
+          { path: "laudos", element: <LaudosPage /> },
+          { path: "laudos/novo", element: <NovoLaudoPage /> },
+          { path: "laudos/:id/revisar", element: <RevisarLaudoPage /> },
+          { path: "laudos/:id/editar", element: <NovoLaudoPage /> },
+          // pacientes
+          { path: "pacientes", element: <GerenciamentoPacientesPage /> },
+          { path: "pacientes/novo", element: <PaginaCadastroPaciente /> },
+          { path: "pacientes/editar/:id", element: <PaginaCadastroPaciente /> },
+          // Consultas
+          { path: "consultas", element: <GerenciamentoConsultasPage /> },
+        ],
+      },
+      // ===============================================
+      // FIM DA ÁREA DO MÉDICO
+      // ===============================================
 
       // ÁREA DO ADMIN
       {
@@ -125,11 +141,7 @@ export const router = createBrowserRouter([
           { path: "UsersList", element: <UsersList /> },
           { path: "CreateUser", element: <CreateUser /> },
           { path: "AppointmentsPage", element: <AppointmentsPage /> },
-          
-          // ✅ 2. ROTA DA LISTA DE LAUDOS ADICIONADA
           { path: "laudos", element: <AdminReportsList /> },
-          
-          // ✅ 3. ROTA PARA REVISÃO (USA A PÁGINA DO MÉDICO COMO PLACEHOLDER)
           { path: "laudos/:id/revisar", element: <RevisarLaudoPage /> },
         ],
       },
