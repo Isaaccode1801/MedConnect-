@@ -379,8 +379,8 @@ export default function PatientDashboard() {
                       style={{
                         flexShrink: 0, // Impede que o cartão encolha
                         width: '240px', // Largura fixa para cada cartão
-                        backgroundColor: '#F9FAFB',
-                        border: '1px solid #E5E7EB',
+                        backgroundColor: 'var(--card-bg-dash)',
+                        border: '1px solid #eef2f7',
                         borderRadius: '12px',
                         padding: '16px',
                         display: 'flex',
@@ -393,7 +393,7 @@ export default function PatientDashboard() {
                         style={{
                           fontSize: '18px',
                           fontWeight: 700,
-                          color: '#111827',
+                          color: 'var(--text-dash)',
                         }}
                       >
                         {format(new Date(consulta.scheduled_at), "HH:mm")}
