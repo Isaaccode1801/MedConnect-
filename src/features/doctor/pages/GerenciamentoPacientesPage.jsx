@@ -6,6 +6,7 @@ import { listPacientes, deletePaciente } from '@/lib/pacientesService';
 import '@/styles/GerenciamentoPacientesPage.css'; 
 import { FaSearch, FaPlus, FaEye, FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
 import { Stethoscope, Search } from 'lucide-react';
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 // --- Funções Auxiliares ---
 function formatCPF(v) {
@@ -204,6 +205,7 @@ export default function GerenciamentoPacientesPage() {
                     </div>
                 </section>
             </main>
+            <AccessibilityMenu />
         </>
     );
 }

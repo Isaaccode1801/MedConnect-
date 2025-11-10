@@ -5,6 +5,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { createPaciente, getPaciente, updatePaciente, getHeaders } from '@/lib/pacientesService';
 // Importe os estilos (ajuste o caminho se necessário)
 import '@/styles/PaginaCadastroPaciente.css'; // Ou importe no seu CSS global
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 /* ========================= Helpers (adaptados de cadMed.js) ========================= */
 // datas: aceita DD/MM/YYYY, D/M/YYYY, YYYY-MM-DD, YYYY/M/D
@@ -450,6 +451,7 @@ export default function PaginaCadastroPaciente() {
                  style={{ borderColor: toastMsg.ok ? 'var(--success)' : 'var(--danger)' }}>
                 {toastMsg.msg}
             </div>
+            <AccessibilityMenu />
         </>
     );
 }

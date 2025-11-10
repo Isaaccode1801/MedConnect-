@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './dashboard.css';
-import { MdOutlineAccessibilityNew } from "react-icons/md";
+import AccessibilityMenu from "@/components/ui/AccessibilityMenu";
 
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
@@ -32,45 +32,6 @@ function initials(name = "") {
 export default function PatientDashboard() {
   const navigate = useNavigate();
   const [currentMonth] = useState(new Date());
-
-  // ==========================================================
-  // LÓGICA DE ACESSIBILIDADE (sem mudanças)
-  // ==========================================================
-  const [acessOpen, setAcessOpen] = useState(false);
-  const [dark, setDark] = useState(() => JSON.parse(localStorage.getItem("modoEscuro") || "false"));
-  const [daltonico, setDaltonico] = useState(() => JSON.parse(localStorage.getItem("modoDaltonico") || "false"));
-
-  useEffect(() => {
-    document.body.classList.toggle("modo-escuro", dark);
-    localStorage.setItem("modoEscuro", JSON.stringify(dark));
-  }, [dark]);
-  
-  useEffect(() => {
-    document.body.classList.toggle("modo-daltonico", daltonico);
-    localStorage.setItem("modoDaltonico", JSON.stringify(daltonico));
-  }, [daltonico]);
-  
-  const incFont = () => {
-    const html = document.documentElement;
-    const cur = parseFloat(getComputedStyle(html).fontSize || '16');
-    html.style.fontSize = Math.min(cur + 1, 22) + "px";
-  };
-  const decFont = () => {
-    const html = document.documentElement;
-    const cur = parseFloat(getComputedStyle(html).fontSize || '16');
-    html.style.fontSize = Math.max(cur - 1, 12) + "px";
-  };
-  const toggleDaltonico = () => {
-    setDaltonico(v => !v);
-  };
-  const resetA11y = () => {
-    document.documentElement.style.fontSize = "";
-    setDark(false);
-    setDaltonico(false);
-  };
-  // ==========================================================
-  // FIM DA LÓGICA DE ACESSIBILIDADE
-  // ==========================================================
 
   // (Estados dinâmicos... sem mudanças)
   const [perfil, setPerfil] = useState<any>(null);
@@ -424,29 +385,7 @@ export default function PatientDashboard() {
           
         </div>
       </main>
-
-      {/* BOTÃO E MENU DE ACESSIBILIDADE (sem mudanças) */}
-      <button
-        className="acessibilidade-btn"
-        onClick={() => setAcessOpen(v => !v)}
-        aria-label="Abrir menu de acessibilidade"
-      >
-        <MdOutlineAccessibilityNew size={28} />
-      </button>
-
-      <div className={`menu-acessibilidade ${acessOpen ? "active" : ""}`}>
-        <h4>Acessibilidade</h4>
-        <button className="menu-item" onClick={incFont}>Aumentar fonte</button>
-        <button className="menu-item" onClick={decFont}>Diminuir fonte</button>
-        <button className="menu-item" onClick={toggleDaltonico}>
-          {daltonico ? "Modo normal" : "Modo daltônico"}
-        </button>
-        <button className="menu-item" onClick={() => setDark(v => !v)}>
-          {dark ? "Modo claro" : "Modo escuro"}
-        </button>
-        <button className="menu-item" onClick={resetA11y}>Resetar</button>
-      </div>
-      
+      <AccessibilityMenu />
     </div>
   );
 }

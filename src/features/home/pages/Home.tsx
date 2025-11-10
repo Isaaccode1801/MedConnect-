@@ -1,17 +1,17 @@
 // src/features/home/pages/Home.tsx
-import { useState, useEffect, CSSProperties } from "react"; // ✅ Importar CSSProperties
-import { Link, useNavigate } from "react-router-dom";
+import { useState, CSSProperties } from "react";
+import { Link, useNavigate } from "react-router-dom"; // ✅ "Link" com L maiúsculo
 import "./home.css";
 import medLogo from "../../../assets/Medconnect.logo.png";
-import { FaHeartbeat, FaUserAlt, FaEnvelope, FaUsersCog, FaCoins } from "react-icons/fa";
-import { MdOutlineAccessibilityNew } from "react-icons/md";
+import { FaHeartbeat, FaUserAlt, FaEnvelope, FaUsersCog, FaCoins } from "react-icons/fa"; // ✅ Nomes corretos
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu"; // ✅ Import correto
 
-// ✅ ADICIONAR OBJETO DE ESTILOS
+// ✅ OBJETO DE ESTILOS
 const styles: { [key: string]: CSSProperties } = {
   headerInner: {
     width: '100%',
     display: 'flex',
-    justifyContent: 'space-between', // <--- A MÁGICA ACONTECE AQUI
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
 };
@@ -19,33 +19,6 @@ const styles: { [key: string]: CSSProperties } = {
 export default function Home() {
   const nav = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [acessOpen, setAcessOpen] = useState(false);
-  const [dark, setDark] = useState(() => JSON.parse(localStorage.getItem("modoEscuro") || "false"));
-  const [daltonico, setDaltonico] = useState(() => JSON.parse(localStorage.getItem("modoDaltonico") || "false"));
-
-  // ... (lógica do useEffect e funções de acessibilidade - sem mudanças) ...
-  useEffect(() => {
-    document.body.classList.toggle("modo-escuro", dark);
-    localStorage.setItem("modoEscuro", JSON.stringify(dark));
-  }, [dark]);
-  const incFont = () => {
-    const html = document.documentElement;
-    const cur = parseFloat(getComputedStyle(html).fontSize);
-    html.style.fontSize = Math.min(cur + 1, 22) + "px";
-  };
-  const decFont = () => {
-    const html = document.documentElement;
-    const cur = parseFloat(getComputedStyle(html).fontSize);
-    html.style.fontSize = Math.max(cur - 1, 12) + "px";
-  };
-  const toggleDaltonico = () => {
-    document.body.classList.toggle("modo-daltonico");
-  };
-  const resetA11y = () => {
-    document.documentElement.style.fontSize = "";
-    document.body.classList.remove("modo-daltonico");
-    setDark(false);
-  };
 
   return (
     <>
@@ -120,27 +93,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BOTÃO DE ACESSIBILIDADE */}
-      <button
-        className="acessibilidade-btn"
-        onClick={() => setAcessOpen(v => !v)}
-        aria-label="Abrir menu de acessibilidade"
-      >
-        <MdOutlineAccessibilityNew size={28} />
-      </button>
-
-      <div className={`menu-acessibilidade ${acessOpen ? "active" : ""}`}>
-        <h4>Acessibilidade</h4>
-        <button className="menu-item" onClick={incFont}>Aumentar fonte</button>
-        <button className="menu-item" onClick={decFont}>Diminuir fonte</button>
-        <button className="menu-item" onClick={toggleDaltonico}>
-          Modo daltônico
-        </button>
-        <button className="menu-item" onClick={() => setDark(v => !v)}>
-          {dark ? "Modo claro" : "Modo escuro"}
-        </button>
-        <button className="menu-item" onClick={resetA11y}>Reset</button>
-      </div>
+      {/* ✅ COMPONENTE DE ACESSIBILIDADE SEPARADO */}
+      <AccessibilityMenu />
     </>
   );
 }

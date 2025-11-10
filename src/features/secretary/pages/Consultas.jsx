@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Consultas.css";
 import { listarConsultasComNomes } from "@/lib/pacientesService";
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 // ======== CONFIG SUPABASE ========
 const SUPABASE_BASE = "https://yuanqfswhberkoevtmfr.supabase.co";
@@ -444,6 +445,7 @@ export default function Consultas() {
           </div>
         </div>
       )}
+      <AccessibilityMenu />
     </div>
   );
 }

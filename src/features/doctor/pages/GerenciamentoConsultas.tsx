@@ -10,6 +10,7 @@ import '@/styles/GerenciamentoPacientesPage.css';
 // Ícones
 import { Stethoscope, Search } from 'lucide-react';
 import { FaSearch, FaEye, FaCheck, FaTimes, FaUserMd } from 'react-icons/fa';
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 // --- Tipos de Dados ---
 interface Consulta {
@@ -282,6 +283,7 @@ export default function GerenciamentoConsultasPage() {
                     </div>
                 </section>
             </main>
+            <AccessibilityMenu />
         </>
     );
 }

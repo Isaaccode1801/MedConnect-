@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { FaStethoscope, FaCalendarAlt, FaClock, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import './PatientAppointments.css';
 import './dashboard.css'; // ✅ IMPORTADO (para estilos do header)
+import AccessibilityMenu from "@/components/ui/AccessibilityMenu";
 
 // Helper para formatar a data (sem mudanças)
 function formatarData(dataISO) {
@@ -186,6 +187,7 @@ export default function PatientAppointments() {
             ))}
           </div>
         )}
+        <AccessibilityMenu />
       </div>
     </>
   );

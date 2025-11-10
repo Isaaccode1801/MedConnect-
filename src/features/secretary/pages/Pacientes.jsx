@@ -1,5 +1,6 @@
 // src/features/secretary/pages/Pacientes.jsx
 import React, { useState, useEffect } from "react";
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 // ======== CONFIG API (mesma base usada nas outras telas) ========
 const SUPABASE_BASE = "https://yuanqfswhberkoevtmfr.supabase.co";
@@ -750,6 +751,7 @@ async function handleSalvar() {
           font-size:14px;
         }
       `}</style>
+      <AccessibilityMenu />
     </div>
   );
 }

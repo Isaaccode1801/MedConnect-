@@ -20,6 +20,7 @@ import "./agendamento.css";
 import "./dashboard.css"; // 1. IMPORTAR CSS DO DASHBOARD (PARA O HEADER)
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { FaSearch, FaWheelchair, FaRegCalendarAlt, FaClock } from 'react-icons/fa';
+import AccessibilityMenu from "@/components/ui/AccessibilityMenu";
 
 
 // --- Interface de Tipos --- (sem mudanças)
@@ -430,17 +431,8 @@ export default function AgendamentoPage() {
     }, [medicos]);
 
     // (Estados e useEffect de acessibilidade... sem mudanças)
-    const [menuAcessibilidade, setMenuAcessibilidade] = useState(false);
-    const [modoEscuro, setModoEscuro] = useState(false);
-    const [modoDaltonico, setModoDaltonico] = useState(false);
-
-    useEffect(() => {
-        document.body.classList.remove('modo-daltonico');
-        document.body.classList.toggle('modo-escuro', modoEscuro);
-        return () => {
-            document.body.classList.remove('modo-escuro');
-        }
-    }, [modoEscuro]);
+    
+    
 
     return (
         // ✅ 4. CONFLITO REMOVIDO. MANTIDA A VERSÃO COM HEADER.
@@ -467,7 +459,7 @@ export default function AgendamentoPage() {
             </header>
         
             {/* O 'div' original agora é irmão do header */}
-            <div className={`agendamento-page-container ${modoDaltonico ? 'modo-daltonico' : ''}`}> 
+            <div className="agendamento-page-container">
                 {/* --- Appbar (Modificada para ser só o título) --- */}
                 <div className="appbar" style={{ marginTop: '24px' }}> {/* Adiciona margem do topo */}
                     <div className="appbar-inner">
@@ -591,35 +583,7 @@ export default function AgendamentoPage() {
                     <ModalAgendamento medico={medicoSelecionado} onClose={handleFecharModal} />
                 )}
 
-                {/* --- Acessibilidade --- (sem mudanças) */}
-                <button
-                    id="btnAcessibilidade"
-                    className="acessibilidade-btn"
-                    aria-label="Menu de acessibilidade"
-                    onClick={() => setMenuAcessibilidade(prev => !prev)}
-                >
-                    <i className="fa-solid fa-wheelchair"></i>
-                </button>
-                <div id="menuAcessibilidade" className="menu-acessibilidade" style={{ display: menuAcessibilidade ? 'flex' : 'none' }}>
-                    <h4>Opções de Acessibilidade</h4>
-                    <button className="menu-item" id="modoEscuro" onClick={() => setModoEscuro(prev => !prev)}>
-                        🌓 Fundo Preto {modoEscuro ? '(Ativado)' : '(Desativado)'}
-                    </button>
-                    <div className="menu-item" id="aumentarFonteContainer">
-                        🔠 Aumentar Fonte
-                        <div id="controlesFonte" className="controles-fonte">
-                             <button id="diminuirFonte" className="controle-fonte">➖</button>
-                             <span id="tamanhoFonteValor">100%</span>
-                             <button id="aumentarFonte" className="controle-fonte">➕</button>
-                        </div>
-                    </div>
-                    <button className="menu-item" id="leitorTexto">
-                        🔊 Leitor de Texto
-                    </button>
-                    <button className="menu-item" id="modoDaltonico" onClick={() => setModoDaltonico(prev => !prev)}>
-                        🎨 Modo Daltônico {modoDaltonico ? '(Ativado)' : '(Desativado)'}
-                    </button>
-                </div>
+                <AccessibilityMenu />
             </div>
         </>
     );

@@ -16,6 +16,7 @@ import "react-day-picker/dist/style.css";
 // O CSS é importado no DoctorLayout.tsx, mas podemos deixar aqui por segurança
 import "./Dashboard.css"; 
 import medicaImg from "/medica.jpeg";
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 // --- Tipos de Dados (sem alterações) ---
 interface ProximaConsulta {
@@ -272,6 +273,7 @@ export default function DoctorDashboard() {
           </Card>
 
         </aside>
+        <AccessibilityMenu />
       </div>
     </main>
   );
@@ -341,6 +343,7 @@ function BarGhost() {
           style={{ height: `${h}%` }}
         />
       ))}
+
     </div>
   );
 }

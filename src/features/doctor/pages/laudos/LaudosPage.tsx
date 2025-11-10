@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 
 import { listarLaudos, Report, excluirLaudo } from '@/lib/pacientesService';
+import AccessibilityMenu from "../../../../components/ui/AccessibilityMenu";
 import "./LaudosPage.css";
+
 
 // Tipagem do laudo
 export type Laudo = {
@@ -364,6 +366,7 @@ export default function LaudosPage() {
           </table>
         </div>
       </div>
+      <AccessibilityMenu />
     </>
   );
 }

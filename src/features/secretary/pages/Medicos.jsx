@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 // Config de API / Supabase
 const SUPABASE_BASE = "https://yuanqfswhberkoevtmfr.supabase.co";
@@ -890,6 +891,7 @@ export default function MedicosPage() {
           font-size:14px;
         }
       `}</style>
+      <AccessibilityMenu />
     </div>
   );
 }

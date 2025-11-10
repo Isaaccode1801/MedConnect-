@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import Chart from "chart.js/auto";
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 export default function Dashboard() {
   const chartRef = useRef(null);
@@ -89,6 +90,7 @@ export default function Dashboard() {
           </li>
         </ul>
       </section>
+      <AccessibilityMenu />
     </div>
   );
 }
