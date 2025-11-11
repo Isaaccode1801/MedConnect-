@@ -346,7 +346,7 @@ export default function GerenciamentoConsultasPage() {
 
               <button
                 type="button"
-                className="page-btn btn-primary"
+                className="page-btn "
                 style={{ marginLeft: '12px' }}
                 onClick={openCreateModal}
                 title="Criar disponibilidade"

@@ -1,0 +1,84 @@
+/* Altura dos slots/células (mais legível) */
+.rbc-time-content .rbc-time-slot,
+.rbc-time-gutter .rbc-timeslot-group {
+  height: 52px; /* ajuste 44–60 conforme preferir */
+}
+
+/* Gutter (coluna de horários) mais claro e com fonte melhor */
+.rbc-time-gutter .rbc-timeslot-group {
+  color: #667085;
+  font-size: 12.5px;
+}
+
+/* Cabeçalho da semana/dia */
+.rbc-toolbar {
+  padding: 8px 6px;
+  gap: 8px;
+}
+.rbc-toolbar button {
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
+  font-weight: 600;
+  color: #0f172a;
+  background: #fff;
+}
+.rbc-toolbar button.rbc-active,
+.rbc-toolbar button:focus {
+  background: #ecfeff;
+  border-color: #99f6e4;
+  outline: none;
+}
+
+/* Grades mais suaves */
+.rbc-time-view, .rbc-month-view {
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+.rbc-time-header, .rbc-header {
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+/* Evento (melhora tipografia e contraste) */
+.event-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.event-card .event-time {
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.95;
+}
+.event-card .event-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rbc-event {
+  border-radius: 12px;
+}
+
+/* Slot indisponível (fora da disponibilidade do médico) */
+.slot-unavailable {
+  pointer-events: none;        /* impede clique/drag */
+  filter: grayscale(0.15);
+}
+
+/* Slot disponível: leve realce ao passar o mouse */
+.slot-available:hover {
+  background: #f0fdfa;
+}
+
+/* Linha "agora" mais visível */
+.rbc-current-time-indicator {
+  background-color: #0ea5e9;  /* azul claro */
+  height: 2px;
+}

@@ -17,7 +17,7 @@ import "react-day-picker/dist/style.css";
 import "./Dashboard.css"; 
 import medicaImg from "/medica.jpeg";
 import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
-
+import SmartCalendar from "../components/SmartCalendar"; // <— novo
 // --- Tipos de Dados (sem alterações) ---
 interface ProximaConsulta {
   id: string;
@@ -228,26 +228,18 @@ export default function DoctorDashboard() {
         <aside className="lg:col-span-3 space-y-8">
           
           {/* CALENDÁRIO */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-slate-500" />
-                Agenda
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex justify-center">
-              <DayPicker
-                mode="single"
-                locale={ptBR}
-                modifiers={{ consulta: diasComConsulta }}
-                modifiersClassNames={{
-                  consulta: 'rdp-day_consulta'
-                }}
-                disabled={{ before: new Date() }}
-                className="dashboard-calendar"
-              />
-            </CardContent>
-          </Card>
+<Card>
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <CalendarDays className="h-4 w-4 text-slate-500" />
+      Agenda Semanal
+    </CardTitle>
+    <CardDescription>Arraste, navegue e veja suas consultas.</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <SmartCalendar />
+  </CardContent>
+</Card>
           
           {/* PRÓXIMAS CONSULTAS */}
           <Card>
