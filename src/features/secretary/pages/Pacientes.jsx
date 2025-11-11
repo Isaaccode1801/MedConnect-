@@ -1,5 +1,6 @@
 // src/features/secretary/pages/Pacientes.jsx
 import React, { useState, useEffect } from "react";
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 // ======== CONFIG API (mesma base usada nas outras telas) ========
 const SUPABASE_BASE = "https://yuanqfswhberkoevtmfr.supabase.co";
@@ -185,100 +186,121 @@ async function listarPacientes({ forceRemote = false } = {}) {
   // -------------------------------------------------
   // CRIAR PACIENTE (POST /patients)
   // -------------------------------------------------
-  async function criarPacienteAPI(payload) {
-    await ensureLogin();
-
-    // Ajuste de nomes para colunas reais do banco:
+async function criarPacienteAPI(payload, token) {
+  try {
     const bodyDB = {
-      full_name: payload.nome,
+      full_name: payload.full_name,
       cpf: payload.cpf,
       email: payload.email,
-      phone: payload.telefone,
-      birth_date: payload.data_nascimento || null,
+      phone_mobile: payload.phone_mobile,
+      birth_date: payload.birth_date || null,
+      created_by: payload.created_by || null,
     };
 
-    const res = await fetch(`${API_BASE}/patients`, {
+    console.log("[POST /patients] body enviado:", bodyDB);
+
+    const resp = await fetch(`${API_BASE}/patients`, {
       method: "POST",
       headers: getHeaders({ Prefer: "return=representation" }),
       body: JSON.stringify(bodyDB),
     });
 
-    if (!res.ok) {
-      throw new Error(`POST /patients falhou ${res.status}`);
+    if (!resp.ok) {
+      const errData = await resp.text();
+      console.error("[API ERRO]", errData);
+      throw new Error("Erro ao criar paciente");
     }
 
-    const data = await res.json(); // Supabase retorna array de rows inseridos
-    // pode vir []. vamos normalizar todos e pegar o primeiro
-    const createdArray = Array.isArray(data) ? data : [data];
-    const createdPacientes = createdArray.map(normalizePaciente);
+    const data = await resp.json();
+    return normalizePaciente(data[0]);
+  } catch (error) {
+    console.error("Erro ao criar paciente:", error);
+    throw error;
+  }
+}
 
-    // atualiza estado:
-    setPacientes((old) => {
-      const novo = [...old, ...createdPacientes];
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(novo));
-      return novo;
-    });
 
-    return createdPacientes[0] || null;
+
+  
+ // =========================================
+// ATUALIZAR PACIENTE
+// =========================================
+async function atualizarPacienteAPI(id, payload) {
+  await ensureLogin();
+
+const bodyDB = {
+  full_name: payload.nome,
+  cpf: payload.cpf,
+  email: payload.email,
+  phone_mobile: payload.telefone, // ← trocar aqui
+  birth_date: payload.data_nascimento || null,
+  created_by: sessionStorage.getItem("user_id") || "123e4567-e89b-12d3-a456-426614174000", // ← colocar um valor real
+};
+
+
+  console.log("[PATCH /patients?id=eq." + id + "] body enviado:", bodyDB);
+
+  const res = await fetch(`${API_BASE}/patients?id=eq.${id}`, {
+    method: "PATCH",
+    headers: getHeaders({ Prefer: "return=representation" }),
+    body: JSON.stringify(bodyDB),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    console.error("Erro ao atualizar paciente:", msg);
+    throw new Error(`PATCH /patients falhou ${res.status}`);
   }
 
-  // -------------------------------------------------
-  // ATUALIZAR PACIENTE (PATCH /patients?id=eq.{id})
-  // -------------------------------------------------
-  async function atualizarPacienteAPI(id, payload) {
+  const data = await res.json();
+  const updated = Array.isArray(data) ? data[0] : data;
+  const normalized = normalizePaciente(updated);
+
+  setPacientes((prev) => {
+    const novo = prev.map((p) => (p.id === id ? normalized : p));
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(novo));
+    return novo;
+  });
+}
+
+// =======================================================
+// 🔹 EXCLUIR PACIENTE (DELETE)
+// =======================================================
+async function removerPacienteAPI(id) {
+  try {
+    if (!window.confirm("Deseja realmente excluir este paciente?")) return;
+    
     await ensureLogin();
 
-    const bodyDB = {
-      full_name: payload.nome,
-      cpf: payload.cpf,
-      email: payload.email,
-      phone: payload.telefone,
-      birth_date: payload.data_nascimento || null,
-    };
+    console.log(`[DELETE] Tentando excluir paciente id=${id}...`);
 
-    const res = await fetch(`${API_BASE}/patients?id=eq.${id}`, {
-      method: "PATCH",
-      headers: getHeaders({ Prefer: "return=representation" }),
-      body: JSON.stringify(bodyDB),
-    });
+    const res = await fetch(
+      `${API_BASE}/patients?id=eq.${id}`, 
+      {
+        method: "DELETE",
+        headers: getHeaders(), 
+      }
+    );
 
-    if (!res.ok) {
-      throw new Error(`PATCH /patients falhou ${res.status}`);
-    }
+    const txt = await res.text();
+    console.log("[DELETE resposta]", res.status, txt);
 
-    const data = await res.json();
-    const updated = Array.isArray(data) ? data[0] : data;
-    const normalized = normalizePaciente(updated);
+    // Supabase retorna 204 No Content em sucesso, sem corpo de resposta
+    if (res.status !== 204 && !res.ok) throw new Error(`Falha ao excluir paciente (${res.status})`);
 
-    // atualiza no estado/localStorage
-    setPacientes((prev) => {
-      const novo = prev.map((p) => (p.id === id ? normalized : p));
+    // Remove o paciente da lista localmente:
+    setPacientes((antigos) => {
+      const novo = antigos.filter((p) => p.id !== id);
       localStorage.setItem(LOCAL_KEY, JSON.stringify(novo));
       return novo;
     });
+
+    alert("✅ Paciente excluído com sucesso!");
+  } catch (err) {
+    console.error("[Pacientes] Erro ao excluir:", err);
+    alert("❌ Erro ao excluir paciente (ver console).");
   }
-
-  // -------------------------------------------------
-  // REMOVER PACIENTE (DELETE /patients?id=eq.{id})
-  // -------------------------------------------------
-  async function removerPacienteAPI(id) {
-    await ensureLogin();
-
-    const res = await fetch(`${API_BASE}/patients?id=eq.${id}`, {
-      method: "DELETE",
-      headers: getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error(`DELETE /patients falhou ${res.status}`);
-    }
-
-    setPacientes((prev) => {
-      const novo = prev.filter((p) => p.id !== id);
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(novo));
-      return novo;
-    });
-  }
+}
 
   // -------------------------------------------------
   // modal / form handlers
@@ -311,24 +333,40 @@ async function listarPacientes({ forceRemote = false } = {}) {
     setModalOpen(false);
   }
 
-  async function handleSalvar() {
-    if (!form.nome || !form.cpf) {
-      alert("Preencha pelo menos Nome e CPF");
-      return;
+async function handleSalvar() {
+  try {
+    await ensureLogin();
+    const token = sessionStorage.getItem("token");
+
+    const payload = {
+      full_name: form.nome,
+      cpf: form.cpf,
+      email: form.email,
+      phone_mobile: form.telefone,
+      birth_date: form.data_nascimento || null,
+      created_by: sessionStorage.getItem("user_id") || null,
+    };
+
+    if (editingId) {
+      // EDITANDO
+      await atualizarPacienteAPI(editingId, payload);
+      alert("Paciente atualizado com sucesso!");
+    } else {
+      // CRIANDO
+      await criarPacienteAPI(payload, token);
+      alert("Paciente criado com sucesso!");
     }
 
-    try {
-      if (editingId) {
-        await atualizarPacienteAPI(editingId, form);
-      } else {
-        await criarPacienteAPI(form);
-      }
-      fecharModal();
-    } catch (err) {
-      console.error("[Pacientes] erro ao salvar:", err);
-      alert("Não foi possível salvar o paciente (permite RLS? colunas batem?)");
-    }
+    listarPacientes({ forceRemote: true });
+    fecharModal();
+
+  } catch (err) {
+    console.error("[Pacientes] erro ao salvar:", err);
+    alert("Erro ao salvar paciente. Veja o console.");
   }
+}
+
+
 
   async function handleRemover(id) {
     if (!window.confirm("Tem certeza que deseja remover este paciente?")) return;
@@ -713,6 +751,7 @@ async function listarPacientes({ forceRemote = false } = {}) {
           font-size:14px;
         }
       `}</style>
+      <AccessibilityMenu />
     </div>
   );
 }

@@ -1,0 +1,92 @@
+/* src/components/AccessibilityMenu.css */
+.acessibilidade-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  top: auto !important;
+  left: auto !important;
+  background: linear-gradient(135deg, #3fbbc0, #2ca5aa);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(63, 187, 192, 0.4), 0 2px 8px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  z-index: 1000;
+}
+.acessibilidade-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 8px 24px rgba(63, 187, 192, 0.5), 0 4px 12px rgba(0,0,0,0.25);
+}
+.acessibilidade-btn:active {
+  transform: scale(1.02);
+}
+.menu-acessibilidade {
+  position: fixed;
+  bottom: 98px;
+  right: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+  padding: 16px;
+  width: 240px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+.menu-acessibilidade.active { 
+  display: flex;
+  animation: slideUp 0.2s ease-out;
+}
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.menu-acessibilidade h4 {
+  margin-bottom: 10px;
+  text-align: center;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+  color: #333;
+  font-weight: 700;
+  font-size: 16px;
+}
+.menu-item {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #444;
+  transition: all 0.2s;
+  text-align: center;
+}
+.menu-item:hover { 
+  background: #e7f3f4;
+  border-color: #3fbbc0;
+  color: #3fbbc0;
+  transform: translateX(2px);
+}
+
+.modo-daltonico .acessibilidade-btn {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  top: auto !important;
+  left: auto !important;
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { listPacientes } from '@/services/api/pacientes';
 import { listarMedicos } from '@/services/api/medicos';
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 // Ícones importados do 'react-icons/fa' (versão corrigida)
 import { FaHeartbeat, FaColumns, FaCalendarCheck, FaUsers, FaUserMd, FaFileInvoice, FaCog, FaBars, FaSearch, FaBell, FaDollarSign, FaChevronRight } from 'react-icons/fa';
 // Importa os componentes necessários do Chart.js, incluindo o BarController
@@ -330,6 +331,7 @@ export default function App() {
                   )}
                 </div>
               </div>
+              <AccessibilityMenu />
             </>
           );
   }

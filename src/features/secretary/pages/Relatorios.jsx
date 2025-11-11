@@ -17,6 +17,7 @@ import { listarLaudosAdmin } from "@/lib/pacientesService";
 
 // 2. Usa o MESMO CSS da sua lista de usuários (para manter o estilo)
 import "@/features/admin/pages/UsersList.css"; 
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 export default function Relatorios() {
   const navigate = useNavigate();
@@ -285,6 +286,7 @@ export default function Relatorios() {
         </footer>
       </div>
     )}
+    <AccessibilityMenu />
   </div>
   );
 }

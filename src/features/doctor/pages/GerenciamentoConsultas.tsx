@@ -8,7 +8,10 @@ import { supabase } from '@/lib/supabase';
 
 import '@/styles/GerenciamentoPacientesPage.css';
 
+// Ícones
+import { Stethoscope, Search } from 'lucide-react';
 import { FaSearch, FaEye, FaCheck, FaTimes, FaUserMd, FaPlus } from 'react-icons/fa';
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 // -----------------------------
 // Tipos

@@ -687,8 +687,14 @@
 
 
 body.modo-escuro {
+  --bg-dash: #1c1c1c !important; /* Fundo principal */
+  --text-dash: #e0e0e0 !important; /* Texto principal claro */
+  --card-bg-dash: #252525 !important; /* Fundo dos cards escuro */
+  --shadow-dash: 0 10px 25px -10px rgba(0, 0, 0, 0.4) !important;
+
   background-color: #121212 !important;
   color: #e0e0e0 !important;
+  
 }
 
 /* Ajusta as cores de fundo */
@@ -775,21 +781,7 @@ body.modo-escuro .menu-acessibilidade h4 {
   border-bottom: 2px solid #333 !important;
 }
 
-/* Modo daltônico (opção de acessibilidade) */
-body.modo-daltonico {
-  filter: hue-rotate(45deg) saturate(110%);
-}
-body.modo-escuro.modo-daltonico {
-  filter: hue-rotate(30deg) saturate(115%) brightness(0.9);
-  background-color: #121212 !important;
-  color: #e0e0e0 !important;
-}
-/* Garante que o menu em modo misto fique visível */
-body.modo-escuro.modo-daltonico .menu-acessibilidade {
-  background: #1f1f1f !important;
-  color: #fafafa !important;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
-}
+
 
 /* NOVO: Ajuste de botões no Header */
 body.modo-escuro .btn-inicio {
@@ -869,4 +861,64 @@ body.modo-escuro .mes-ano {
 /* Garante que o indicador de consulta (.dia.com-consulta::after) tenha contraste */
 body.modo-escuro .dia.com-consulta::after {
   background: #5eead4 !important; /* Ponto de cor clara da marca */
+}
+
+.card.horizontal-consultas .card-body {
+  /* Firefox: Thumb (cursor) e Track (trilho) */
+  scrollbar-color: #d1d5db #f8fafb; 
+  scrollbar-width: thin; 
+}
+
+/* Tamanho da barra para WebKit (Chrome/Safari) */
+.card.horizontal-consultas .card-body::-webkit-scrollbar {
+  height: 12px;
+}
+
+/* Trilho (Fundo) da barra no Modo Claro (Muito Claro) */
+.card.horizontal-consultas .card-body::-webkit-scrollbar-track {
+  background: #f8fafb; /* Cinza muito claro, sutil */
+  border-radius: 10px;
+}
+
+/* Polegar (Cursor) da barra no Modo Claro (Cinza claro) */
+.card.horizontal-consultas .card-body::-webkit-scrollbar-thumb {
+  background-color: #d1d5db; /* Cinza claro para o cursor */
+  border-radius: 10px;
+  border: 3px solid #f8fafb; /* Borda da cor do trilho */
+}
+
+
+/* 2. OVERRIDE PARA O MODO ESCURO */
+
+/* Firefox Dark Mode */
+body.modo-escuro .card.horizontal-consultas .card-body {
+  scrollbar-color: #555 #1c1c1c; 
+}
+
+/* Trilho (Fundo) da barra no Modo Escuro (Fundo escuro) */
+body.modo-escuro .card.horizontal-consultas .card-body::-webkit-scrollbar-track {
+  background: #1c1c1c; 
+}
+
+/* Polegar (Cursor) da barra no Modo Escuro (Cinza escuro) */
+body.modo-escuro .card.horizontal-consultas .card-body::-webkit-scrollbar-thumb {
+  background-color: #555; 
+  border: 3px solid #1c1c1c;
+}
+
+
+/* Modo daltônico (opção de acessibilidade) */
+body.modo-daltonico {
+  filter: hue-rotate(45deg) saturate(110%);
+}
+body.modo-escuro.modo-daltonico {
+  filter: hue-rotate(30deg) saturate(115%) brightness(0.9);
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+/* Garante que o menu em modo misto fique visível */
+body.modo-escuro.modo-daltonico .menu-acessibilidade {
+  background: #1f1f1f !important;
+  color: #fafafa !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
 }

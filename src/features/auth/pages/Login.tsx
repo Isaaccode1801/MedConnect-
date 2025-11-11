@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import medLogo from "@/assets/Medconnect.logo.png";
 import { Mail, Lock } from "lucide-react";
+import AccessibilityMenu from "@/components/ui/AccessibilityMenu";
 
 function resolveRouteByRole(role: string) {
   switch ((role || "").toLowerCase()) {
@@ -469,6 +470,7 @@ export default function Login() {
             Cadastre-se
           </button>
         </p>
+        <AccessibilityMenu />
       </div>
     </div>
   );
