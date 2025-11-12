@@ -18,6 +18,7 @@ import {
   Views,
   View,
   SlotInfo,
+  ToolbarProps,
 } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./smart-calendar.css";
@@ -37,21 +38,20 @@ type Availability = {
   end_time: string;         // "12:00"
 };
 
+const DEFAULT_DURATION_MIN = 30; // duração padrão da consulta
+
+/* ----------------- Localizer (pt-BR) ----------------- */
 const locales: Record<string, Locale> = { "pt-BR": ptBR };
 const localizer = dateFnsLocalizer({
   format: (date, formatStr) => fnsFormat(date, formatStr, { locale: ptBR }),
   parse: (dateString, formatString) =>
     parse(dateString, formatString, new Date(), { locale: ptBR }),
-  startOfWeek: () => startOfWeek(new Date(), { locale: ptBR }),
+  startOfWeek: () => startOfWeek(new Date(), { locale: ptBR, weekStartsOn: 0 }),
   getDay,
   locales,
 });
 
 /* ----------------- Helpers ----------------- */
-const DEFAULT_DURATION_MIN = 30; // ajuste como preferir (45/60/etc.)
-// Trata 'scheduled_at' vindo do PostgREST em qualquer formato.
-// - Se tiver timezone no texto (Z ou ±HH:MM), usa Date nativo (que já converte p/ local).
-// - Se NÃO tiver timezone, cria um Date no "horário de parede" local para evitar o shift de -3h.
 // Remove o timezone (Z ou ±HH:MM) do final, se houver
 const stripTZ = (s: string) => s.replace(/([zZ]|[+\-]\d{2}:\d{2})$/, "");
 
@@ -61,14 +61,13 @@ function parseLocalWallTime(s: string) {
   const [date, time = "00:00:00"] = norm.split("T");
   const [y, m, d] = date.split("-").map(Number);
   const [hh = 0, mm = 0, ss = 0] = time.split(":").map(Number);
-  return new Date(y, (m || 1) - 1, d || 1, hh, mm, ss, 0); // <-- sem conversão de fuso
+  return new Date(y, (m || 1) - 1, d || 1, hh, mm, ss, 0); // sem conversão de fuso
 }
 
 // Parser unificado: SEMPRE interpreta como hora local (mesmo que venha com Z)
 function parseScheduledAt(s: string): Date {
   return parseLocalWallTime(s);
 }
-
 
 const parseHHMM = (hhmm: string) => {
   const [h, m] = hhmm.split(":").map(Number);
@@ -81,6 +80,55 @@ const addHM = (d: Date, hhmm: string) => {
   nd.setHours(h, m, 0, 0);
   return nd;
 };
+
+/* ----------------- Toolbar custom (pílulas + label central) ----------------- */
+function SegmentedToolbar({ label, onNavigate, onView, view }: ToolbarProps) {
+  const is = (v: View) => view === v;
+  return (
+    <div className="mc-toolbar">
+      <div className="mc-toolbar-left">
+        <button className="mc-btn ghost" onClick={() => onNavigate?.("TODAY")}>Hoje</button>
+        <div className="mc-nav">
+          <button aria-label="Anterior" className="mc-icon-btn" onClick={() => onNavigate?.("PREV")}>‹</button>
+          <button aria-label="Próximo" className="mc-icon-btn" onClick={() => onNavigate?.("NEXT")}>›</button>
+        </div>
+      </div>
+
+      <div className="mc-toolbar-center">
+        <span className="mc-label">{label}</span>
+      </div>
+
+      <div className="mc-toolbar-right">
+        <div className="mc-segment">
+          <button
+            className={`mc-seg ${is(Views.DAY) ? "active" : ""}`}
+            onClick={() => onView?.(Views.DAY)}
+          >
+            Dia
+          </button>
+          <button
+            className={`mc-seg ${is(Views.WEEK) ? "active" : ""}`}
+            onClick={() => onView?.(Views.WEEK)}
+          >
+            Semana
+          </button>
+          <button
+            className={`mc-seg ${is(Views.MONTH) ? "active" : ""}`}
+            onClick={() => onView?.(Views.MONTH)}
+          >
+            Mês
+          </button>
+          <button
+            className={`mc-seg ${is(Views.AGENDA) ? "active" : ""}`}
+            onClick={() => onView?.(Views.AGENDA)}
+          >
+            Agenda
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ----------------- Componente ----------------- */
 export default function SmartCalendar() {
@@ -133,21 +181,17 @@ export default function SmartCalendar() {
 
       if (apptErr) throw apptErr;
 
-const DEFAULT_DURATION_MIN = 30; // ajuste se quiser
+      const mapped: RbcEvent[] = (appts || []).map((row: any) => {
+        const start = parseScheduledAt(row.scheduled_at as string);
+        const end = new Date(start.getTime() + DEFAULT_DURATION_MIN * 60_000);
 
-const mapped: RbcEvent[] = (appts || []).map((row: any) => {
-  const start = parseScheduledAt(row.scheduled_at as string);
-  const end = new Date(start.getTime() + DEFAULT_DURATION_MIN * 60_000);
+        const patient =
+          (Array.isArray(row.patients)
+            ? row.patients?.[0]?.full_name
+            : row.patients?.full_name) || "Consulta";
 
-  const patient =
-    (Array.isArray(row.patients)
-      ? row.patients?.[0]?.full_name
-      : row.patients?.full_name) || "Consulta";
-
-  return { id: row.id, title: patient, start, end };
-});
-
-
+        return { id: row.id, title: patient, start, end };
+      });
 
       setEvents(mapped);
 
@@ -237,11 +281,11 @@ const mapped: RbcEvent[] = (appts || []).map((row: any) => {
       background:
         "linear-gradient(180deg, rgba(20,184,166,0.95) 0%, rgba(13,148,136,0.95) 100%)",
       color: "#fff",
-      boxShadow: "0 4px 14px rgba(13,148,136,0.25)",
+      boxShadow: "0 6px 16px rgba(13,148,136,0.25)",
       padding: "6px 8px",
       lineHeight: 1.25,
       fontSize: 13.5,
-      fontWeight: 600,
+      fontWeight: 700,
     },
   });
 
@@ -263,7 +307,8 @@ const mapped: RbcEvent[] = (appts || []).map((row: any) => {
     eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
       `${fnsFormat(start, "HH:mm")}–${fnsFormat(end, "HH:mm")}`,
     agendaTimeFormat: (date: Date) => fnsFormat(date, "HH:mm"),
-    dayHeaderFormat: (date: Date) => fnsFormat(date, "EEEE, dd 'de' MMMM", { locale: ptBR }),
+    dayHeaderFormat: (date: Date) =>
+      fnsFormat(date, "EEEE, dd 'de' MMMM", { locale: ptBR }),
     dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }) =>
       `${fnsFormat(start, "dd/MM")} – ${fnsFormat(end, "dd/MM")}`,
   };
@@ -275,8 +320,25 @@ const mapped: RbcEvent[] = (appts || []).map((row: any) => {
     return d;
   }, []);
 
+  // min/max dinâmicos (se houver disponibilidade; senão fallback 7–20h)
+  const { minTime, maxTime } = useMemo(() => {
+    const hours: number[] = [];
+    Object.values(availability).forEach((arr) =>
+      arr?.forEach(({ start_time, end_time }) => {
+        const { h: hs } = parseHHMM(start_time);
+        const { h: he } = parseHHMM(end_time);
+        hours.push(hs, he);
+      })
+    );
+    const minH = hours.length ? Math.min(...hours) : 7;
+    const maxH = hours.length ? Math.max(...hours) : 20;
+    const min = new Date(1970, 1, 1, minH, 0, 0);
+    const max = new Date(1970, 1, 1, Math.max(maxH, minH + 1), 0, 0);
+    return { minTime: min, maxTime: max };
+  }, [availability]);
+
   return (
-    <div className="w-full">
+    <div className="mc-calendar-wrap mc-light">
       <Calendar
         localizer={localizer}
         culture="pt-BR"
@@ -290,19 +352,32 @@ const mapped: RbcEvent[] = (appts || []).map((row: any) => {
         onRangeChange={handleRangeChange}
         selectable
         onSelectSlot={onSelectSlot}
-        style={{ height: 760 }}
+        style={{ height: "76vh" }}
         popup                 // “+x mais” quando lotado
         showMultiDayTimes
         step={30}
         timeslots={1}
-        min={new Date(1970, 1, 1, 7, 0, 0)}
-        max={new Date(1970, 1, 1, 20, 0, 0)}   // fallback até 20:00
+        min={minTime}
+        max={maxTime}
         slotPropGetter={slotPropGetter}
         eventPropGetter={eventPropGetter}
         scrollToTime={scrollToTime}
         formats={formats}
         components={{
           event: EventCard,
+          toolbar: (props) => (
+            <SegmentedToolbar
+              {...props}
+              label={
+                view === Views.WEEK
+                  ? formats.dayRangeHeaderFormat!({
+                      start: props.date as Date,
+                      end: addWeeks(props.date as Date, 1),
+                    } as any)
+                  : props.label
+              }
+            />
+          ),
         }}
         messages={{
           next: "Próximo",

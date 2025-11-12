@@ -272,17 +272,7 @@ export default function PaginaCadastroPaciente() {
 
     return (
         <>
-            {/* Header (Adapte ou remova se usar um layout global) */}
-            <header className="app-header" /* ... estilos ... */>
-                 {/* ... conteúdo do header do seu HTML ... */}
-                 <div className="app-brand"> {/* ... */} </div>
-                 <nav className="top-nav">
-                    {/* Use <Link> ou <button onClick={() => navigate(...)> */}
-                     <Link to="/doctor/pacientes" data-page="pacientes">Pacientes</Link>
-                     <Link to="/doctor/laudos" data-page="laudos">Laudos</Link>
-                     <Link to="#" data-page="cadastro" className="active">Cadastro</Link>
-                 </nav>
-            </header>
+
 
             <main className="container" style={{ maxWidth: '1100px', margin: '20px auto', padding: '0 12px' }}>
                 <div className="card">

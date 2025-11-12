@@ -360,3 +360,16 @@ tbody tr td {
     padding: 20px 16px;
   }
 }
+
+.table-scroll {
+  max-height: 60vh;
+  overflow: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+.table thead.thead {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+}

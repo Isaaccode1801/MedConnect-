@@ -1,48 +1,155 @@
+/* ===================== Tokens (tema claro) ===================== */
+:root {
+  --mc-bg: #ffffff;             /* fundo */
+  --mc-card: #ffffff;           /* cartão / contêiner */
+  --mc-muted: #667085;          /* texto auxiliar */
+  --mc-text: #0f172a;           /* texto principal */
+  --mc-border: #e6eaf0;         /* bordas suaves */
+  --mc-header-bg: #f8fafc;      /* cabeçalho de grade */
+  --mc-header-grad: linear-gradient(180deg, #fbfdff 0%, #f5f9fc 100%);
+
+  --mc-teal-50: #f0fdfa;
+  --mc-teal-100: #e6fffb;
+  --mc-teal-200: #bff3ea;
+  --mc-teal-500: #14b8a6;
+  --mc-teal-600: #0ea5a3;
+
+  --mc-focus: #0ea5e9;          /* azul leve p/ foco */
+  --mc-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+}
+
+/* Wrapper branco com leve destaque */
+.mc-calendar-wrap.mc-light {
+  width: 100%;
+  background: var(--mc-card);
+  border: 1px solid var(--mc-border);
+  border-radius: 16px;
+  box-shadow: var(--mc-shadow);
+  padding: 12px;
+}
+
+/* ===================== Toolbar ===================== */
+.mc-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 10px;
+}
+
+.mc-toolbar-left,
+.mc-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mc-toolbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mc-label {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--mc-text);
+  letter-spacing: 0.2px;
+}
+
+/* Botões base (brancos) */
+.mc-btn {
+  border-radius: 12px;
+  border: 1px solid var(--mc-border);
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  background: #fff;
+  color: var(--mc-text);
+  transition: all .15s ease;
+}
+.mc-btn:hover { background: #ffffff; box-shadow: 0 6px 16px rgba(20,184,166,0.12); }
+.mc-btn.ghost { background: #fff; }
+
+/* Navegação anterior/próximo */
+.mc-icon-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid var(--mc-border);
+  background: #fff;
+  font-weight: 700;
+  color: var(--mc-text);
+  transition: box-shadow .15s ease, transform .06s ease;
+}
+.mc-icon-btn:hover { box-shadow: 0 6px 16px rgba(20,184,166,0.12); }
+.mc-icon-btn:active { transform: translateY(1px); }
+.mc-nav { display: inline-flex; gap: 6px; }
+
+/* Segmentado (Dia/Semana/Mês/Agenda) */
+.mc-segment {
+  background: var(--mc-header-bg);
+  border: 1px solid var(--mc-border);
+  border-radius: 12px;
+  padding: 4px;
+  display: inline-flex;
+  gap: 4px;
+}
+.mc-seg {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--mc-text);
+  transition: background .15s ease, box-shadow .15s ease;
+}
+.mc-seg:hover {
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(20,184,166,0.10);
+}
+.mc-seg.active {
+  background: var(--mc-teal-50);
+  color: var(--mc-text);
+  box-shadow: inset 0 0 0 1px var(--mc-teal-200);
+}
+
+/* ===================== Big Calendar base ===================== */
+.rbc-time-view, .rbc-month-view, .rbc-agenda-view {
+  border-radius: 14px;
+  border: 1px solid var(--mc-border);
+  overflow: hidden;
+  background: var(--mc-bg);
+}
+
+.rbc-time-header, .rbc-header {
+  background: var(--mc-header-grad);
+  color: var(--mc-text);
+  font-weight: 700;
+  border-bottom: 1px solid var(--mc-border);
+}
+
 /* Altura dos slots/células (mais legível) */
 .rbc-time-content .rbc-time-slot,
 .rbc-time-gutter .rbc-timeslot-group {
-  height: 52px; /* ajuste 44–60 conforme preferir */
+  height: 52px;
 }
 
-/* Gutter (coluna de horários) mais claro e com fonte melhor */
+/* Gutter (coluna de horários) suave e legível */
 .rbc-time-gutter .rbc-timeslot-group {
-  color: #667085;
+  color: var(--mc-muted);
   font-size: 12.5px;
 }
 
-/* Cabeçalho da semana/dia */
-.rbc-toolbar {
-  padding: 8px 6px;
-  gap: 8px;
-}
-.rbc-toolbar button {
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  padding: 6px 10px;
-  font-weight: 600;
-  color: #0f172a;
-  background: #fff;
-}
-.rbc-toolbar button.rbc-active,
-.rbc-toolbar button:focus {
-  background: #ecfeff;
-  border-color: #99f6e4;
-  outline: none;
+.rbc-time-content, .rbc-day-slot, .rbc-month-row, .rbc-row-segment {
+  border-color: var(--mc-border);
 }
 
-/* Grades mais suaves */
-.rbc-time-view, .rbc-month-view {
-  border-radius: 14px;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
-}
-.rbc-time-header, .rbc-header {
-  background: #f8fafc;
-  color: #0f172a;
-  font-weight: 600;
-}
-
-/* Evento (melhora tipografia e contraste) */
+/* ===================== Eventos ===================== */
 .event-card {
   display: flex;
   flex-direction: column;
@@ -50,12 +157,12 @@
 }
 .event-card .event-time {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   opacity: 0.95;
 }
 .event-card .event-title {
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -64,21 +171,51 @@
 
 .rbc-event {
   border-radius: 12px;
+  border: 1px solid rgba(13,148,136,0.14);
+  background: linear-gradient(180deg, rgba(20,184,166,0.97) 0%, rgba(13,148,136,0.95) 100%);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(13,148,136,0.22);
+}
+
+/* Hover sutil nos blocos vazios disponíveis */
+.slot-available:hover {
+  background: var(--mc-teal-50);
 }
 
 /* Slot indisponível (fora da disponibilidade do médico) */
 .slot-unavailable {
-  pointer-events: none;        /* impede clique/drag */
+  pointer-events: none;
   filter: grayscale(0.15);
+  background:
+    repeating-linear-gradient(45deg, #f7fafc 0, #f7fafc 8px, #f1f5f9 8px, #f1f5f9 16px) !important;
+  opacity: .7;
 }
 
-/* Slot disponível: leve realce ao passar o mouse */
-.slot-available:hover {
-  background: #f0fdfa;
-}
-
-/* Linha "agora" mais visível */
+/* Linha "agora" */
 .rbc-current-time-indicator {
-  background-color: #0ea5e9;  /* azul claro */
+  background-color: var(--mc-focus);
   height: 2px;
+}
+
+/* ===================== Focus & acessibilidade ===================== */
+.mc-btn:focus,
+.mc-icon-btn:focus,
+.mc-seg:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14,165,233,.25);
+}
+
+/* ===================== Responsividade ===================== */
+@media (max-width: 992px) {
+  .mc-label { font-size: 14px; }
+  .mc-toolbar { grid-template-columns: 1fr; row-gap: 10px; }
+  .mc-toolbar-center { order: -1; }
+  .mc-calendar-wrap { padding: 10px; }
+}
+
+@media (max-width: 600px) {
+  .mc-seg { padding: 7px 10px; font-size: 12.5px; }
+  .mc-icon-btn { width: 34px; height: 34px; }
+  .rbc-time-content .rbc-time-slot,
+  .rbc-time-gutter .rbc-timeslot-group { height: 46px; }
 }

@@ -1,9 +1,8 @@
-// src/features/medico/pages/DoctorProfile.jsx (CORRIGIDO)
-import React, { useState, useEffect } from "react";
+// src/features/medico/pages/DoctorProfile.jsx
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-
-import { 
+import {
   UserCircle2,
   User,
   Mail,
@@ -12,33 +11,19 @@ import {
   BadgeInfo,
   ArrowLeft,
   Upload,
-  Loader2
+  Loader2,
 } from "lucide-react";
 
-// NOTA DE CSS: Adicione isto ao teu ficheiro CSS global (ex: Dashboard.css)
 /*
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.avatar-container:hover .avatar-overlay {
-  opacity: 1 !important;
-}
-
-.loading-icon-animation {
-  animation: spin 1s linear infinite;
-}
+CSS sugerido (global):
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.avatar-container:hover .avatar-overlay { opacity: 1 !important; }
+.loading-icon-animation { animation: spin 1s linear infinite; }
 */
 
-
-// Componente de Ícone
 function UserIcon() {
   return (
-    <UserCircle2 
-      style={{ width: '100px', height: '100px', color: '#9ca3af' }}
-      strokeWidth={1}
-    />
+    <UserCircle2 style={{ width: 100, height: 100, color: "#9ca3af" }} strokeWidth={1} />
   );
 }
 
@@ -46,111 +31,225 @@ export default function DoctorProfile() {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [avatarUrl, setAvatarUrl] = useState(null); // URL.createObjectURL
   const [isUploading, setIsUploading] = useState(false);
 
-  // --- Carregamento Inicial de Dados ---
-  useEffect(() => {
-    async function fetchProfile() {
-      setLoading(true);
-      setError("");
-      
-      try {
-        const { data, error } = await supabase.functions.invoke('user-info');
-        if (error) throw error;
-        
-        if (data) {
-          setProfileData(data);
-          if (data.profile?.avatar_url) {
-            await downloadAvatar(data.profile.avatar_url);
-          }
-        } else {
-          throw new Error("Não foi possível carregar os dados do perfil.");
-        }
-      } catch (e) {
-        console.error("Erro ao buscar perfil:", e.message);
-        setError(e.message || "Erro ao carregar dados.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProfile();
-  }, []);
+  const objectUrlRef = useRef(null); // para revogar URLs antigas
 
-  // --- Download Avatar ---
-  async function downloadAvatar(path) {
+  const SUPABASE_URL =
+    import.meta.env.VITE_SUPABASE_URL || "https://yuanqfswhberkoevtmfr.supabase.co";
+  const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  // --- util: pega token atual (SDK ou localStorage) ---
+  async function getAccessToken() {
+    const { data } = await supabase.auth.getSession();
+    return (
+      data?.session?.access_token ||
+      (() => {
+        try {
+          return localStorage.getItem("user_token");
+        } catch {
+          return null;
+        }
+      })()
+    );
+  }
+
+  // --- cria URL local a partir de blob e faz cleanup do anterior ---
+  function setAvatarFromBlob(blob) {
     try {
-      const { data, error } = await supabase.storage
-        .from('avatars')
-        .getPublicUrl(path);
-        
-      if (error) throw error;
-      setAvatarUrl(data.publicUrl + `?t=${new Date().getTime()}`);
-    } catch (error) {
-      console.error("Erro ao obter URL pública do avatar:", error.message);
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+      }
+      const url = URL.createObjectURL(blob);
+      objectUrlRef.current = url;
+      setAvatarUrl(url);
+    } catch (e) {
+      console.error("Erro ao criar URL do avatar:", e);
     }
   }
 
-  // --- Upload Avatar ---
-async function handleUploadAvatar(event) {
-    if (!event.target.files || event.target.files.length === 0) {
-      return; // Nenhum ficheiro selecionado
+  // --- baixa binário via REST GET /storage/v1/object/avatars/{path} ---
+  async function downloadAvatarREST(path) {
+    if (!path) return;
+    try {
+      const token = await getAccessToken();
+      if (!token) throw new Error("Sessão expirada. Faça login novamente.");
+
+      const resp = await fetch(
+        `${SUPABASE_URL}/storage/v1/object/avatars/${encodeURIComponent(path)}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            apikey: SUPABASE_ANON || "",
+          },
+        }
+      );
+
+      if (!resp.ok) {
+        throw new Error(`Download falhou (${resp.status})`);
+      }
+      const blob = await resp.blob();
+      setAvatarFromBlob(blob);
+      return true;
+    } catch (e) {
+      console.warn("downloadAvatarREST erro:", e.message);
+      return false;
     }
+  }
+
+  // --- tenta descobrir um caminho válido (jpg -> png) se não houver no BD/local ---
+  async function tryGuessAvatarPath(userId) {
+    const guesses = [`${userId}/avatar.jpg`, `${userId}/avatar.jpeg`, `${userId}/avatar.png`];
+    for (const g of guesses) {
+      const ok = await downloadAvatarREST(g);
+      if (ok) return g;
+    }
+    return null;
+  }
+
+  // --- Carregamento Inicial de Dados + avatar ---
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      setLoading(true);
+      setError("");
+      try {
+        // Tua function que retorna { user, profile, ... }
+        const { data, error } = await supabase.functions.invoke("user-info");
+        if (error) throw error;
+        if (!data?.user) throw new Error("Não foi possível carregar os dados do perfil.");
+
+        if (!mounted) return;
+        setProfileData(data);
+
+        const userId = data.user.id;
+
+        // 1) Preferir BD
+        let path =
+          data.profile?.avatar_url && typeof data.profile.avatar_url === "string"
+            ? data.profile.avatar_url
+            : null;
+
+        // 2) Depois localStorage (salvo após upload)
+        if (!path) {
+          try {
+            path = localStorage.getItem("avatar_path") || null;
+          } catch {
+            /* no-op */
+          }
+        }
+
+        // 3) Se ainda não, tentar descobrir por convenção (jpg/png)
+        if (!path) {
+          path = await tryGuessAvatarPath(userId);
+        } else {
+          const ok = await downloadAvatarREST(path);
+          if (!ok) {
+            // se o path salvo não existir mais, tenta adivinhar:
+            path = await tryGuessAvatarPath(userId);
+          }
+        }
+
+        // Se encontramos um path válido, garanta que fica salvo
+        if (path) {
+          try {
+            localStorage.setItem("avatar_path", path);
+          } catch {
+            /* no-op */
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao carregar perfil:", e);
+        if (mounted) setError(e.message || "Erro ao carregar dados.");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    };
+  }, []);
+
+  // --- Upload Avatar (via REST POST) e já atualiza preview usando o GET REST ---
+  async function handleUploadAvatar(event) {
+    if (!event.target.files || event.target.files.length === 0) return;
     if (!profileData?.user?.id) {
       setError("ID do usuário não encontrado. Não é possível fazer upload.");
       return;
     }
 
     const file = event.target.files[0];
+    if (!/^image\/(png|jpeg)$/.test(file.type)) {
+      setError("Envie uma imagem PNG ou JPG.");
+      return;
+    }
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      setError("A imagem deve ter no máximo 5MB.");
+      return;
+    }
+
     const userId = profileData.user.id;
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${userId}/avatar.${fileExt}`;
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const filePath = `${userId}/avatar.${ext}`;
 
     try {
       setIsUploading(true);
-      setError(""); // Limpa erros antigos
+      setError("");
 
-      // --- PASSO 1: Upload (API de Upload de avatar) ---
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true });
-        
-      if (uploadError) throw uploadError;
+      const token = await getAccessToken();
+      if (!token) throw new Error("Sessão expirada. Faça login novamente.");
 
-      // --- PASSO 2: Atualizar perfil na base de dados (IGNORADO) ---
-      
-      /*
-      // Esta secção está desativada porque a coluna 'avatar_url' não foi encontrada.
-      // Para a funcionalidade ser permanente, a coluna precisa existir na tabela 'doctors'.
-      const { error: updateError } = await supabase
-        .from('doctors') 
-        .update({ avatar_url: filePath }) // <-- O ERRO ACONTECE AQUI
-        .eq('user_id', userId);
-        
-      if (updateError) throw updateError;
-      */
-      
-      // --- PASSO 3: Atualizar a imagem exibida (Temporariamente) ---
-      // (Vamos usar a função de download para exibir a foto que acabámos de enviar)
-      await downloadAvatar(filePath);
-      
-      // Aviso de que não foi salvo permanentemente
-      setError("Upload bem-sucedido, mas a foto não será guardada permanentemente. A coluna 'avatar_url' precisa de ser criada na base de dados.");
+      const form = new FormData();
+      form.append("file", file, file.name);
 
+      const resp = await fetch(
+        `${SUPABASE_URL}/storage/v1/object/avatars/${encodeURIComponent(filePath)}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            apikey: SUPABASE_ANON || "",
+            "x-upsert": "true",
+          },
+          body: form,
+        }
+      );
 
-    } catch (error) {
-      console.error("Erro no upload:", error.message);
-      // Se o erro for do PASSO 1 (Upload), mostra-o
-      if (error.message.includes('Storage')) {
-         setError("Falha ao enviar avatar: " + error.message);
+      if (!resp.ok) {
+        const txt = await resp.text();
+        throw new Error(`Falha no upload (${resp.status}): ${txt || "erro desconhecido"}`);
       }
+
+      // Baixa imediatamente via REST GET e mostra
+      await downloadAvatarREST(filePath);
+
+      // Persiste caminho para próximos loads (até você salvar no BD)
+      try {
+        localStorage.setItem("avatar_path", filePath);
+      } catch {
+        /* no-op */
+      }
+
+      // (opcional) atualizar sua tabela de perfil, quando a coluna existir:
+      // await supabase.from("doctors").update({ avatar_url: filePath }).eq("user_id", userId);
+    } catch (err) {
+      console.error("Erro no upload:", err);
+      setError(err.message || "Falha ao enviar avatar.");
     } finally {
       setIsUploading(false);
+      event.target.value = ""; // permitir reupload do mesmo arquivo
     }
   }
 
-
-  // --- Estados de UI ---
+  // --- UI ---
   if (loading && !profileData) {
     return (
       <div style={styles.pageContainer}>
@@ -161,16 +260,14 @@ async function handleUploadAvatar(event) {
   if (error && !profileData) {
     return <div style={styles.pageContainer}>Erro: {error}</div>;
   }
-  if (!profileData || !profileData.profile || !profileData.user) {
+  if (!profileData?.user || !profileData?.profile) {
     return <div style={styles.pageContainer}>Perfil não encontrado.</div>;
   }
 
   const { user, profile } = profileData;
 
-  // --- Renderização Principal ---
   return (
     <div style={styles.pageContainer}>
-      
       <div style={styles.pageHeader}>
         <h1 style={styles.pageTitle}>O Meu Perfil</h1>
         <Link to="/doctor/dashboard" style={styles.backButton}>
@@ -180,31 +277,25 @@ async function handleUploadAvatar(event) {
       </div>
 
       {error && <p style={styles.errorText}>{error}</p>}
-      
-      <div style={styles.layoutContainer}>
 
-        {/* --- COLUNA ESQUERDA (Avatar e Nome) --- */}
+      <div style={styles.layoutContainer}>
+        {/* ESQUERDA: Avatar */}
         <div style={styles.leftColumn}>
           <div style={styles.card}>
-
-            {/* ✅ Input de Upload (com classes CSS) */}
-            <label 
-              htmlFor="avatarUpload" 
-              style={styles.avatarContainer} 
-              className="avatar-container" // Adiciona a classe para o :hover
+            <label
+              htmlFor="avatarUpload"
+              style={styles.avatarContainer}
+              className="avatar-container"
               title="Clique para trocar a foto"
             >
-              
               {avatarUrl ? (
                 <img key={avatarUrl} src={avatarUrl} alt="Avatar" style={styles.avatarImage} />
               ) : (
                 <UserIcon />
               )}
-              
-              {/* Overlay (usa estilo condicional) */}
-              <div 
+              <div
                 style={isUploading ? styles.avatarOverlayActive : styles.avatarOverlay}
-                className="avatar-overlay" // Adiciona a classe para o :hover
+                className="avatar-overlay"
               >
                 {isUploading ? (
                   <Loader2 size={32} className="loading-icon-animation" />
@@ -213,26 +304,22 @@ async function handleUploadAvatar(event) {
                 )}
               </div>
             </label>
-            
-            <input 
-              type="file" 
-              id="avatarUpload" 
+
+            <input
+              type="file"
+              id="avatarUpload"
               accept="image/png, image/jpeg"
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
               onChange={handleUploadAvatar}
               disabled={isUploading}
             />
 
-            <h2 style={styles.profileName}>
-              {profile.full_name}
-            </h2>
-            <p style={styles.profileSpecialty}>
-              {profile.specialty || "Médico(a)"}
-            </p>
+            <h2 style={styles.profileName}>{profile.full_name}</h2>
+            <p style={styles.profileSpecialty}>{profile.specialty || "Médico(a)"}</p>
           </div>
         </div>
 
-        {/* --- COLUNA DIREITA (Detalhes) --- */}
+        {/* DIREITA: Infos */}
         <div style={styles.rightColumn}>
           <div style={styles.card}>
             <div style={styles.cardHeader}>
@@ -241,7 +328,7 @@ async function handleUploadAvatar(event) {
                 Editar
               </Link>
             </div>
-            
+
             <div style={styles.infoList}>
               <div style={styles.infoItem}>
                 <div style={styles.infoLabelContainer}>
@@ -262,7 +349,7 @@ async function handleUploadAvatar(event) {
                   <Smartphone size={16} style={styles.infoIcon} />
                   <span style={styles.infoLabel}>Celular / WhatsApp</span>
                 </div>
-                <span style={styles.infoValue}>{profile.phone_mobile || 'N/A'}</span>
+                <span style={styles.infoValue}>{profile.phone_mobile || "N/A"}</span>
               </div>
               <div style={styles.infoItem}>
                 <div style={styles.infoLabelContainer}>
@@ -270,7 +357,7 @@ async function handleUploadAvatar(event) {
                   <span style={styles.infoLabel}>CRM</span>
                 </div>
                 <span style={styles.infoValue}>
-                  {profile.crm ? `${profile.crm} - ${profile.crm_uf}` : 'N/A'}
+                  {profile.crm ? `${profile.crm} - ${profile.crm_uf}` : "N/A"}
                 </span>
               </div>
               <div style={styles.infoItem}>
@@ -278,183 +365,133 @@ async function handleUploadAvatar(event) {
                   <BadgeInfo size={16} style={styles.infoIcon} />
                   <span style={styles.infoLabel}>CPF</span>
                 </div>
-                <span style={styles.infoValue}>{profile.cpf ? profile.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : 'N/A'}</span>
+                <span style={styles.infoValue}>
+                  {profile.cpf
+                    ? profile.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$4")
+                    : "N/A"}
+                </span>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
 }
 
-// =================================================================
-// ESTILOS CORRIGIDOS E REORGANIZADOS
-// =================================================================
-
+// estilos
 const styles = {
   pageContainer: {
-    padding: '24px',
-    backgroundColor: '#f9fafb',
-    minHeight: '100vh',
-    fontFamily: 'Arial, sans-serif',
+    padding: "24px",
+    backgroundColor: "#f9fafb",
+    minHeight: "100vh",
+    fontFamily: "Arial, sans-serif",
   },
-  loadingText: {
-    fontSize: '18px',
-    color: '#6b7280',
-  },
+  loadingText: { fontSize: "18px", color: "#6b7280" },
   pageHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '24px',
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "24px",
   },
-  pageTitle: {
-    margin: 0,
-    fontSize: '32px',
-    fontWeight: 700,
-    color: '#111827',
-  },
+  pageTitle: { margin: 0, fontSize: "32px", fontWeight: 700, color: "#111827" },
   backButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    textDecoration: 'none',
-    color: '#2563eb',
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    textDecoration: "none",
+    color: "#2563eb",
     fontWeight: 500,
-    fontSize: '15px',
+    fontSize: "15px",
   },
   errorText: {
-    padding: '12px 16px',
-    backgroundColor: '#fee2e2',
-    color: '#991b1b',
-    borderRadius: '8px',
-    marginBottom: '16px',
-    border: '1px solid #fecaca',
+    padding: "12px 16px",
+    backgroundColor: "#fee2e2",
+    color: "#991b1b",
+    borderRadius: "8px",
+    marginBottom: "16px",
+    border: "1px solid #fecaca",
   },
-  layoutContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: '24px',
-  },
-  leftColumn: {
-    flex: '1',
-    minWidth: '280px',
-    maxWidth: '320px',
-  },
-  rightColumn: {
-    flex: '2',
-    minWidth: '300px',
-  },
+  layoutContainer: { display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "24px" },
+  leftColumn: { flex: "1", minWidth: "280px", maxWidth: "320px" },
+  rightColumn: { flex: "2", minWidth: "300px" },
   card: {
-    backgroundColor: '#ffffff',
-    border: '1px solid #e5e7eb',
-    borderRadius: '12px',
-    padding: '24px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+    backgroundColor: "#ffffff",
+    border: "1px solid #e5e7eb",
+    borderRadius: "12px",
+    padding: "24px",
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)",
   },
   avatarContainer: {
-    position: 'relative',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '120px',
-    height: '120px',
-    borderRadius: '50%',
-    backgroundColor: '#f3f4f6',
-    margin: '0 auto 16px auto',
-    overflow: 'hidden',
-    cursor: 'pointer',
-    border: '2px dashed #d1d5db',
+    position: "relative",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: 120,
+    height: 120,
+    borderRadius: "50%",
+    backgroundColor: "#f3f4f6",
+    margin: "0 auto 16px auto",
+    overflow: "hidden",
+    cursor: "pointer",
+    border: "2px dashed #d1d5db",
   },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  // Estilo base do overlay (escondido)
+  avatarImage: { width: "100%", height: "100%", objectFit: "cover" },
   avatarOverlay: {
-    position: 'absolute',
+    position: "absolute",
     inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    color: '#ffffff',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    color: "#ffffff",
     opacity: 0,
-    transition: 'opacity 0.2s ease-in-out',
+    transition: "opacity 0.2s ease-in-out",
   },
-  // Estilo do overlay quando o upload está ATIVO
   avatarOverlayActive: {
-    position: 'absolute',
+    position: "absolute",
     inset: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    color: '#ffffff',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.7)",
+    color: "#ffffff",
     opacity: 1,
-    transition: 'opacity 0.2s ease-in-out',
+    transition: "opacity 0.2s ease-in-out",
   },
   profileName: {
-    margin: '10px 0 5px 0', 
-    textAlign: 'center',
-    fontSize: '22px',
+    margin: "10px 0 5px 0",
+    textAlign: "center",
+    fontSize: 22,
     fontWeight: 600,
-    color: '#111827',
+    color: "#111827",
   },
-  profileSpecialty: {
-    margin: 0, 
-    color: '#4b5563', 
-    textAlign: 'center',
-    fontSize: '16px',
-  },
+  profileSpecialty: { margin: 0, color: "#4b5563", textAlign: "center", fontSize: 16 },
   cardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottom: '1px solid #e5e7eb',
-    paddingBottom: '16px',
-    marginBottom: '24px',
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: "1px solid #e5e7eb",
+    paddingBottom: "16px",
+    marginBottom: "24px",
   },
   editButton: {
-    padding: '8px 16px',
-    backgroundColor: '#2563eb',
-    color: '#ffffff',
-    textDecoration: 'none',
-    borderRadius: '8px',
+    padding: "8px 16px",
+    backgroundColor: "#2563eb",
+    color: "#ffffff",
+    textDecoration: "none",
+    borderRadius: "8px",
     fontWeight: 600,
-    fontSize: '14px',
+    fontSize: "14px",
   },
   infoList: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '24px',
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "24px",
   },
-  infoItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  infoLabelContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  infoIcon: {
-    color: '#6b7280',
-    flexShrink: 0,
-  },
-  infoLabel: {
-    fontSize: '14px',
-    color: '#6b7280',
-    fontWeight: 600,
-  },
-  infoValue: {
-    fontSize: '16px',
-    color: '#111827',
-    fontWeight: 500,
-  },
+  infoItem: { display: "flex", flexDirection: "column", gap: "8px" },
+  infoLabelContainer: { display: "flex", alignItems: "center", gap: "8px" },
+  infoIcon: { color: "#6b7280", flexShrink: 0 },
+  infoLabel: { fontSize: 14, color: "#6b7280", fontWeight: 600 },
+  infoValue: { fontSize: 16, color: "#111827", fontWeight: 500 },
 };

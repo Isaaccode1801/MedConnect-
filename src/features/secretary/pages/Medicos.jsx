@@ -294,7 +294,7 @@ export default function MedicosPage() {
         <div className="appbar-inner">
           <div className="brand">
             <div>
-              <h1>HealthOne</h1>
+              <h1>MedConnect</h1>
               <small>Gerenciamento de Médicos</small>
             </div>
           </div>

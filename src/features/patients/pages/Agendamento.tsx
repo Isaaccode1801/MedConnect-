@@ -43,7 +43,7 @@ function initials(name = "") {
 }
 
 // =================================================================
-// 🚀 MODAL DE AGENDAMENTO (com disponibilidades do médico)
+// 🚀 MODAL DE AGENDAMENTO (com disponibilidades do médico + SMS)
 // =================================================================
 function ModalAgendamento({ medico, onClose }: ModalAgendamentoProps) {
   const [dataSelecionada, setDataSelecionada] = useState<Date | undefined>();
@@ -56,6 +56,13 @@ function ModalAgendamento({ medico, onClose }: ModalAgendamentoProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [patientRecordId, setPatientRecordId] = useState<string | null>(null);
+
+  // 👇 estados para SMS
+  const [sendSms, setSendSms] = useState(true);
+  const [smsSending, setSmsSending] = useState(false);
+  const [smsError, setSmsError] = useState<string | null>(null);
+  const [patientPhone, setPatientPhone] = useState<string | null>(null);
+  const [patientFullName, setPatientFullName] = useState<string | null>(null);
 
   // ---- helpers de normalização ----
   // Converte "wednesday", "quarta", "3", 3 → número 0..6
@@ -101,6 +108,41 @@ function ModalAgendamento({ medico, onClose }: ModalAgendamentoProps) {
     return `${h}:${m}`;
   }
 
+  // === Helper: chamar a Edge Function send-sms ===
+  async function sendSMSViaEdge({ phone, message, patient_id }: { phone: string; message: string; patient_id?: string }) {
+    setSmsError(null);
+    setSmsSending(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-sms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify({
+          phone_number: phone,
+          message,
+          patient_id,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || json?.success !== true) {
+        throw new Error(json?.details || json?.error || 'Falha ao enviar SMS');
+      }
+      return json; // { success: true, message_sid: "..." }
+    } catch (err: any) {
+      setSmsError(err.message || String(err));
+      throw err;
+    } finally {
+      setSmsSending(false);
+    }
+  }
+
   useEffect(() => {
     if (!medico?.id) return;
     setIsLoadingAvailability(true);
@@ -112,6 +154,7 @@ function ModalAgendamento({ medico, onClose }: ModalAgendamentoProps) {
     setDataSelecionada(undefined);
     setAvailableSlots([]);
     setHorarioSelecionado(null);
+    setSmsError(null);
 
     const fetchUserAndAvailability = async () => {
       try {
@@ -127,6 +170,18 @@ function ModalAgendamento({ medico, onClose }: ModalAgendamentoProps) {
         const patientId = await getMyPatientRecordId(authId);
         if (!patientId) throw new Error("Erro: Registro de paciente não encontrado para este usuário.");
         setPatientRecordId(patientId);
+
+        // 2.1) perfil do paciente (nome + telefone)
+        const { data: patientProfile, error: patientErr } = await supabase
+          .from('patients')
+          .select('full_name, phone_number')
+          .eq('id', patientId)
+          .single();
+
+        if (!patientErr) {
+          setPatientFullName(patientProfile?.full_name || 'Paciente');
+          setPatientPhone(patientProfile?.phone_number || null);
+        }
 
         // 3) disponibilidade ativa do médico
         const availabilityData = await listarDisponibilidadeMedico(medico.id, {
@@ -326,6 +381,27 @@ function ModalAgendamento({ medico, onClose }: ModalAgendamentoProps) {
       };
 
       await criarAgendamento(payload);
+
+      // ✉️ Envio de SMS de confirmação (opcional, não bloqueia o fluxo)
+      if (sendSms && patientPhone) {
+        const dataBR = local.toLocaleDateString("pt-BR");
+        const horaBR = local.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+        const msg = `Olá, ${patientFullName || 'Paciente'}! Sua consulta com ${medico.full_name} foi confirmada para ${dataBR} às ${horaBR}. ` +
+                    `Se não puder comparecer, responda este SMS.`;
+
+        try {
+          await sendSMSViaEdge({
+            phone: patientPhone,
+            message: msg,
+            patient_id: patientRecordId || undefined,
+          });
+          console.log('[SMS] enviado com sucesso');
+        } catch (smsErr) {
+          console.warn('[SMS] falha ao enviar:', smsErr);
+          // Mantemos o agendamento criado mesmo se o SMS falhar
+        }
+      }
+
       alert(`Agendamento realizado com ${medico.full_name} em ${format(dataSelecionada, 'dd/MM/yyyy')} às ${horarioSelecionado}.`);
       onClose();
     } catch (error: any) {
@@ -420,6 +496,26 @@ function ModalAgendamento({ medico, onClose }: ModalAgendamentoProps) {
                     />
                   </div>
                 )}
+
+                {/* Toggle do SMS de confirmação */}
+                <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    id="sendSmsToggle"
+                    type="checkbox"
+                    checked={sendSms}
+                    onChange={(e) => setSendSms(e.target.checked)}
+                    disabled={isSubmitting || smsSending}
+                  />
+                  <label htmlFor="sendSmsToggle">
+                    Enviar SMS de confirmação {smsSending && ' (enviando...)'}
+                  </label>
+                  {smsError && <span style={{ color: 'var(--danger)', marginLeft: 8 }}>Falha no SMS: {smsError}</span>}
+                  {!patientPhone && (
+                    <span style={{ color: 'var(--warning-dark, #92400e)', marginLeft: 8 }}>
+                      Cadastre um telefone no seu perfil para receber SMS.
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           )}
