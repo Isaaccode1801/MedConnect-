@@ -121,8 +121,9 @@ export default function App() {
                 .nav-links { margin-top: 0; }
                 .sidebar-header .logo-icon { color: #fff; font-size: 1.5rem; }
                 .sidebar-header .logo-text { color: #fff; font-size: 1rem; font-weight: 600; white-space: nowrap; }
-                .nav-links { flex-grow: 1; }
-                .nav-links ul { list-style: none; padding: 0; margin: 0; }
+                /* Garantir que nav-links do admin não seja sobrescrito por estilos globais */
+                .nav-links { flex-grow: 1; display: block; }
+                .sidebar .nav-links ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
                 .nav-links li { position: relative; }
                 .nav-links a {
                   display: flex;
