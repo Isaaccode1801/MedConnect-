@@ -4,49 +4,25 @@
 /* TEMA PADRÃO: Medicio-like (Light Theme) 
 /* Corrigido o erro de sintaxe 'Unknown word' e removido o tema escuro duplicado.
 /* ========================================================================= */
-:root {
-  /* Paleta Medicio */
-  --medicio-teal: #3fbbc0;
-  --medicio-teal-600: #34a3a8;
-  --medicio-teal-100: #e5f7f8;
-  --medicio-dark: #2a2d34;
-  --medicio-muted: #6b7280;
-  --medicio-border: #e5e7eb;
-  --medicio-white: #ffffff;
 
-  /* Variáveis Globais */
-  --brand-primary: var(--medicio-teal, #3fbbc0);
-  --brand-primary-600: var(--medicio-teal-600, #34a3a8);
-  --brand-accent: var(--medicio-teal, #3fbbc0);
-  --bg: var(--medicio-white, #f9f9f9); /* Fundo ligeiramente off-white */
-  --card: #ffffff;
-  --card-2: #ffffff;
-  --text: var(--medicio-dark, #2a2d34);
-  --muted: var(--medicio-muted, #6b7280);
-  --border: var(--medicio-border, #e5e7eb);
-  --ring: var(--medicio-teal, #3fbbc0);
-  --shadow: 0 8px 24px rgba(0,0,0,.06);
-  --radius: 12px;
-  --danger:#ef4444;
-  --warning:#f59e0b;
-}
 
 *{box-sizing:border-box}
 body {
   margin:0;
-  background: var(--bg) !important;
-  color: var(--text) !important;
+  background: var(--color-bg-primary) !important;
+  color: var(--color-text-primary) !important;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   line-height:1.35;
+  transition: none; /* Remove transição conflitante */
 }
 
 /* Header */
 .appbar{
   position:sticky; top:0; z-index:10;
-  background: #ffffff !important;
+  background: var(--color-bg-secondary) !important;
   backdrop-filter: none !important;
-  border-bottom: 1px solid var(--border) !important;
-  box-shadow: var(--shadow); /* Adiciona sombra leve */
+  border-bottom: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-md);
 }
 .appbar-inner{
   max-width:1200px; margin:0 auto; padding:18px 20px !important;
@@ -57,13 +33,13 @@ body {
   display:flex; align-items:center; gap:12px;
 }
 .brand h1{
-  color: var(--text) !important;
+  color: var(--color-text-primary) !important;
   letter-spacing:.2px;
-  font-size: 1.25rem; /* Aumenta um pouco */
+  font-size: 1.25rem;
   margin: 0;
 }
 .brand small{
-  color: var(--muted) !important;
+  color: var(--color-text-muted) !important;
   display: block;
   margin-top: 2px;
   font-weight: 500;
@@ -88,48 +64,84 @@ body {
 }
 
 /* Top actions / filtros */
+/* SOLUÇÃO FLEXBOX - Funciona melhor com elementos diferentes */
 .toolbar{
-  display:grid; 
-  /* 4 colunas para os 4 itens */
-  grid-template-columns: 1fr 220px 220px 160px; 
-  gap: 14px !important; 
-  margin: 24px 0 12px !important;
+  display: flex;
+  gap: 12px;
+  margin: 24px 0 16px !important;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
 }
-@media (max-width: 980px){
-  .toolbar{ grid-template-columns: 1fr 1fr; }
+
+/* Campo de pesquisa ocupa espaço flexível */
+.toolbar .field:first-child {
+  flex: 1;
+  min-width: 200px;
 }
-@media (max-width: 640px){
-  .toolbar{ grid-template-columns: 1fr; }
+
+/* Filtros e Switch com largura fixa */
+.toolbar .field:nth-child(2),
+.toolbar .field:nth-child(3),
+.toolbar .switch {
+  width: 200px;
+  flex-shrink: 0;
+}
+
+/* Botão */
+.toolbar .btn {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+/* Media Queries Flexbox */
+@media (max-width: 1024px){
+  .toolbar .field:nth-child(2),
+  .toolbar .field:nth-child(3),
+  .toolbar .switch {
+    width: 180px;
+  }
+}
+
+@media (max-width: 768px){
+  .toolbar{ 
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .toolbar .field,
+  .toolbar .switch,
+  .toolbar .btn {
+    width: 100% !important;
+  }
 }
 
 .field{
   display:flex; align-items:center; gap:10px; 
-  background: #ffffff !important;
-  border: 1px solid var(--border) !important;
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
   padding: 12px 14px !important;
   border-radius: 10px !important;
 }
-.field span { /* Estilo para o ícone de busca */
-  color: var(--muted);
+.field span {
+  color: var(--color-text-muted);
 }
 .field input,.field select{
-  width:100%; background:transparent; border:0; color:var(--text) !important; outline:none; font-size:14px;
-}
-.field select option {
-  background: #ffffff;
-  color: var(--text);
+  width:100%; background:transparent; border:0; 
+  color:var(--color-text-primary) !important; 
+  outline:none; font-size:14px;
 }
 
 .btn{
   appearance:none; 
-  border:1px solid var(--brand-primary);
-  background: var(--brand-primary) !important;
+  border:1px solid var(--color-primary);
+  background: var(--color-primary) !important;
   color: white !important;
   padding:10px 14px; 
   border-radius:12px; 
   font-weight:600; 
   cursor:pointer;
-  box-shadow: 0 6px 16px rgba(63,187,192,.25) !important;
+  box-shadow: var(--shadow-md) !important;
   transition: transform .1s ease, filter .2s ease;
   white-space:nowrap;
   display: inline-flex;
@@ -176,12 +188,14 @@ body {
   box-shadow: var(--shadow) !important;
   overflow: hidden; /* Garante que a tabela não vaze */
 }
-.card-header{
-  display:flex; align-items:center; justify-content:space-between;
-  padding: 16px 18px 10px 18px !important;
-  border-bottom: 1px solid var(--border);
+.card{
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-sm) !important;
+  overflow: hidden;
 }
-.card-header h2{margin:0; font-size:18px; color: var(--text);}
+.card-header h2{margin:0; font-size:18px; color: var(--color-text-primary);}
 .card-content{ 
   padding: 8px 18px 18px 18px !important; 
   overflow-x: auto; /* Permite scroll horizontal na tabela em telas pequenas */
@@ -779,4 +793,62 @@ body, body *,
   background-color: var(--bg-secondary);
   color: var(--text-disabled);
   cursor: not-allowed;
+}
+
+@media (max-width: 1200px){
+  .toolbar{ 
+    grid-template-columns: 1fr 180px 180px auto;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 1024px){
+  .toolbar{ 
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  
+  .toolbar .field:first-child {
+    grid-column: 1 / -1;
+  }
+  
+  .toolbar .field:nth-child(2),
+  .toolbar .field:nth-child(3) {
+    min-width: 140px;
+    max-width: none;
+  }
+  
+  .toolbar .switch {
+    grid-column: 1;
+    min-width: 100%;
+    max-width: none;
+    justify-self: stretch;
+  }
+  
+  .toolbar .btn {
+    grid-column: 2;
+    min-width: 120px;
+    max-width: none;
+    justify-self: end;
+  }
+}
+
+@media (max-width: 768px){
+  .toolbar{ 
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .toolbar .field,
+  .toolbar .switch,
+  .toolbar .btn {
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    justify-self: stretch !important;
+  }
+  
+  .toolbar .btn {
+    grid-column: 1;
+  }
 }

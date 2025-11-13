@@ -5,48 +5,54 @@
   margin: 0 auto;
   padding: 24px;
   font-family: Arial, sans-serif;
-  color: #333;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  min-height: 100vh;
 }
 
 .pa-header {
   margin-bottom: 32px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
   padding-bottom: 16px;
 }
 
 .pa-header h1 {
   font-size: 32px;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text-primary);
   margin: 0 0 8px 0;
 }
 
 .pa-header p {
   font-size: 16px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
 .pa-loading,
-.pa-error,
 .pa-empty {
   text-align: center;
   padding: 48px;
-  color: #6b7280;
-  background-color: #f9fafb;
+  color: var(--color-text-muted);
+  background-color: var(--color-bg-tertiary);
   border-radius: 12px;
-  border: 1px dashed #d1d5db;
+  border: 1px dashed var(--color-border);
 }
 
 .pa-error {
+  text-align: center;
+  padding: 48px;
   color: #991b1b;
   background-color: #fee2e2;
   border-color: #fecaca;
+  border-radius: 12px;
+  border: 1px dashed #fecaca;
 }
 
 .pa-empty svg {
   margin-bottom: 16px;
   opacity: 0.5;
+  color: var(--color-text-muted);
 }
 
 .pa-list {
@@ -55,16 +61,17 @@
 }
 
 .pa-card {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .pa-card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .pa-card-header {
@@ -72,11 +79,11 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background-color: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background-color: var(--color-bg-tertiary);
+  border-bottom: 1px solid var(--color-border);
   font-size: 15px;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text-primary);
 }
 
 .pa-card-body {
@@ -91,7 +98,7 @@
 
 .pa-doctor-info svg {
   font-size: 24px;
-  color: #0d9488; /* Cor principal (Teal) */
+  color: var(--color-primary);
   flex-shrink: 0;
 }
 
@@ -102,19 +109,19 @@
 
 .pa-doctor-info strong {
   font-size: 18px;
-  color: #111827;
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 
 .pa-doctor-info span {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 .pa-card-footer {
   padding: 12px 16px;
-  background-color: #f9fafb;
-  border-top: 1px solid #e5e7eb;
+  background-color: var(--color-bg-tertiary);
+  border-top: 1px solid var(--color-border);
   text-align: right;
 }
 
@@ -126,28 +133,83 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
+  border: 1px solid transparent;
 }
 
+/* Status no modo claro */
 .pa-badge.status-completed {
   background-color: #dcfce7;
   color: #166534;
+  border-color: #bbf7d0;
 }
+
 .pa-badge.status-confirmed {
   background-color: #dbeafe;
   color: #1d4ed8;
+  border-color: #bfdbfe;
 }
+
 .pa-badge.status-cancelled {
   background-color: #fee2e2;
   color: #991b1b;
+  border-color: #fecaca;
 }
+
 .pa-badge.status-requested {
   background-color: #fef3c7;
   color: #92400e;
+  border-color: #fde68a;
+}
+
+/* Status no modo escuro */
+.modo-escuro .pa-badge.status-completed {
+  background-color: #065f46;
+  color: #d1fae5;
+  border-color: #047857;
+}
+
+.modo-escuro .pa-badge.status-confirmed {
+  background-color: #1e40af;
+  color: #dbeafe;
+  border-color: #3730a3;
+}
+
+.modo-escuro .pa-badge.status-cancelled {
+  background-color: #7f1d1d;
+  color: #fecaca;
+  border-color: #991b1b;
+}
+
+.modo-escuro .pa-badge.status-requested {
+  background-color: #78350f;
+  color: #fef3c7;
+  border-color: #92400e;
 }
 
 /* Opacidade para consultas canceladas */
 .pa-card.status-cancelled {
   opacity: 0.7;
-  background-color: #fdfdfd;
+  background-color: var(--color-bg-tertiary);
 }
 
+/* Garante que ícones tenham boa visibilidade no modo escuro */
+.modo-escuro .pa-doctor-info svg {
+  color: var(--color-primary);
+  opacity: 0.9;
+}
+
+/* Correção para textos que podem ficar com contraste ruim */
+.modo-escuro .pa-header p,
+.modo-escuro .pa-doctor-info span {
+  color: var(--color-text-muted);
+}
+
+/* Garante que a página ocupe 100% da altura */
+.patient-appointments-page {
+  min-height: calc(100vh - 100px); /* Ajuste conforme seu header */
+}
+
+/* Se tiver algum container pai, garanta o fundo escuro */
+.modo-escuro .patient-appointments-container {
+  background-color: var(--color-bg-primary);
+}

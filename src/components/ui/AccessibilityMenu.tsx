@@ -1,22 +1,18 @@
 // src/components/AccessibilityMenu.tsx
 import { useState, useEffect } from "react";
 import { MdOutlineAccessibilityNew } from "react-icons/md";
+import { useDarkMode } from "@/hooks/useDarkMode";
 import "./AccessibilityMenu.css";
 
 export default function AccessibilityMenu() {
   const [acessOpen, setAcessOpen] = useState(false);
-  const [dark, setDark] = useState(() => 
-    JSON.parse(localStorage.getItem("modoEscuro") || "false")
-  );
+  const { isDark, toggle: toggleDarkMode } = useDarkMode();
   const [daltonico, setDaltonico] = useState(() => 
     JSON.parse(localStorage.getItem("modoDaltonico") || "false")
   );
 
   // Efeito para modo escuro
-  useEffect(() => {
-    document.body.classList.toggle("modo-escuro", dark);
-    localStorage.setItem("modoEscuro", JSON.stringify(dark));
-  }, [dark]);
+  
 
   // Efeito para modo daltônico
   useEffect(() => {
@@ -43,7 +39,8 @@ export default function AccessibilityMenu() {
   const resetA11y = () => {
     document.documentElement.style.fontSize = "";
     setDaltonico(false);
-    setDark(false);
+    const { disable } = useDarkMode();
+    disable();
   };
 
   
@@ -66,8 +63,8 @@ export default function AccessibilityMenu() {
         <button className="menu-item" onClick={toggleDaltonico}>
           Modo daltônico
         </button>
-        <button className="menu-item" onClick={() => setDark(v => !v)}>
-          {dark ? "Modo claro" : "Modo escuro"}
+        <button className="menu-item" onClick={toggleDarkMode}>
+          {isDark ? "Modo claro" : "Modo escuro"}
         </button>
         <button className="menu-item" onClick={resetA11y}>Reset</button>
       </div>

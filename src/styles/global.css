@@ -1,44 +1,220 @@
 @import "tailwindcss";
 
-/* Root sizing to allow full-bleed sections (hero 100vh etc.) */
+/* ===== VARIÁVEIS CSS PARA MODO CLARO/ESCURO ===== */
+:root {
+  /* MODO CLARO (default) */
+  --color-bg-primary: #f8fafc;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f1f5f9;
+  --color-bg-card: #ffffff;
+  
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748b;
+  
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e0;
+  
+  --color-primary: #3fbbc0;
+  --color-primary-dark: #2ca5aa;
+  --color-accent: #06b6d4;
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  --loader-border: rgba(255, 255, 255, 0.25);
+  --loader-color: #fff;
+}
+
+/* MODO ESCURO */
+.modo-escuro {
+  --color-bg-primary: #0f1419;
+  --color-bg-secondary: #1a202c;
+  --color-bg-tertiary: #2d3748;
+  --color-bg-card: #1e293b;
+  
+  --color-text-primary: #f7fafc;
+  --color-text-secondary: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  
+  --color-border: #4a5568;
+  --color-border-strong: #718096;
+  
+  --color-primary: #4fd1c7;
+  --color-primary-dark: #38b2ac;
+  --color-accent: #22d3ee;
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  
+  --loader-border: rgba(255, 255, 255, 0.3);
+  --loader-color: #4fd1c7;
+}
+
+/* ===== ESTILOS BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
 html, body, #root {
   height: 100%;
   width: 100%;
 }
+
 #root {
   max-width: none;
   margin: 0;
   padding: 0;
 }
 
-/* ... seus estilos abaixo ... */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
   font-family: system-ui, sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  line-height: 1.6;
 }
+
+/* ===== COMPONENTES COMUNS ===== */
+
+/* Cards */
+.card, .dashboard-card, .pa-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-primary);
+}
+
+/* Headers */
+.dashboard-header, .doctor-header, .pa-header {
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+/* Botões */
+.btn, .btn-inicio, .btn-consulta, .page-btn {
+  background: var(--color-primary);
+  color: white;
+  border: 1px solid var(--color-primary-dark);
+  transition: all 0.2s ease;
+}
+
+.btn:hover, .btn-inicio:hover, .btn-consulta:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-secondary, .btn.secondary {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+/* Tabelas */
+.table {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
+.table th {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table td {
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+/* Inputs */
+input, select, textarea {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(63, 187, 192, 0.1);
+}
+
+input::placeholder {
+  color: var(--color-text-muted);
+}
+
 /* Loader do fallback do Spline */
 .loader {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 3px solid rgba(255,255,255,0.25);
-  border-top-color: #fff;
+  border: 3px solid var(--loader-border);
+  border-top-color: var(--loader-color);
   animation: spin .8s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+}
 
 /* Pulso suave do spotlight */
 @keyframes spotlightPulse {
   0%, 100% { opacity: .15; }
   50% { opacity: .45; }
 }
-.animate-spotlight { animation: spotlightPulse 6s ease-in-out infinite; }
 
-/* dentro de src/styles/global.css */
+.animate-spotlight { 
+  animation: spotlightPulse 6s ease-in-out infinite; 
+}
+
+/* ===== CLASSES UTILITÁRIAS ===== */
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.bg-primary {
+  background-color: var(--color-bg-primary);
+}
+
+.bg-secondary {
+  background-color: var(--color-bg-secondary);
+}
+
+.border-card {
+  border-color: var(--color-border);
+}
+
+/* ===== ACESSIBILIDADE ===== */
+.modo-daltonico {
+  /* Suas regras daltônicas existentes */
+  filter: contrast(1.4);
+}
+
+/* Garante que imagens não fiquem estranhas no modo escuro */
+.modo-escuro img {
+  filter: brightness(0.9);
+}
+
+/* Links */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+

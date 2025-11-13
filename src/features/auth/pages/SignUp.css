@@ -5,7 +5,7 @@
   min-height: 100vh;
   width: 100%;
   font-family: Arial, sans-serif;
-  background-color: #f4f7f6;
+  background-color: #1fbb87;
 }
 
 /* --- Painel Esquerdo (Azul) --- */
@@ -202,4 +202,75 @@
   .login-prompt {
     display: none; /* Esconde o "Já tem conta?" em telas pequenas */
   }
+}
+
+/* ===== MODO ESCURO PARA SIGNUP ===== */
+.modo-escuro .signup-container {
+  background-color: #0f1419;
+}
+
+.modo-escuro .signup-panel-right {
+  background-color: #1a202c;
+}
+
+.modo-escuro .signup-form-container {
+  color: #e2e8f0;
+}
+
+.modo-escuro .signup-form-container h2 {
+  color: #f7fafc;
+}
+
+.modo-escuro .signup-form-container .subtitle {
+  color: #94a3b8;
+}
+
+.modo-escuro .input-group label {
+  color: #e2e8f0;
+}
+
+.modo-escuro .input-group input[type="text"],
+.modo-escuro .input-group input[type="email"],
+.modo-escuro .input-group input[type="date"] {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: #f7fafc;
+}
+
+.modo-escuro .input-group input::placeholder {
+  color: #718096;
+}
+
+.modo-escuro .checkbox-group label {
+  color: #e2e8f0;
+}
+
+.modo-escuro .back-to-login-link {
+  color: #63b3ed;
+}
+
+/* Se estiver usando as variáveis do global.css, pode usar: */
+.modo-escuro .signup-container {
+  background-color: var(--color-bg-primary);
+}
+
+.modo-escuro .signup-panel-right {
+  background-color: var(--color-bg-secondary);
+}
+
+.modo-escuro .signup-form-container,
+.modo-escuro .signup-form-container h2,
+.modo-escuro .input-group label,
+.modo-escuro .checkbox-group label {
+  color: var(--color-text-primary);
+}
+
+.modo-escuro .signup-form-container .subtitle {
+  color: var(--color-text-muted);
+}
+
+.modo-escuro .input-group input {
+  background-color: var(--input-bg);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
 }

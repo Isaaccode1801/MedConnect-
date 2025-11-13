@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import "./SignUp.css";
 import { AnimatedText } from "@/components/ui/AnimatedText";
 import medLogo from "../../../assets/Medconnect.logo.png"; // ✅ 1. IMPORTAR A LOGO
+import AccessibilityMenu from "@/components/ui/AccessibilityMenu";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -116,6 +117,7 @@ export default function SignUp() {
           </div>
         </div>
       </div>
+      
     );
   }
 
@@ -251,6 +253,8 @@ export default function SignUp() {
           </form>
         </div>
       </div>
+      <AccessibilityMenu />
     </div>
+    
   );
 }
