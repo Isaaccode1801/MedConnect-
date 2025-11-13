@@ -1,26 +1,99 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
+import { listarConsultasComNomes, listarMedicos, listPacientes } from "../../../lib/pacientesService";
 
 export default function Dashboard() {
   const chartRef = useRef(null);
+  const chartInstance = useRef(null);
 
+  const [appointments, setAppointments] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // formata hora local para "HH:MM"
+  function fmtTime(iso) {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    } catch {
+      return "--:--";
+    }
+  }
+
+  // carrega dados das APIs (consultas, medicos, pacientes)
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+
+    async function loadAll() {
+      try {
+        const [appts, docs, pacs] = await Promise.all([
+          listarConsultasComNomes().catch(() => []),
+          listarMedicos().catch(() => []),
+          listPacientes().catch(() => []),
+        ]);
+        if (!mounted) return;
+        setAppointments(Array.isArray(appts) ? appts : []);
+        setDoctors(Array.isArray(docs) ? docs : []);
+        setPatients(Array.isArray(pacs) ? pacs : []);
+      } catch (e) {
+        console.error("Falha ao carregar dados do dashboard", e);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    loadAll();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // monta/atualiza chart quando appointments mudam
   useEffect(() => {
     if (!chartRef.current) return;
+    // destruir instância anterior
+    try {
+      if (chartInstance.current) {
+        chartInstance.current.destroy();
+        chartInstance.current = null;
+      }
+    } catch (e) {
+      /* ignore */
+    }
+
+    // Cria labels dinâmicos (8h-17h) e agrega consultas do dia
+    const hours = Array.from({ length: 10 }, (_, i) => 8 + i); // 8..17
+    const labels = hours.map((h) => `${String(h).padStart(2, "0")}h`);
+
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+
+    const counts = hours.map((h) => {
+      const start = new Date(`${todayStr}T${String(h).padStart(2, "0")}:00:00`);
+      const end = new Date(start.getTime() + 60 * 60 * 1000);
+      return appointments.filter((a) => {
+        if (!a || !a.scheduled_at) return false;
+        const d = new Date(a.scheduled_at);
+        return d >= start && d < end && d.toISOString().slice(0, 10) === todayStr;
+      }).length;
+    });
+
     const ctx = chartRef.current.getContext("2d");
-    const chart = new Chart(ctx, {
+    chartInstance.current = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: ["08h", "09h", "10h", "11h", "12h"],
+        labels,
         datasets: [
           {
             label: "Consultas agendadas",
-            data: [3, 4, 2, 5, 1],
-            // verde claro (Tailwind green): fundo suave e borda mais intensa
-            backgroundColor: "rgba(134, 239, 172, 0.6)", // green-300 ~ #86efac
-            borderColor: "rgba(34, 197, 94, 0.9)",      // green-500 ~ #22c55e
+            data: counts,
+            backgroundColor: "rgba(134, 239, 172, 0.6)",
+            borderColor: "rgba(34, 197, 94, 0.9)",
             borderWidth: 1,
-            borderRadius: 5,
+            borderRadius: 6,
           },
         ],
       },
@@ -31,11 +104,27 @@ export default function Dashboard() {
         scales: { y: { beginAtZero: true } },
       },
     });
-    return () => chart.destroy();
-  }, []);
+
+    return () => {
+      try {
+        if (chartInstance.current) chartInstance.current.destroy();
+      } catch {}
+    };
+  }, [appointments]);
+
+  // derived values
+  const now = new Date();
+  const upcoming = appointments
+    .filter((a) => a?.scheduled_at && new Date(a.scheduled_at) >= now)
+    .slice()
+    .sort((x, y) => new Date(x.scheduled_at) - new Date(y.scheduled_at));
+
+  const nextPatients = upcoming.slice(0, 5);
+  const todayStr = now.toISOString().slice(0, 10);
+  const todayCount = appointments.filter((a) => a?.scheduled_at && new Date(a.scheduled_at).toISOString().slice(0, 10) === todayStr).length;
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "2fr 1fr" }}>
+    <div style={{ display: "grid", gap: "1.25rem", gridTemplateColumns: "2fr 1fr" }}>
       {/* Coluna estatísticas */}
       <section
         style={{
@@ -48,14 +137,32 @@ export default function Dashboard() {
           flexDirection: "column",
         }}
       >
-        <header style={{ marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 style={{ fontSize: "1rem", fontWeight: 600, color: "#1F2937" }}>
-            Consultas por horário (hoje)
-          </h2>
-          <span style={{ fontSize: "0.8rem", color: "#6B7280" }}>Quinta-feira</span>
+        <header style={{ marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+          <div>
+            <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a", margin: 0 }}>Consultas por horário (hoje)</h2>
+            <div style={{ fontSize: "0.85rem", color: "#6B7280", marginTop: 4 }}>{loading ? "Carregando..." : `${todayCount} consultas hoje`}</div>
+          </div>
+          <div style={{ fontSize: "0.85rem", color: "#6B7280" }}>{now.toLocaleDateString(undefined, { weekday: "long" })}</div>
         </header>
+
+        {/* small stat cards */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+          <div style={{ background: "#fbfffd", padding: 12, borderRadius: 10, minWidth: 140, boxShadow: "0 6px 14px rgba(2,6,23,0.04)" }}>
+            <div style={{ fontSize: "0.75rem", color: "#6B7280" }}>Próximas</div>
+            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>{upcoming.length}</div>
+          </div>
+          <div style={{ background: "#fbfffd", padding: 12, borderRadius: 10, minWidth: 140, boxShadow: "0 6px 14px rgba(2,6,23,0.04)" }}>
+            <div style={{ fontSize: "0.75rem", color: "#6B7280" }}>Médicos</div>
+            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>{doctors.length}</div>
+          </div>
+          <div style={{ background: "#fbfffd", padding: 12, borderRadius: 10, minWidth: 140, boxShadow: "0 6px 14px rgba(2,6,23,0.04)" }}>
+            <div style={{ fontSize: "0.75rem", color: "#6B7280" }}>Pacientes</div>
+            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>{patients.length}</div>
+          </div>
+        </div>
+
         <div style={{ flex: 1, position: "relative" }}>
-          <canvas ref={chartRef} />
+          <canvas ref={chartRef} style={{ width: "100%", height: 260 }} />
         </div>
       </section>
 
@@ -78,16 +185,18 @@ export default function Dashboard() {
           <p style={{ fontSize: "0.8rem", color: "#6B7280", margin: 0 }}>Chegada na recepção</p>
         </header>
 
-        <ul style={{ listStyle: "none", margin: 0, padding: 0, fontSize: "0.9rem", lineHeight: 1.4 }}>
-          <li style={{ padding: "0.5rem 0", borderBottom: "1px solid #E5E7EB" }}>
-            <strong style={{ color: "#111827" }}>Maria Santos</strong> — Dr. João · 09:00
-          </li>
-          <li style={{ padding: "0.5rem 0", borderBottom: "1px solid #E5E7EB" }}>
-            <strong style={{ color: "#111827" }}>Carlos Lima</strong> — Dra. Ana · 09:30
-          </li>
-          <li style={{ padding: "0.5rem 0" }}>
-            <strong style={{ color: "#111827" }}>Fernanda Souza</strong> — Dr. Pedro · 10:00
-          </li>
+        <ul style={{ listStyle: "none", margin: 0, padding: 0, fontSize: "0.95rem", lineHeight: 1.6 }}>
+          {loading && <li style={{ color: "#6B7280" }}>Carregando próximos pacientes...</li>}
+          {!loading && nextPatients.length === 0 && <li style={{ color: "#6B7280" }}>Nenhuma consulta próxima</li>}
+          {!loading && nextPatients.map((a) => (
+            <li key={a.id} style={{ padding: "0.6rem 0", borderBottom: "1px solid #E5E7EB", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontWeight: 700, color: "#111827" }}>{a.paciente_nome || "—"}</div>
+                <div style={{ color: "#6B7280", fontSize: "0.9rem" }}>{a.medico_nome || "—"}</div>
+              </div>
+              <div style={{ color: "#111827", fontWeight: 600 }}>{fmtTime(a.scheduled_at)}</div>
+            </li>
+          ))}
         </ul>
       </section>
       <AccessibilityMenu />

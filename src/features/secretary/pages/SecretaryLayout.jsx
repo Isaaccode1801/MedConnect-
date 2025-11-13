@@ -146,20 +146,25 @@ export default function SecretaryLayout() {
   const displayEmail = me?.email || "—";
   const displayName = me?.email ? displayNameFromEmail(me.email) : "Secretaria";
   const displayInitials = me?.email ? initialsFromEmail(me.email) : "S";
-
   return (
     <div className="secretary-shell" style={{ display: "flex", minHeight: "100vh", backgroundColor: "#F7F8FC" }}>
       {/* SIDEBAR */}
       <aside
         className="secretary-sidebar"
         style={{
-          width: collapsed ? "80px" : "240px",
+          width: collapsed ? "76px" : "220px",
           backgroundColor: "#0d9488",
-          color: "#9CA3AF",
-          transition: "width 0.25s ease",
+          color: "#e6f7f5",
+          transition: "width 220ms ease",
           display: "flex",
           flexDirection: "column",
-          padding: "1.5rem 1rem",
+          justifyContent: "space-between",
+          padding: "1.25rem 0.75rem",
+          boxShadow: "inset -1px 0 0 rgba(255,255,255,0.03)",
+          position: "sticky",
+          top: 0,
+          height: "100vh",
+          overflow: "hidden",
         }}
       >
         {/* topo / branding */}
@@ -168,214 +173,121 @@ export default function SecretaryLayout() {
             display: "flex",
             alignItems: "center",
             gap: "0.75rem",
-            marginBottom: "2rem",
-            paddingLeft: collapsed ? 0 : "0.5rem",
+            marginBottom: "1.75rem",
+            paddingLeft: collapsed ? 6 : 12,
           }}
         >
-          <FaCalendarCheck style={{ color: "#fff", fontSize: "1.5rem" }} />
+          <FaCalendarCheck style={{ color: "#fff", fontSize: "1.45rem" }} />
           {!collapsed && (
-            <div style={{ color: "#fff", fontWeight: 600, fontSize: "1rem", lineHeight: 1.2 }}>
-              Secretaria <div style={{ fontSize: "0.8rem", fontWeight: 400, color: "#e0f7fa" }}>MedConnect</div>
+            <div style={{ color: "#fff", fontWeight: 700, fontSize: "1rem", lineHeight: 1.1 }}>
+              Secretaria
+              <div style={{ fontSize: "0.78rem", fontWeight: 400, color: "#dffaf7" }}>MedConnect</div>
             </div>
           )}
         </div>
 
-        {/* links */}
-        <nav style={{ flex: 0, marginBottom: "1.5rem" }}>
-          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-            <li>
-              <NavLink
-                to="/secretary"
-                end
-                className={({ isActive }) => "sec-link" + (isActive ? " active" : "")}
-                style={({ isActive }) => ({
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  textDecoration: "none",
-                  color: isActive ? "#0d9488" : "#fff",
-                  backgroundColor: isActive ? "#fff" : "transparent",
-                  borderRadius: "0.5rem",
-                  padding: "0.75rem 1rem",
-                  fontWeight: 500,
-                  marginBottom: "0.25rem",
-                })}
-              >
-                <FaHome style={{ minWidth: 20 }} />
-                {!collapsed && <span>Dashboard</span>}
-              </NavLink>
-            </li>
-
-            <li>
-              <NavLink
-                to="/secretary/consultas"
-                className={({ isActive }) => "sec-link" + (isActive ? " active" : "")}
-                style={({ isActive }) => ({
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  textDecoration: "none",
-                  color: isActive ? "#0d9488" : "#fff",
-                  backgroundColor: isActive ? "#fff" : "transparent",
-                  borderRadius: "0.5rem",
-                  padding: "0.75rem 1rem",
-                  fontWeight: 500,
-                  marginBottom: "0.25rem",
-                })}
-              >
-                <FaCalendarCheck style={{ minWidth: 20 }} />
-                {!collapsed && <span>Consultas</span>}
-              </NavLink>
-            </li>
-
-            <li>
-              <NavLink
-                to="/secretary/medicos"
-                style={({ isActive }) => ({
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  textDecoration: "none",
-                  color: isActive ? "#0d9488" : "#fff",
-                  backgroundColor: isActive ? "#fff" : "transparent",
-                  borderRadius: "0.5rem",
-                  padding: "0.75rem 1rem",
-                  fontWeight: 500,
-                  marginBottom: "0.25rem",
-                })}
-              >
-                <FaUserMd style={{ minWidth: 20 }} />
-                {!collapsed && <span>Médicos</span>}
-              </NavLink>
-            </li>
-
-            <li>
-              <NavLink
-                to="/secretary/pacientes"
-                style={({ isActive }) => ({
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  textDecoration: "none",
-                  color: isActive ? "#0d9488" : "#fff",
-                  backgroundColor: isActive ? "#fff" : "transparent",
-                  borderRadius: "0.5rem",
-                  padding: "0.75rem 1rem",
-                  fontWeight: 500,
-                  marginBottom: "0.25rem",
-                })}
-              >
-                <FaUsers style={{ minWidth: 20 }} />
-                {!collapsed && <span>Pacientes</span>}
-              </NavLink>
-            </li>
-
-            <li>
-              <NavLink
-                to="/secretary/relatorios"
-                style={({ isActive }) => ({
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  textDecoration: "none",
-                  color: isActive ? "#0d9488" : "#fff",
-                  backgroundColor: isActive ? "#fff" : "transparent",
-                  borderRadius: "0.5rem",
-                  padding: "0.75rem 1rem",
-                  fontWeight: 500,
-                  marginBottom: "0.25rem",
-                })}
-              >
-                <FaFileAlt style={{ minWidth: 20 }} />
-                {!collapsed && <span>Relatórios</span>}
-              </NavLink>
-            </li>
-
-            <li>
-              <NavLink
-                to="/secretary/configuracoes"
-                style={({ isActive }) => ({
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  textDecoration: "none",
-                  color: isActive ? "#0d9488" : "#fff",
-                  backgroundColor: isActive ? "#fff" : "transparent",
-                  borderRadius: "0.5rem",
-                  padding: "0.75rem 1rem",
-                  fontWeight: 500,
-                  marginBottom: "0.25rem",
-                })}
-              >
-                <FaCog style={{ minWidth: 20 }} />
-                {!collapsed && <span>Configurações</span>}
-              </NavLink>
-            </li>
+        {/* links (área rolável) */}
+        <nav style={{ flex: 1, overflowY: "auto", paddingRight: 6 }}>
+          <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+            {[
+              { to: "/secretary", icon: FaHome, label: "Dashboard" },
+              { to: "/secretary/consultas", icon: FaCalendarCheck, label: "Consultas" },
+              { to: "/secretary/medicos", icon: FaUserMd, label: "Médicos" },
+              { to: "/secretary/pacientes", icon: FaUsers, label: "Pacientes" },
+              { to: "/secretary/relatorios", icon: FaFileAlt, label: "Relatórios" },
+              { to: "/secretary/configuracoes", icon: FaCog, label: "Configurações" },
+            ].map((item) => (
+              <li key={item.to}>
+                <NavLink
+                  to={item.to}
+                  end={item.to === "/secretary"}
+                  style={({ isActive }) => ({
+                    display: "flex",
+                    alignItems: "center",
+                    gap: collapsed ? 0 : 12,
+                    textDecoration: "none",
+                    color: isActive ? "#0d9488" : "#fff",
+                    backgroundColor: isActive ? "#fff" : "transparent",
+                    borderRadius: 12,
+                    padding: collapsed ? "10px 6px" : "10px 12px",
+                    fontWeight: 600,
+                    margin: 0,
+                    transition: "background 160ms ease, color 160ms ease",
+                    alignSelf: "stretch",
+                  })}
+                >
+                  <item.icon style={{ minWidth: 20, fontSize: 16 }} />
+                  {!collapsed && <span style={{ fontSize: "0.95rem" }}>{item.label}</span>}
+                </NavLink>
+              </li>
+            ))}
           </ul>
         </nav>
 
-        {/* botão sair */}
-        <button
-          onClick={handleLogout}
-          style={{
-            marginTop: "1rem",
-            background: "none",
-            border: "none",
-            color: "#fff",
-            cursor: "pointer",
-            textAlign: "left",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            padding: "0.75rem 1rem",
-            borderRadius: "0.5rem",
-          }}
-        >
-          <FaSignOutAlt style={{ minWidth: 20 }} />
-          {!collapsed && <span>Sair</span>}
-        </button>
+  {/* rodapé do sidebar: ações (sempre visível) */}
+  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8, flexShrink: 0 }}>
+          <button
+            onClick={handleLogout}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#fff",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: collapsed ? 0 : 10,
+              padding: collapsed ? "8px 6px" : "10px 12px",
+              borderRadius: 10,
+              textAlign: "left",
+            }}
+            title="Sair"
+          >
+            <FaSignOutAlt style={{ minWidth: 20 }} />
+            {!collapsed && <span style={{ fontSize: "0.95rem", fontWeight: 600 }}>Sair</span>}
+          </button>
 
-        {/* botão colapsar */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          style={{
-            marginTop: "0.5rem",
-            background: "transparent",
-            border: "1px solid rgba(255, 255, 255, 0.3)",
-            borderRadius: "0.5rem",
-            color: "#fff",
-            padding: "0.5rem 0.75rem",
-            cursor: "pointer",
-            fontSize: "0.8rem",
-            lineHeight: 1.2,
-          }}
-        >
-          <FaBars /> {!collapsed && "Recolher menu"}
-        </button>
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            style={{
+              marginTop: 4,
+              background: "transparent",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: 10,
+              color: "#fff",
+              padding: "8px 10px",
+              cursor: "pointer",
+              alignSelf: collapsed ? "center" : "stretch",
+            }}
+            aria-pressed={collapsed}
+          >
+            <FaBars /> {!collapsed && <span style={{ marginLeft: 8 }}>Recolher</span>}
+          </button>
+        </div>
       </aside>
 
       {/* MAIN AREA */}
       <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-        {/* header/topbar da secretária */}
+        {/* header/topbar */}
         <header
           style={{
             backgroundColor: "#fff",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-            padding: "1rem 1.5rem",
+            boxShadow: "0 1px 6px rgba(15,23,42,0.06)",
+            padding: "0.9rem 1.25rem",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            gap: 12,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ position: "relative" }}>
               <FaSearch
                 style={{
                   position: "absolute",
-                  left: "12px",
+                  left: 12,
                   top: "50%",
                   transform: "translateY(-50%)",
-                  fontSize: "0.9rem",
+                  fontSize: "0.95rem",
                   color: "#6B7280",
                 }}
               />
@@ -383,22 +295,26 @@ export default function SecretaryLayout() {
                 type="text"
                 placeholder="Buscar paciente, médico..."
                 style={{
-                  padding: "0.6rem 0.75rem 0.6rem 2rem",
-                  borderRadius: "0.5rem",
-                  border: "1px solid #D1D5DB",
-                  fontSize: "0.9rem",
-                  minWidth: "220px",
+                  padding: "0.55rem 0.75rem 0.55rem 2.6rem",
+                  borderRadius: 999,
+                  border: "1px solid #E6E9EE",
+                  fontSize: "0.95rem",
+                  minWidth: 260,
+                  background: "#FBFDFF",
                 }}
               />
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <FaBell style={{ fontSize: "1.1rem", color: "#4B5563" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ position: "relative" }} title="Notificações">
+              <div style={{ width: 36, height: 36, borderRadius: 10, display: "grid", placeItems: "center", background: "#fff", boxShadow: "0 1px 4px rgba(2,6,23,0.04)" }}>
+                <FaBell style={{ fontSize: 16, color: "#4B5563" }} />
+              </div>
+            </div>
 
-            {/* Perfil real da secretária */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              {/* Avatar clicável */}
+            {/* Perfil */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <button
                 onClick={() => setProfileOpen(true)}
                 aria-label="Abrir perfil"
@@ -407,45 +323,41 @@ export default function SecretaryLayout() {
                   cursor: "pointer",
                   display: "grid",
                   placeItems: "center",
-                  width: 40,
-                  height: 40,
+                  width: 44,
+                  height: 44,
                   borderRadius: "999px",
                   backgroundColor: "#e0f2f1",
                   color: "#0d9488",
                   fontWeight: 700,
-                  fontSize: "0.9rem",
+                  fontSize: "0.95rem",
                   userSelect: "none",
-                  border: "1px solid #c7ecea",
+                  boxShadow: "0 2px 6px rgba(13,148,136,0.06)",
                 }}
                 title="Ver meu perfil"
               >
                 {loadingMe ? "…" : displayInitials}
               </button>
 
-              <div style={{ fontSize: "0.8rem", lineHeight: 1.2 }}>
-                <div style={{ fontWeight: 600, color: "#1F2937" }}>
-                  {loadingMe ? "Carregando..." : displayName}
-                </div>
-                <div style={{ color: "#6B7280" }}>
-                  {loadingMe ? "—" : displayEmail}
-                </div>
-                {!!errorMe && (
-                  <div style={{ color: "#dc2626", fontSize: "0.75rem" }}>
-                    {errorMe}
-                  </div>
-                )}
+              <div style={{ fontSize: "0.9rem", lineHeight: 1.1, textAlign: "right" }}>
+                <div style={{ fontWeight: 700, color: "#111827" }}>{loadingMe ? "Carregando..." : displayName}</div>
+                <div style={{ color: "#6B7280", fontSize: "0.82rem" }}>{loadingMe ? "—" : displayEmail}</div>
+                {!!errorMe && <div style={{ color: "#dc2626", fontSize: "0.75rem" }}>{errorMe}</div>}
               </div>
             </div>
           </div>
         </header>
 
-        {/* Conteúdo das rotas filhas */}
-        <div>
-          <Outlet />
+        {/* Conteúdo: centro com padding e cards leves */}
+        <div style={{ padding: "1.25rem" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", minHeight: 520 }}>
+            <div style={{ background: "transparent", padding: 12, borderRadius: 12 }}>
+              <Outlet />
+            </div>
+          </div>
         </div>
       </main>
 
-      {/* MODAL de Perfil */}
+      {/* MODAL de Perfil (sem mudanças funcionais, apenas visual) */}
       {profileOpen && (
         <div
           role="dialog"
@@ -456,7 +368,7 @@ export default function SecretaryLayout() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.35)",
+            background: "rgba(6,8,23,0.45)",
             display: "grid",
             placeItems: "center",
             padding: "1rem",
@@ -468,7 +380,7 @@ export default function SecretaryLayout() {
               width: "min(560px, 96vw)",
               background: "#ffffff",
               borderRadius: "0.75rem",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
+              boxShadow: "0 14px 40px rgba(2,6,23,0.12)",
               overflow: "hidden",
             }}
           >
@@ -482,112 +394,44 @@ export default function SecretaryLayout() {
                 background: "#F9FAFB",
               }}
             >
-              <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 700, color: "#111827" }}>
-                Meu perfil
-              </h3>
+              <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 700, color: "#111827" }}>Meu perfil</h3>
               <button
                 onClick={() => setProfileOpen(false)}
                 aria-label="Fechar"
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 6,
-                  borderRadius: 8,
-                  color: "#374151",
-                }}
+                style={{ background: "transparent", border: "none", cursor: "pointer", padding: 6, borderRadius: 8, color: "#374151" }}
               >
                 <FaTimes />
               </button>
             </div>
 
             <div style={{ padding: "1rem 1.25rem" }}>
-              {/* Header do modal com avatar e nome */}
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-                <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 999,
-                    background: "#e0f2f1",
-                    color: "#0d9488",
-                    display: "grid",
-                    placeItems: "center",
-                    fontWeight: 700,
-                  }}
-                >
-                  {displayInitials}
-                </div>
+                <div style={{ width: 56, height: 56, borderRadius: 999, background: "#e0f2f1", color: "#0d9488", display: "grid", placeItems: "center", fontWeight: 700, fontSize: "1rem" }}>{displayInitials}</div>
                 <div>
-                  <div style={{ fontWeight: 700, color: "#111827" }}>{displayName}</div>
+                  <div style={{ fontWeight: 700, color: "#111827", fontSize: "0.98rem" }}>{displayName}</div>
                   <div style={{ color: "#6B7280", fontSize: "0.9rem" }}>{displayEmail}</div>
                 </div>
               </div>
 
-              {/* Tabela simples com infos */}
-              <div
-                style={{
-                  border: "1px solid #E5E7EB",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                }}
-              >
+              <div style={{ border: "1px solid #E5E7EB", borderRadius: 12, overflow: "hidden" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "180px 1fr" }}>
-                  <div style={{ background: "#F9FAFB", padding: "0.75rem", color: "#374151", fontWeight: 600 }}>
-                    ID
-                  </div>
+                  <div style={{ background: "#F9FAFB", padding: "0.75rem", color: "#374151", fontWeight: 600 }}>ID</div>
                   <div style={{ padding: "0.75rem", color: "#111827" }}>{me?.id || "—"}</div>
 
-                  <div style={{ background: "#F9FAFB", padding: "0.75rem", color: "#374151", fontWeight: 600 }}>
-                    E-mail
-                  </div>
+                  <div style={{ background: "#F9FAFB", padding: "0.75rem", color: "#374151", fontWeight: 600 }}>E-mail</div>
                   <div style={{ padding: "0.75rem", color: "#111827" }}>{displayEmail}</div>
 
-                  <div style={{ background: "#F9FAFB", padding: "0.75rem", color: "#374151", fontWeight: 600 }}>
-                    Criado em
-                  </div>
-                  <div style={{ padding: "0.75rem", color: "#111827" }}>
-                    {me?.created_at ? formatDate(me.created_at) : "—"}
-                  </div>
+                  <div style={{ background: "#F9FAFB", padding: "0.75rem", color: "#374151", fontWeight: 600 }}>Criado em</div>
+                  <div style={{ padding: "0.75rem", color: "#111827" }}>{me?.created_at ? formatDate(me.created_at) : "—"}</div>
 
-                  <div style={{ background: "#F9FAFB", padding: "0.75rem", color: "#374151", fontWeight: 600 }}>
-                    Papel
-                  </div>
-                  <div style={{ padding: "0.75rem", color: "#111827", textTransform: "capitalize" }}>
-                    {userRole}
-                  </div>
+                  <div style={{ background: "#F9FAFB", padding: "0.75rem", color: "#374151", fontWeight: 600 }}>Papel</div>
+                  <div style={{ padding: "0.75rem", color: "#111827", textTransform: "capitalize" }}>{userRole}</div>
                 </div>
               </div>
 
-              {/* Ações */}
               <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem", justifyContent: "flex-end" }}>
-                <button
-                  onClick={() => setProfileOpen(false)}
-                  style={{
-                    padding: "0.6rem 0.9rem",
-                    borderRadius: 8,
-                    border: "1px solid #D1D5DB",
-                    background: "#fff",
-                    color: "#111827",
-                    cursor: "pointer",
-                  }}
-                >
-                  Fechar
-                </button>
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    padding: "0.6rem 0.9rem",
-                    borderRadius: 8,
-                    border: "none",
-                    background: "#0d9488",
-                    color: "#fff",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                  }}
-                >
-                  Sair da conta
-                </button>
+                <button onClick={() => setProfileOpen(false)} style={{ padding: "0.6rem 0.9rem", borderRadius: 8, border: "1px solid #D1D5DB", background: "#fff", color: "#111827", cursor: "pointer" }}>Fechar</button>
+                <button onClick={handleLogout} style={{ padding: "0.6rem 0.9rem", borderRadius: 8, border: "none", background: "#0d9488", color: "#fff", cursor: "pointer", fontWeight: 600 }}>Sair da conta</button>
               </div>
             </div>
           </div>
