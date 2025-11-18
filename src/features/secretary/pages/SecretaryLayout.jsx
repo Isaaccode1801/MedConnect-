@@ -164,6 +164,7 @@ export default function SecretaryLayout() {
           position: "sticky",
           top: 0,
           height: "100vh",
+          zIndex: 30,
           overflow: "hidden",
         }}
       >
@@ -277,6 +278,7 @@ export default function SecretaryLayout() {
             alignItems: "center",
             justifyContent: "space-between",
             gap: 12,
+            zIndex: 10,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -348,7 +350,7 @@ export default function SecretaryLayout() {
         </header>
 
         {/* Conteúdo: centro com padding e cards leves */}
-        <div style={{ padding: "1.25rem" }}>
+        <div style={{ padding: "1.25rem", position: "relative", zIndex: 0 }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", minHeight: 520 }}>
             <div style={{ background: "transparent", padding: 12, borderRadius: 12 }}>
               <Outlet />

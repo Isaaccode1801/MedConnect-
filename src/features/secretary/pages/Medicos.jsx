@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 // Config de API / Supabase
 const SUPABASE_BASE = "https://yuanqfswhberkoevtmfr.supabase.co";
@@ -30,6 +31,13 @@ export default function MedicosPage() {
   const escapeHTML = (s) => {
     if (s == null) return "";
     return String(s).replace(/[&<>"]+/g, (e) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[e]));
+  };
+
+  const getInitials = (full) => {
+    if (!full) return "?";
+    const parts = full.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
   };
 
   const getHeaders = (extra = {}) => {
@@ -413,17 +421,21 @@ export default function MedicosPage() {
                 <div className="table-wrapper">
                   <table className="table-medicos">
                     <thead>
-                      <tr>
-                        <th>Nome</th>
-                        <th>Especialidade</th>
-                        <th>Presença</th>
-                        <th style={{ textAlign: "center" }}>Ações</th>
-                      </tr>
+                        <tr>
+                          <th style={{ width: 56 }}></th>
+                          <th>Nome</th>
+                          <th>Especialidade</th>
+                          <th>Presença</th>
+                          <th style={{ textAlign: "center" }}>Ações</th>
+                        </tr>
                     </thead>
                     <tbody>
                       {medicosFiltrados.map((m) => (
                         <tr key={m.id}>
-                          <td>{escapeHTML(m.nome)}</td>
+                          <td>
+                            <div className="avatar" title={m.nome}>{getInitials(m.nome)}</div>
+                          </td>
+                          <td style={{ minWidth: 220 }}>{escapeHTML(m.nome)}</td>
                           <td>{escapeHTML(m.especialidade)}</td>
                           <td>
                             {m.presente ? (
@@ -434,18 +446,18 @@ export default function MedicosPage() {
                           </td>
                           <td className="actions">
                             <button
-                              className="ghost"
+                              className="action-btn"
                               title="Editar"
                               onClick={() => abrirModalParaEditar(m)}
                             >
-                              ✏️
+                              <FiEdit />
                             </button>
                             <button
-                              className="ghost"
+                              className="action-btn"
                               title="Remover"
                               onClick={() => removerMedicoAPI(m.id)}
                             >
-                              🗑️
+                              <FiTrash2 />
                             </button>
                           </td>
                         </tr>
@@ -675,7 +687,7 @@ export default function MedicosPage() {
         </div>
       )}
 
-      {/* estilos locais */}
+      {/* estilos locais (refatorados para visual mais minimalista) */}
       <style>{`
         :root{
           --bg:#ffffff;
@@ -690,206 +702,85 @@ export default function MedicosPage() {
           flex: 1;
           min-height: 1vh;
           background: var(--bg);
-          padding-left: 2px; /* alinhado com sidebar fixa da secretária */
+          padding-left: 2px;
+          color: #0f172a;
+          -webkit-font-smoothing:antialiased;
         }
 
         @media (max-width: 768px) {
-          .secretary-page-wrap {
-            padding-left: 88px;
-          }
+          .secretary-page-wrap { padding-left: 88px; }
         }
 
-        .appbar {
+        .appbar { background: transparent; padding: 20px 24px 0; position: relative; z-index: 0 }
+        .appbar-inner { display:flex; align-items:center; justify-content:space-between; gap: 12px; }
+        .brand h1 { margin:0; font-size:1.05rem; font-weight:600; color: #0f172a; }
+        .brand small { color: var(--muted); font-size:0.82rem; }
+
+        .wrap { padding: 24px; padding-top: 6px; max-width: 1280px; }
+        .app { max-width: 1180px; margin:0 auto; }
+
+        /* Top cards mais arejados e minimal */
+        .top-cards{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:6px }
+        .card{ background:var(--card); padding:12px 14px; border-radius:10px; min-width:150px; box-shadow: 0 4px 14px rgba(2,6,23,0.04); }
+        .card small{ display:block; color:var(--muted); margin-bottom:6px; font-size:0.82rem }
+        .value{ font-weight:700; font-size:18px }
+
+        /* controles de busca / ações */
+        .controls { display:flex; gap:8px; align-items:center }
+        .controls input, .search input, .search select {
+          border: 1px solid #e6eef3;
           background: transparent;
-          padding: 24px 24px 0;
-        }
-
-        .appbar-inner {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 12px;
-        }
-
-        .brand h1 {
-          margin: 0;
-          font-size: 1.1rem;
-          font-weight: 600;
+          padding: 10px 12px;
+          border-radius: 10px;
+          outline: none;
+          font-size: 0.95rem;
           color: #0f172a;
         }
+        .controls .btn { padding:8px 14px; border-radius:10px; box-shadow:none }
+        .controls .ghost { border-radius:10px }
 
-        .brand small {
-          color: #64748b;
-          font-size: 0.8rem;
-        }
+        /* Layout principal: coluna principal e lateral */
+        .layout { display:grid; grid-template-columns: 1fr 300px; gap:24px; margin-top:20px }
 
-        .wrap {
-          padding: 24px;
-          padding-top: 8px;
-          max-width: 1400px;
-        }
+        .panel { background: var(--card); border-radius:12px; padding:16px; box-shadow:none; border:1px solid rgba(15,23,42,0.03) }
 
-        .app {
-          max-width: 1300px;
-          margin: 0 auto;
-        }
+        /* tabela minimalista */
+        .table-wrapper { width:100%; overflow-x:auto; border-radius:10px; background: #fff; border:1px solid #eef2f6; margin-top:12px }
+        .table-medicos { width:100%; min-width:720px; border-collapse:separate; border-spacing:0; font-size:0.95rem; color:#0f172a }
+        .table-medicos thead tr { background:transparent; color:#1e293b; text-transform:uppercase; font-size:0.72rem; }
+        .table-medicos th, .table-medicos td { padding:12px 14px; border-bottom:1px solid #f1f5f9; text-align:left }
+        .table-medicos thead th { color:var(--muted); font-weight:600; letter-spacing:0.02em }
+        .table-medicos tbody tr { transition: background .15s ease; }
+        .table-medicos tbody tr:hover { background: #fbfdff }
 
-        .top-cards{
-          display:flex;
-          gap:12px;
-          flex-wrap:wrap;
-        }
+        .badge.present{ background: rgba(22,163,74,0.12); color:var(--accent); padding:6px 8px; border-radius:999px; font-weight:600; font-size:0.82rem }
+        .badge.absent{ background: rgba(239,68,68,0.08); color:var(--danger); padding:6px 8px; border-radius:999px; font-weight:600; font-size:0.82rem }
 
-        .card{
-          background:var(--card);
-          padding:14px;
-          border-radius:12px;
-          box-shadow:0 6px 18px rgba(0,0,0,0.08);
-          min-width:160px;
-        }
+        /* avatar de iniciais */
+        .avatar{ width:36px; height:36px; border-radius:999px; background: #eef9f7; color: var(--accent); display:inline-grid; place-items:center; font-weight:700; font-size:0.85rem }
 
-        .card small{
-          display:block;
-          color:var(--muted);
-          margin-bottom:4px
-        }
+        /* ícones de ação */
+        .action-btn svg { color: #0f172a; font-size: 16px }
 
-        .value{
-          font-weight:700;
-          font-size:20px
-        }
+        /* botões de ação sutis */
+        .table-medicos .actions { text-align:center }
+        .action-btn { background:transparent; border:none; width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; cursor:pointer }
+        .action-btn:hover { background: rgba(6,182,212,0.06) }
+        .action-btn[title="Remover"]:hover { background: rgba(239,68,68,0.06) }
 
-        .badge.present{
-          background:var(--accent);
-          color:#fff;
-          padding:2px 6px;
-          border-radius:6px;
-          font-size:12px
-        }
+        /* lista lateral compacta */
+        .list-compact li { padding:8px 0; border-bottom:1px solid #f1f5f9 }
+        .list-compact li:last-child { border-bottom: none }
 
-        .badge.absent{
-          background:var(--danger);
-          color:#fff;
-          padding:2px 6px;
-          border-radius:6px;
-          font-size:12px
-        }
+        /* modal mais leve */
+        .modal-backdrop { position:fixed; inset:0; background: rgba(2,6,23,0.18); display:flex; align-items:center; justify-content:center; z-index:9999 }
+        .modal { background:#fff; padding:20px; border-radius:12px; min-width:320px; max-width:460px; box-shadow: 0 12px 40px rgba(2,6,23,0.12) }
+        .field{ margin-bottom:12px; display:flex; flex-direction:column }
+        .field label{ margin-bottom:6px; font-size:14px; color:var(--muted) }
+        .field input{ padding:10px 12px; border-radius:8px; border:1px solid #e6eef3; font-size:14px }
 
-        .table-wrapper {
-          width: 100%;
-          overflow-x: auto;
-          border: 1px solid #e5e7eb;
-          border-radius: 10px;
-          background: #fff;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-
-        .table-wrapper::-webkit-scrollbar {
-          height: 8px;
-        }
-        .table-wrapper::-webkit-scrollbar-thumb {
-          background-color: #cbd5e1;
-          border-radius: 4px;
-        }
-        .table-wrapper::-webkit-scrollbar-thumb:hover {
-          background-color: #94a3b8;
-        }
-
-        .table-medicos {
-          width: 100%;
-          min-width: 800px;
-          border-collapse: collapse;
-          table-layout: auto;
-          font-size: 0.9rem;
-          color: #1e293b;
-        }
-
-        .table-medicos thead tr {
-          background: #eef2ff;
-          color: #1e293b;
-          text-transform: uppercase;
-          font-size: 0.7rem;
-          letter-spacing: 0.03em;
-        }
-
-        .table-medicos th,
-        .table-medicos td {
-          padding: 10px 14px;
-          border-bottom: 1px solid #e5e7eb;
-          white-space: nowrap;
-          text-align: left;
-        }
-
-        .table-medicos td.actions {
-          text-align: center;
-        }
-
-        .table-medicos tbody tr:hover {
-          background: #f8fafc;
-        }
-
-        .btn{
-          background:var(--primary);
-          color:#fff;
-          border:none;
-          padding:8px 12px;
-          border-radius:6px;
-          cursor:pointer;
-          font-weight:600;
-          font-size:14px;
-        }
-
-        .ghost{
-          background:transparent;
-          border:1px solid var(--muted);
-          color:var(--muted);
-          padding:8px 12px;
-          border-radius:6px;
-          cursor:pointer;
-          font-size:14px;
-        }
-
-        .modal-backdrop {
-          position:fixed;
-          top:0;
-          left:0;
-          width:100%;
-          height:100%;
-          background:rgba(0,0,0,0.4);
-          display:flex;
-          justify-content:center;
-          align-items:center;
-          z-index:9999;
-        }
-
-        .modal {
-          background:#fff;
-          padding:24px;
-          border-radius:12px;
-          min-width:320px;
-          max-width:400px;
-          box-shadow:0 20px 60px rgba(0,0,0,0.25);
-        }
-
-        .field{
-          margin-bottom:12px;
-          display:flex;
-          flex-direction:column
-        }
-
-        .field label{
-          margin-bottom:4px;
-          font-size:14px;
-          color:var(--muted)
-        }
-
-        .field input{
-          padding:8px 10px;
-          border-radius:6px;
-          border:1px solid #cbd5e1;
-          font-size:14px;
-        }
+        /* responsividade */
+        @media (max-width: 980px) { .layout { grid-template-columns: 1fr } .panel-stats { order: 2 } }
       `}</style>
       <AccessibilityMenu />
     </div>
