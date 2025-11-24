@@ -124,32 +124,122 @@ export default function GerenciamentoPacientesPage() {
 
     return (
         <>
-            {/* Header Limpo */}
+            <header className="doctor-header">
+                <div
+                    className="doctor-header__inner"
+                    style={{ justifyContent: 'flex-start', gap: '2rem', display: 'flex', alignItems: 'center' }}
+                >
+                    <div className="doctor-header__brand">
+                        <div className="brand-icon">
+                            <div className="brand-icon__inner">
+                                <Stethoscope className="brand-icon__svg" />
+                            </div>
+                        </div>
+                        <span className="brand-name">Medconnect</span>
+                        <h1 className="doctor-greeting">
+                            {/* Idealmente, o nome viria de dados do usuário logado */}
+                            Olá, Dr(a). <span className="highlight">Camilla Millene</span> 👋
+                        </h1>
+                    </div>
 
-            
-            {/* Conteúdo da Página */}
+                    <div className="doctor-header__search">
+                        <div className="search-wrapper">
+                            <Search className="search-icon" />
+                            <input
+                                name="q"
+                                autoComplete="off"
+                                value={q} // Usa o estado 'q'
+                                onChange={(e) => setQ(e.target.value)} // Usa o setter 'setQ'
+                                placeholder="Buscar paciente, exame, laudo…"
+                                className="search-input"
+                            />
+                        </div>
+                    </div>
+
+                    {/* 6. Links de navegação ajustados */}
+                    <nav
+                        className="doctor-header__nav"
+                        style={{ marginLeft: 'auto', display: 'flex', gap: '1rem', alignItems: 'center' }}
+                    >
+                        <button
+                            onClick={() => navigate("/doctor/dashboard")}
+                            // Define classe 'active' se o pathname corresponder
+                            className={pathname === '/doctor/dashboard' ? 'nav-link active' : 'nav-link'}
+                        >
+                            Início
+                        </button>
+                        <button
+                            onClick={() => navigate("/doctor/laudos")}
+                            className={pathname.startsWith('/doctor/laudos') ? 'nav-link active' : 'nav-link'}
+                        >
+                            Laudos
+                        </button>
+                        {/* Botão para a página atual */}
+                        <button
+                            onClick={() => navigate("/doctor/pacientes")} // Navega para a própria página (ou pode desabilitar)
+                            className={pathname.startsWith('/doctor/pacientes') ? 'nav-link active' : 'nav-link'}
+                        >
+                            Gerenciamento de Pacientes
+                        </button>
+                    </nav>
+                </div>
+            </header>
             <main className="container">
                 <section className="card">
-                    <div className="head">
-                        <div className="title">
-                            <h1>Pacientes</h1>
-                            <span className="badge">CRUD</span>
+                    <div className="head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                        <h1
+                            style={{
+                                margin: 0,
+                                flex: '1 1 auto',
+                                minWidth: '150px',
+                                fontSize: '2rem',
+                                fontWeight: 700,
+                                letterSpacing: '0.04em',
+                                background: 'linear-gradient(90deg, #c7d2fe 0%, #26bdbd 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text',
+                                textShadow: '0 2px 12px rgba(24, 98, 180, 0.18), 0 1px 0 #fff3',
+                                lineHeight: 1.15,
+                                textAlign: 'left'
+                            }}
+                        >
+                            Pacientes
+                        </h1>
+                        <div className="search" style={{ flex: '2 1 400px', display: 'flex', alignItems: 'center', background: '#ffffffff', border: '1px solid #374151', borderRadius: '12px', boxShadow: '0 2px 6px rgba(0,0,0,0.4)', padding: '0.75rem 1rem', transition: 'background-color 0.3s ease, box-shadow 0.3s ease', margin: '0 1rem' }}>
+                            <FaSearch style={{ color: '#9ca3af', marginRight: '12px', fontSize: '1.25rem' }}/> {/* Ícone React maior e cor clara */}
+                            <input
+                                id="q"
+                                placeholder="Buscar por nome, CPF, telefone..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    outline: 'none',
+                                    color: '#f0f0f0',
+                                    fontSize: '1rem',
+                                    width: '100%',
+                                    padding: '0.5rem 0',
+                                    borderRadius: '12px',
+                                    fontWeight: '500',
+                                    '::placeholder': { color: '#d1d5db' }
+                                }}
+                                type="search"
+                                onFocus={e => {
+                                    e.currentTarget.parentElement.style.backgroundColor = '#cccdcfff';
+                                    e.currentTarget.parentElement.style.boxShadow = '0 0 8px 2px rgba(147,197,253,0.7)';
+                                }}
+                                onBlur={e => {
+                                    e.currentTarget.parentElement.style.backgroundColor = '#b0b1b1ff';
+                                    e.currentTarget.parentElement.style.boxShadow = '0 2px 6px rgba(223, 223, 223, 0.4)';
+                                }}
+                            />
                         </div>
-                        <div className="toolbar">
-                            <div className="search">
-                                <FaSearch style={{ color: '#6b7a88', marginRight: '8px' }}/>
-                                <input
-                                    id="q_table"
-                                    placeholder="Buscar por nome, CPF, telefone..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <Link className="btn primary" to="/doctor/pacientes/novo">
-                                <FaPlus style={{ marginRight: '8px' }}/>
-                                Novo paciente
-                            </Link>
-                        </div>
+                        <Link className="btn primary" to="/doctor/pacientes/novo" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
+                            <FaPlus style={{ marginRight: '8px' }}/> {/* Ícone React */}
+                            Novo paciente
+                        </Link>
                     </div>
 
                     {error && (
