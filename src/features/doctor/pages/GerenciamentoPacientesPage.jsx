@@ -1,12 +1,11 @@
-// src/features/doctor/pages/GerenciamentoPacientesPage.jsx (LIMPO)
+// src/features/doctor/pages/GerenciamentoPacientesPage.jsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { listPacientes, deletePaciente } from '@/lib/pacientesService';
-import '@/styles/GerenciamentoPacientesPage.css'; 
-import { FaSearch, FaPlus, FaEye, FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
-import { Stethoscope, Search } from 'lucide-react';
+import { listPacientes, deletePaciente } from '@/lib/pacientesService'; 
+import { FaSearch, FaPlus, FaEye, FaPencilAlt, FaTrashAlt, FaPrint, FaTimes, FaUserCircle } from 'react-icons/fa';
 import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
+import '@/styles/GerenciamentoPacientesPage.css'; 
 
 // --- Funções Auxiliares ---
 function formatCPF(v) {
@@ -15,287 +14,308 @@ function formatCPF(v) {
     return only.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 }
 
-// --- Componente Principal ---
+function formatDate(dateString) {
+    if (!dateString) return "—";
+    try {
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('pt-BR').format(date);
+    } catch (e) {
+        return dateString;
+    }
+}
+
 export default function GerenciamentoPacientesPage() {
     const navigate = useNavigate();
-    const { pathname } = useLocation();
 
     // --- Estados ---
     const [pacientes, setPacientes] = useState([]);
     const [loading, setLoading] = useState(true); 
-    const [headerLoading, setHeaderLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [doctorName, setDoctorName] = useState("Médico(a)");
     const [searchTerm, setSearchTerm] = useState('');
+    
+    // Estado para o Modal de Carteirinha
+    const [viewPatient, setViewPatient] = useState(null);
 
-    // --- Lógica de Dados ---
-
-    // Busca o nome do médico (apenas 1 vez)
-    useEffect(() => {
-        async function fetchDoctorName() {
-            setHeaderLoading(true);
-            try {
-                const { data: { user }, error: authError } = await supabase.auth.getUser();
-                if (authError || !user) throw new Error("Sessão não encontrada.");
-
-                const { data: doctorData, error: doctorError } = await supabase
-                    .from('doctors')
-                    .select('full_name')
-                    .eq('user_id', user.id)
-                    .single();
-
-                if (doctorError) throw new Error("Registro de médico não encontrado.");
-                if (doctorData?.full_name) {
-                    setDoctorName(doctorData.full_name);
-                }
-            } catch (err) {
-                console.warn("Não foi possível carregar o nome do médico:", err.message);
-            } finally {
-                setHeaderLoading(false);
-            }
-        }
-        fetchDoctorName();
-    }, []);
-
-    // Busca a lista de pacientes
+    // --- Busca ---
     const carregarPacientes = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await listPacientes();
+            // Se não tiver o service, use: await supabase.from('patients').select('*');
+            const data = await listPacientes(); 
             setPacientes(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.error("Erro ao carregar pacientes:", err);
+            console.error("Erro ao carregar:", err);
+            setPacientes([]); 
             setError(err.message || 'Falha ao carregar a lista.');
-            setPacientes([]);
         } finally {
             setLoading(false);
         }
     }, []);
 
-    // Carrega pacientes na montagem inicial
     useEffect(() => {
         carregarPacientes();
     }, [carregarPacientes]);
 
-    // --- Handlers de Ação ---
-    const handleEdit = (id) => {
-        if (!id) return;
-        try { sessionStorage.setItem('edit_patient_id', id); } catch {}
-        navigate(`/doctor/pacientes/editar/${id}`);
-    };
+    // --- Handlers ---
+    const handleEdit = (id) => navigate(`/doctor/pacientes/editar/${id}`);
 
     const handleDelete = async (id) => {
         if (!id) return;
-        const pacienteParaDeletar = pacientes.find(p => p.id === id);
-        if (!pacienteParaDeletar) return;
-
-        const ok = window.confirm(`Tem certeza que deseja excluir o paciente "${pacienteParaDeletar.full_name || id}"?`);
-        if (!ok) return;
+        const paciente = pacientes.find(p => p.id === id);
+        if (!window.confirm(`Excluir "${paciente?.full_name || 'paciente'}"?`)) return;
 
         try {
             await deletePaciente(id);
-            setPacientes(prevPacientes => prevPacientes.filter(p => p.id !== id));
-            alert('Paciente excluído com sucesso.');
+            setPacientes(prev => prev.filter(p => p.id !== id));
+            alert('Paciente excluído.');
         } catch (err) {
-            console.error('Falha ao excluir paciente:', err);
-            setError(`Falha ao excluir: ${err.message || 'erro desconhecido'}`);
-            alert(`Falha ao excluir: ${err.message || 'erro desconhecido'}`);
+            alert(`Erro ao excluir: ${err.message}`);
         }
     };
 
     const handleView = (id) => {
-        console.log("Visualizar paciente com ID:", id);
-        alert("Funcionalidade de visualizar carteirinha a implementar.");
+        const paciente = pacientes.find(p => p.id === id);
+        if (paciente) {
+            setViewPatient(paciente);
+        }
     };
 
-    // --- Filtragem ---
+    const closeView = () => setViewPatient(null);
+
+    // --- Filtros ---
     const filteredPacientes = useMemo(() => {
-        return pacientes.filter(p => {
-            const lowerSearch = searchTerm.toLowerCase();
-            return (
-                (p.full_name && p.full_name.toLowerCase().includes(lowerSearch)) ||
-                (p.cpf && formatCPF(p.cpf).includes(lowerSearch)) ||
-                (p.phone_mobile && p.phone_mobile.toLowerCase().includes(lowerSearch)) ||
-                (p.email && p.email.toLowerCase().includes(lowerSearch))
-            );
-        });
+        if (!searchTerm) return pacientes;
+        const lower = searchTerm.toLowerCase();
+        return pacientes.filter(p => 
+            (p.full_name?.toLowerCase().includes(lower)) ||
+            (p.cpf && formatCPF(p.cpf).includes(lower)) ||
+            (p.phone_mobile?.includes(lower)) ||
+            (p.email?.toLowerCase().includes(lower))
+        );
     }, [pacientes, searchTerm]);
 
     return (
-        <>
-            <header className="doctor-header">
-                <div
-                    className="doctor-header__inner"
-                    style={{ justifyContent: 'flex-start', gap: '2rem', display: 'flex', alignItems: 'center' }}
-                >
-                    <div className="doctor-header__brand">
-                        <div className="brand-icon">
-                            <div className="brand-icon__inner">
-                                <Stethoscope className="brand-icon__svg" />
-                            </div>
-                        </div>
-                        <span className="brand-name">Medconnect</span>
-                        <h1 className="doctor-greeting">
-                            {/* Idealmente, o nome viria de dados do usuário logado */}
-                            Olá, Dr(a). <span className="highlight">Camilla Millene</span> 👋
-                        </h1>
-                    </div>
-
-                    <div className="doctor-header__search">
-                        <div className="search-wrapper">
-                            <Search className="search-icon" />
+        <div className="container" style={{ padding: '20px' }}>
+            <section className="card" style={{ background: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                
+                {/* Header da Tabela */}
+                <div className="head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', marginBottom: '24px', gap: '16px' }}>
+                    <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700, color: '#1e293b' }}>Pacientes</h1>
+                    
+                    <div style={{ display: 'flex', gap: '12px', flex: 1, justifyContent: 'flex-end', minWidth: '300px' }}>
+                        <div className="search" style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', borderRadius: '8px', padding: '8px 16px', flex: 1, maxWidth: '400px', border: '1px solid #e2e8f0' }}>
+                            <FaSearch style={{ color: '#64748b', marginRight: '10px' }}/>
                             <input
-                                name="q"
-                                autoComplete="off"
-                                value={q} // Usa o estado 'q'
-                                onChange={(e) => setQ(e.target.value)} // Usa o setter 'setQ'
-                                placeholder="Buscar paciente, exame, laudo…"
-                                className="search-input"
-                            />
-                        </div>
-                    </div>
-
-                    {/* 6. Links de navegação ajustados */}
-                    <nav
-                        className="doctor-header__nav"
-                        style={{ marginLeft: 'auto', display: 'flex', gap: '1rem', alignItems: 'center' }}
-                    >
-                        <button
-                            onClick={() => navigate("/doctor/dashboard")}
-                            // Define classe 'active' se o pathname corresponder
-                            className={pathname === '/doctor/dashboard' ? 'nav-link active' : 'nav-link'}
-                        >
-                            Início
-                        </button>
-                        <button
-                            onClick={() => navigate("/doctor/laudos")}
-                            className={pathname.startsWith('/doctor/laudos') ? 'nav-link active' : 'nav-link'}
-                        >
-                            Laudos
-                        </button>
-                        {/* Botão para a página atual */}
-                        <button
-                            onClick={() => navigate("/doctor/pacientes")} // Navega para a própria página (ou pode desabilitar)
-                            className={pathname.startsWith('/doctor/pacientes') ? 'nav-link active' : 'nav-link'}
-                        >
-                            Gerenciamento de Pacientes
-                        </button>
-                    </nav>
-                </div>
-            </header>
-            <main className="container">
-                <section className="card">
-                    <div className="head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                        <h1
-                            style={{
-                                margin: 0,
-                                flex: '1 1 auto',
-                                minWidth: '150px',
-                                fontSize: '2rem',
-                                fontWeight: 700,
-                                letterSpacing: '0.04em',
-                                background: 'linear-gradient(90deg, #c7d2fe 0%, #26bdbd 100%)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                backgroundClip: 'text',
-                                textShadow: '0 2px 12px rgba(24, 98, 180, 0.18), 0 1px 0 #fff3',
-                                lineHeight: 1.15,
-                                textAlign: 'left'
-                            }}
-                        >
-                            Pacientes
-                        </h1>
-                        <div className="search" style={{ flex: '2 1 400px', display: 'flex', alignItems: 'center', background: '#ffffffff', border: '1px solid #374151', borderRadius: '12px', boxShadow: '0 2px 6px rgba(0,0,0,0.4)', padding: '0.75rem 1rem', transition: 'background-color 0.3s ease, box-shadow 0.3s ease', margin: '0 1rem' }}>
-                            <FaSearch style={{ color: '#9ca3af', marginRight: '12px', fontSize: '1.25rem' }}/> {/* Ícone React maior e cor clara */}
-                            <input
-                                id="q"
-                                placeholder="Buscar por nome, CPF, telefone..."
+                                placeholder="Buscar por nome, CPF..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    outline: 'none',
-                                    color: '#f0f0f0',
-                                    fontSize: '1rem',
-                                    width: '100%',
-                                    padding: '0.5rem 0',
-                                    borderRadius: '12px',
-                                    fontWeight: '500',
-                                    '::placeholder': { color: '#d1d5db' }
-                                }}
-                                type="search"
-                                onFocus={e => {
-                                    e.currentTarget.parentElement.style.backgroundColor = '#cccdcfff';
-                                    e.currentTarget.parentElement.style.boxShadow = '0 0 8px 2px rgba(147,197,253,0.7)';
-                                }}
-                                onBlur={e => {
-                                    e.currentTarget.parentElement.style.backgroundColor = '#b0b1b1ff';
-                                    e.currentTarget.parentElement.style.boxShadow = '0 2px 6px rgba(223, 223, 223, 0.4)';
-                                }}
+                                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#334155', fontSize: '0.95rem' }}
                             />
                         </div>
-                        <Link className="btn primary" to="/doctor/pacientes/novo" style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
-                            <FaPlus style={{ marginRight: '8px' }}/> {/* Ícone React */}
-                            Novo paciente
+
+                        <Link to="/doctor/pacientes/novo" className="btn primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#06b6d4', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
+                            <FaPlus size={12}/> Novo
                         </Link>
                     </div>
+                </div>
 
-                    {error && (
-                        <div style={{ padding: '1rem 1.2rem', color: 'red', background: '#ffebee' }}>
-                            Erro: {error}
-                        </div>
-                    )}
+                {error && <div style={{ padding: '12px', color: '#b91c1c', background: '#fef2f2', borderRadius: '8px', marginBottom: '16px' }}>{error}</div>}
 
-                    <div className="table-wrap">
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Nome</th>
-                                    <th>CPF</th>
-                                    <th>E-mail</th>
-                                    <th>Telefone</th>
-                                    <th>Cidade/UF</th>
-                                    <th style={{ textAlign: 'right' }}>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {loading ? (
-                                    <tr><td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>Carregando pacientes...</td></tr>
-                                ) : filteredPacientes.length === 0 ? (
-                                    <tr><td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>Nenhum paciente encontrado{searchTerm ? ' para "' + searchTerm + '"' : ''}.</td></tr>
-                                ) : (
-                                    filteredPacientes.map((p, i) => (
-                                        <tr className="row" key={p.id}>
-                                            <td>{i + 1}</td>
-                                            <td>{p.full_name || '—'}</td>
-                                            <td>{p.cpf ? formatCPF(p.cpf) : '—'}</td>
-                                            <td>{p.email || '—'}</td>
-                                            <td>{p.phone_mobile || '—'}</td>
-                                            <td>{p.city ? `${p.city}/${p.state || ''}` : '—'}</td>
-                                            <td className="col-actions">
-                                                <button className="page-btn btn-view" onClick={() => handleView(p.id)} title="Ver carteirinha"><FaEye /></button>
-                                                <button className="page-btn btn-edit" onClick={() => handleEdit(p.id)} title="Editar"><FaPencilAlt /></button>
-                                                <button className="page-btn btn-del" onClick={() => handleDelete(p.id)} title="Excluir"><FaTrashAlt /></button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                {/* Tabela */}
+                <div className="table-wrap" style={{ overflowX: 'auto' }}>
+                    <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#64748b', textAlign: 'left' }}>
+                                <th style={{ padding: '12px' }}>Nome</th>
+                                <th style={{ padding: '12px' }}>CPF</th>
+                                <th style={{ padding: '12px' }}>Telefone</th>
+                                <th style={{ padding: '12px' }}>Cidade</th>
+                                <th style={{ padding: '12px', textAlign: 'right' }}>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Carregando...</td></tr>
+                            ) : filteredPacientes.length === 0 ? (
+                                <tr><td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Nenhum paciente encontrado.</td></tr>
+                            ) : (
+                                filteredPacientes.map((p) => (
+                                    <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                        <td style={{ padding: '12px', fontWeight: 500, color: '#334155' }}>{p.full_name}</td>
+                                        <td style={{ padding: '12px', color: '#64748b' }}>{formatCPF(p.cpf)}</td>
+                                        <td style={{ padding: '12px', color: '#64748b' }}>{p.phone_mobile || '—'}</td>
+                                        <td style={{ padding: '12px', color: '#64748b' }}>{p.city || '—'}</td>
+                                        <td style={{ padding: '12px', textAlign: 'right' }}>
+                                            <button onClick={() => handleView(p.id)} style={iconBtnStyle} title="Ver Carteirinha"><FaEye /></button>
+                                            <button onClick={() => handleEdit(p.id)} style={iconBtnStyle} title="Editar"><FaPencilAlt /></button>
+                                            <button onClick={() => handleDelete(p.id)} style={{...iconBtnStyle, color: '#ef4444'}} title="Excluir"><FaTrashAlt /></button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div className="table-footer">
-                        <small className="muted" id="countLabel">
-                            Mostrando {filteredPacientes.length} de {pacientes.length} paciente(s)
-                            {searchTerm && ` (filtrado de ${pacientes.length})`}
-                        </small>
-                    </div>
-                </section>
-            </main>
+                <div className="table-footer" style={{ marginTop: '16px', color: '#94a3b8', fontSize: '0.85rem' }}>
+                    Mostrando {filteredPacientes.length} de {pacientes.length} registros
+                </div>
+            </section>
+
+            {/* --- MODAL DE CARTEIRINHA --- */}
+            {viewPatient && (
+                <PatientCardModal 
+                    patient={viewPatient} 
+                    onClose={closeView} 
+                />
+            )}
+
             <AccessibilityMenu />
-        </>
+        </div>
     );
 }
+
+// --- Componente Modal Interno ---
+function PatientCardModal({ patient, onClose }) {
+    // Fecha ao clicar fora ou no ESC
+    useEffect(() => {
+        const handleEsc = (e) => { if(e.key === 'Escape') onClose(); };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [onClose]);
+
+    const handlePrint = () => {
+        window.print();
+    };
+
+    return (
+        <div style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+        }} onClick={onClose}>
+            
+            <div 
+                style={{
+                    background: '#fff', width: '100%', maxWidth: '500px',
+                    borderRadius: '16px', overflow: 'hidden',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    animation: 'fadeIn 0.2s ease-out'
+                }}
+                onClick={e => e.stopPropagation()} // Evita fechar ao clicar dentro
+            >
+                {/* Header do Modal */}
+                <div style={{ 
+                    background: 'linear-gradient(135deg, #06b6d4 0%, #2563eb 100%)', 
+                    padding: '24px', color: '#fff', position: 'relative' 
+                }}>
+                    <button 
+                        onClick={onClose}
+                        style={{ 
+                            position: 'absolute', top: '16px', right: '16px', 
+                            background: 'rgba(255,255,255,0.2)', border: 'none', 
+                            color: '#fff', borderRadius: '50%', width: '32px', height: '32px', 
+                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}
+                    >
+                        <FaTimes />
+                    </button>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ 
+                            width: '64px', height: '64px', background: '#fff', 
+                            borderRadius: '50%', display: 'flex', alignItems: 'center', 
+                            justifyContent: 'center', color: '#06b6d4', fontSize: '32px'
+                        }}>
+                            <FaUserCircle />
+                        </div>
+                        <div>
+                            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>Carteira do Paciente</h2>
+                            <p style={{ margin: '4px 0 0 0', opacity: 0.9, fontSize: '0.9rem' }}>MedConnect Health System</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Corpo do Modal */}
+                <div style={{ padding: '24px' }}>
+                    <div style={{ marginBottom: '20px' }}>
+                        <label style={labelStyle}>Nome Completo</label>
+                        <div style={valueStyle}>{patient.full_name}</div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                        <div>
+                            <label style={labelStyle}>CPF</label>
+                            <div style={valueStyle}>{formatCPF(patient.cpf)}</div>
+                        </div>
+                        <div>
+                            <label style={labelStyle}>Data de Nascimento</label>
+                            <div style={valueStyle}>{formatDate(patient.birth_date)}</div>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                         <div>
+                            <label style={labelStyle}>Telefone</label>
+                            <div style={valueStyle}>{patient.phone_mobile || '—'}</div>
+                        </div>
+                        <div>
+                            <label style={labelStyle}>E-mail</label>
+                            <div style={valueStyle}>{patient.email || '—'}</div>
+                        </div>
+                    </div>
+
+                     {/* Linha de Localização */}
+                     <div>
+                        <label style={labelStyle}>Localização</label>
+                        <div style={valueStyle}>
+                            {patient.city ? `${patient.city} - ${patient.state || ''}` : 'Endereço não informado'}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer / Ações */}
+                <div style={{ 
+                    padding: '16px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0',
+                    display: 'flex', justifyContent: 'flex-end', gap: '12px'
+                }}>
+                    <button onClick={onClose} style={{
+                        background: 'transparent', border: '1px solid #cbd5e1', color: '#64748b',
+                        padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600
+                    }}>
+                        Fechar
+                    </button>
+                    <button onClick={handlePrint} style={{
+                        background: '#0f172a', border: 'none', color: '#fff',
+                        padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600,
+                        display: 'flex', alignItems: 'center', gap: '8px'
+                    }}>
+                        <FaPrint /> Imprimir
+                    </button>
+                </div>
+            </div>
+            
+            {/* Estilos de animação simples */}
+            <style>{`
+                @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+            `}</style>
+        </div>
+    );
+}
+
+// --- Estilos Inline Reutilizáveis ---
+const iconBtnStyle = {
+    background: 'transparent', border: 'none', cursor: 'pointer',
+    padding: '8px', color: '#64748b', fontSize: '16px',
+    marginLeft: '4px', transition: 'color 0.2s'
+};
+
+const labelStyle = {
+    display: 'block', fontSize: '0.75rem', textTransform: 'uppercase',
+    letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '4px', fontWeight: 600
+};
+
+const valueStyle = {
+    fontSize: '1rem', color: '#1e293b', fontWeight: 500, wordBreak: 'break-word'
+};

@@ -14,7 +14,7 @@ import DoctorProfile from "@/features/doctor/pages/DoctorProfile";
 import LaudosPage from "@/features/doctor/pages/laudos/LaudosPage";
 import NovoLaudoPage from "@/features/doctor/pages/laudos/NovoLaudoPage";
 import RevisarLaudoPage from "@/features/doctor/pages/laudos/RevisarLaudoPage";
-import GerenciamentoPacientesPage from "@/features/doctor/pages/GerenciamentoPacientesPage.jsx"; 
+import GerenciamentoPacientesPage from "@/features/doctor/pages/GerenciamentoPacientesPage";
 import PaginaCadastroPaciente from "@/features/doctor/pages/PaginaCadastroPaciente";
 import GerenciamentoConsultasPage from "@/features/doctor/pages/GerenciamentoConsultas";
 
@@ -25,6 +25,7 @@ import UsersList from "@/features/admin/pages/UsersList.jsx";
 import CreateUser from "@/features/admin/pages/CreateUser";
 import AppointmentsPage from "@/features/admin/pages/AppointmentsPage";
 import AdminReportsList from "@/features/admin/pages/AdminReportsList";
+import UserProfilePage from "@/features/admin/pages/UserProfilePage";
 
 // Paciente
 import AgendamentoPacientePage from "@/features/patients/pages/Agendamento";
@@ -39,6 +40,8 @@ import Pacientes from "@/features/secretary/pages/Pacientes";
 import Consultas from "@/features/secretary/pages/Consultas";
 import Relatorios from "@/features/secretary/pages/Relatorios";
 import Configuracoes from "@/features/secretary/pages/Configuracoes";
+// exemplo: src/app/providers/router.tsx (ou semelhante)
+import SecretaryProfilePage from "@/features/secretary/pages/SecretaryProfilePage";
 
 // Layout raiz
 const Root = () => <Outlet />;
@@ -143,6 +146,7 @@ export const router = createBrowserRouter([
           { path: "AppointmentsPage", element: <AppointmentsPage /> },
           { path: "laudos", element: <AdminReportsList /> },
           { path: "laudos/:id/revisar", element: <RevisarLaudoPage /> },
+          { path: "profile", element: <UserProfilePage /> },
         ],
       },
 
@@ -164,6 +168,7 @@ export const router = createBrowserRouter([
           { path: "relatorios", element: <Relatorios /> }, 
           { path: "configuracoes", element: <Configuracoes /> },
           { path: "relatorios/:id/revisar", element: <RevisarLaudoPage /> },
+          { path: "profile", element: <SecretaryProfilePage /> },
         ],
       },
     ],

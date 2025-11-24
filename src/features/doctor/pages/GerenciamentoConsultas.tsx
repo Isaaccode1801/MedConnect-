@@ -123,6 +123,10 @@ export default function GerenciamentoConsultasPage() {
   const [formType, setFormType] = useState<AppointmentType>('presencial');
   const [formActive, setFormActive] = useState<boolean>(true);
 
+  // modal de detalhes da consulta
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedConsulta, setSelectedConsulta] = useState<Consulta | null>(null);
+
   // carregar consultas + médico
   const carregarConsultas = useCallback(async () => {
     setLoading(true);
@@ -196,6 +200,16 @@ export default function GerenciamentoConsultasPage() {
       return;
     }
     navigate(`/doctor/pacientes/${patientId}`);
+  };
+
+  const handleOpenConsultaDetails = (consulta: Consulta) => {
+    setSelectedConsulta(consulta);
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseConsultaDetails = () => {
+    setShowDetailsModal(false);
+    setSelectedConsulta(null);
   };
 
   const filteredConsultas = useMemo(() => {
@@ -422,7 +436,11 @@ export default function GerenciamentoConsultasPage() {
                             <FaTimes />
                           </button>
                         )}
-                        <button className="page-btn btn-view" onClick={() => handleViewPatient(c.patients?.id)} title="Ver Prontuário do Paciente">
+                        <button
+                          className="page-btn btn-view"
+                          onClick={() => handleOpenConsultaDetails(c)}
+                          title="Ver detalhes da consulta"
+                        >
                           <FaEye />
                         </button>
                       </td>
@@ -441,6 +459,134 @@ export default function GerenciamentoConsultasPage() {
           </div>
         </section>
       </main>
+
+      {/* MODAL: Detalhes da consulta */}
+      {showDetailsModal && selectedConsulta && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="modal-overlay"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1rem",
+            zIndex: 1000,
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCloseConsultaDetails();
+          }}
+        >
+          <div
+            className="modal-card"
+            style={{
+              width: "100%",
+              maxWidth: 520,
+              background: "#fff",
+              borderRadius: 12,
+              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "1rem 1.25rem",
+                borderBottom: "1px solid #eef2f7",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <div>
+                <h2 style={{ margin: 0, fontSize: 18 }}>Detalhes da consulta</h2>
+                <small className="muted">
+                  Paciente:{" "}
+                  {selectedConsulta.patients?.full_name || "Paciente não encontrado"}
+                </small>
+              </div>
+              <button
+                type="button"
+                className="page-btn btn-secondary"
+                onClick={handleCloseConsultaDetails}
+              >
+                Fechar
+              </button>
+            </div>
+
+            <div style={{ padding: "1rem 1.25rem", fontSize: "0.95rem" }}>
+              <div style={{ marginBottom: 10 }}>
+                <strong>Data:</strong>{" "}
+                {formatData(selectedConsulta.scheduled_at)}
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <strong>Horário:</strong>{" "}
+                {formatHora(selectedConsulta.scheduled_at)}
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <strong>Status:</strong>{" "}
+                <span className={`badge status-${selectedConsulta.status || "default"}`}>
+                  {selectedConsulta.status === "requested"
+                    ? "Solicitada"
+                    : selectedConsulta.status === "confirmed"
+                    ? "Confirmada"
+                    : selectedConsulta.status === "completed"
+                    ? "Realizada"
+                    : selectedConsulta.status === "cancelled"
+                    ? "Cancelada"
+                    : selectedConsulta.status
+                    ? selectedConsulta.status.charAt(0).toUpperCase() +
+                      selectedConsulta.status.slice(1)
+                    : "—"}
+                </span>
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <strong>Paciente:</strong>{" "}
+                {selectedConsulta.patients?.full_name || "Paciente não encontrado"}
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <strong>CPF:</strong>{" "}
+                {formatCPF(selectedConsulta.patients?.cpf)}
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <strong>Telefone:</strong>{" "}
+                {selectedConsulta.patients?.phone_mobile || "—"}
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: "0.85rem 1.25rem",
+                borderTop: "1px solid #eef2f7",
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 8,
+              }}
+            >
+              <button
+                type="button"
+                className="page-btn btn-secondary"
+                onClick={handleCloseConsultaDetails}
+              >
+                Fechar
+              </button>
+              <button
+                type="button"
+                className="page-btn btn-primary"
+                onClick={() => {
+                  handleCloseConsultaDetails();
+                  handleViewPatient(selectedConsulta.patients?.id);
+                }}
+              >
+                Ver prontuário
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MODAL: Criar disponibilidade */}
       {showCreateModal && (

@@ -100,11 +100,7 @@ export default function App() {
                       </li>
                       {/* ================================================== */}
                       
-                      <li>
-                        <a href="#">
-                          <FaCog className="icon" /> <span>Configurações</span>
-                        </a>
-                      </li>
+                 
                       <li>
                         <button
                           onClick={handleLogout}
@@ -156,20 +152,33 @@ export default function App() {
                 <div className={`main-content ${isSidebarCollapsed ? 'collapsed' : ''}`}>
                   <header className="header">
                     <div className="header-left">
-                      <div className="search-bar">
-                        <FaSearch className="icon" />
-                        <input type="text" placeholder="Buscar..." />
-                      </div>
+
                     </div>
                     <div className="header-right">
-                      <FaBell className="icon" />
-                      <div className="profile">
-                        <img src="https://placehold.co/40x40/3B82F6/FFFFFF?text=A" alt="Admin" />
-                        <div>
-                          <div style={{ fontWeight: 600 }}>Admin</div>
-                          <div style={{ fontSize: '0.8rem' }}>gestao@medconnect.com</div>
-                        </div>
-                      </div>
+                      
+                      <button
+                        type="button"
+                        onClick={() => navigate('/admin/profile')}
+                        style={{
+                          border: 'none',
+                          background: 'transparent',
+                          padding: 0,
+                          marginLeft: '1rem',
+                          cursor: 'pointer',
+                        }}
+                        aria-label="Ir para página de perfil"
+                      >
+                        <img
+                          src="https://placehold.co/40x40/3B82F6/FFFFFF?text=A"
+                          alt="Perfil do admin"
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '9999px',
+                            display: 'block',
+                          }}
+                        />
+                      </button>
                     </div>
                   </header>
                   

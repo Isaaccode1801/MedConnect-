@@ -257,19 +257,7 @@ export default function DoctorLayout() {
           </div>
 
           {/* Busca (desktop) */}
-          <div className="doctor-header__search">
-            <div className="search-wrapper">
-              <Search className="search-icon" />
-              <input
-                name="q"
-                autoComplete="off"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar paciente, exame, laudo…"
-                className="search-input"
-              />
-            </div>
-          </div>
+
 
           {/* Nav desktop */}
           <div className="doctor-header__nav-container-desktop">{renderNavContent()}</div>

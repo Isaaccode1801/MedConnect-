@@ -82,10 +82,6 @@ export default function Home() {
             </span>
           </button>
 
-          <button className="btn-card btn-finance" onClick={() => nav("/finance")}>
-            <FaCoins size={22} />
-            <span>Financeiro</span>
-          </button>
         </div>
 
         <div className="starter-logo-wrap">

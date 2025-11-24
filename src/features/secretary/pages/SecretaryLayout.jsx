@@ -196,7 +196,7 @@ export default function SecretaryLayout() {
               { to: "/secretary/medicos", icon: FaUserMd, label: "Médicos" },
               { to: "/secretary/pacientes", icon: FaUsers, label: "Pacientes" },
               { to: "/secretary/relatorios", icon: FaFileAlt, label: "Relatórios" },
-              { to: "/secretary/configuracoes", icon: FaCog, label: "Configurações" },
+             
             ].map((item) => (
               <li key={item.to}>
                 <NavLink
@@ -276,75 +276,46 @@ export default function SecretaryLayout() {
             padding: "0.9rem 1.25rem",
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             gap: 12,
             zIndex: 10,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ position: "relative" }}>
-              <FaSearch
-                style={{
-                  position: "absolute",
-                  left: 12,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  fontSize: "0.95rem",
-                  color: "#6B7280",
-                }}
-              />
-              <input
-                type="text"
-                placeholder="Buscar paciente, médico..."
-                style={{
-                  padding: "0.55rem 0.75rem 0.55rem 2.6rem",
-                  borderRadius: 999,
-                  border: "1px solid #E6E9EE",
-                  fontSize: "0.95rem",
-                  minWidth: 260,
-                  background: "#FBFDFF",
-                }}
-              />
-            </div>
-          </div>
+          {/* Perfil */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button
+              onClick={() => navigate("/secretary/profile")}
+              aria-label="Ver meu perfil"
+              style={{
+                all: "unset",
+                cursor: "pointer",
+                display: "grid",
+                placeItems: "center",
+                width: 44,
+                height: 44,
+                borderRadius: "999px",
+                backgroundColor: "#e0f2f1",
+                color: "#0d9488",
+                fontWeight: 700,
+                fontSize: "0.95rem",
+                userSelect: "none",
+                boxShadow: "0 2px 6px rgba(13,148,136,0.06)",
+              }}
+              title="Ver meu perfil"
+            >
+              {loadingMe ? "…" : displayInitials}
+            </button>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ position: "relative" }} title="Notificações">
-              <div style={{ width: 36, height: 36, borderRadius: 10, display: "grid", placeItems: "center", background: "#fff", boxShadow: "0 1px 4px rgba(2,6,23,0.04)" }}>
-                <FaBell style={{ fontSize: 16, color: "#4B5563" }} />
+            <div style={{ fontSize: "0.9rem", lineHeight: 1.1, textAlign: "right" }}>
+              <div style={{ fontWeight: 700, color: "#111827" }}>
+                {loadingMe ? "Carregando..." : displayName}
               </div>
-            </div>
-
-            {/* Perfil */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <button
-                onClick={() => setProfileOpen(true)}
-                aria-label="Abrir perfil"
-                style={{
-                  all: "unset",
-                  cursor: "pointer",
-                  display: "grid",
-                  placeItems: "center",
-                  width: 44,
-                  height: 44,
-                  borderRadius: "999px",
-                  backgroundColor: "#e0f2f1",
-                  color: "#0d9488",
-                  fontWeight: 700,
-                  fontSize: "0.95rem",
-                  userSelect: "none",
-                  boxShadow: "0 2px 6px rgba(13,148,136,0.06)",
-                }}
-                title="Ver meu perfil"
-              >
-                {loadingMe ? "…" : displayInitials}
-              </button>
-
-              <div style={{ fontSize: "0.9rem", lineHeight: 1.1, textAlign: "right" }}>
-                <div style={{ fontWeight: 700, color: "#111827" }}>{loadingMe ? "Carregando..." : displayName}</div>
-                <div style={{ color: "#6B7280", fontSize: "0.82rem" }}>{loadingMe ? "—" : displayEmail}</div>
-                {!!errorMe && <div style={{ color: "#dc2626", fontSize: "0.75rem" }}>{errorMe}</div>}
+              <div style={{ color: "#6B7280", fontSize: "0.82rem" }}>
+                {loadingMe ? "—" : displayEmail}
               </div>
+              {!!errorMe && (
+                <div style={{ color: "#dc2626", fontSize: "0.75rem" }}>{errorMe}</div>
+              )}
             </div>
           </div>
         </header>

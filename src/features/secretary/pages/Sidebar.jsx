@@ -78,13 +78,7 @@ export default function Sidebar() {
             <i className="fa-regular fa-file-lines" /> <span style={{ display: sidebarOpen ? 'inline' : 'none' }}>Relatórios</span>
           </NavLink>
 
-          {/* Configurações */}
-          <NavLink
-            to="/secretary/configuracoes"
-            className={({ isActive }) => (isActive ? "active" : undefined)}
-          >
-            <i className="fa-solid fa-gear" /> <span style={{ display: sidebarOpen ? 'inline' : 'none' }}>Configurações</span>
-          </NavLink>
+
         </div>
 
         <div className="sidebar-footer">
