@@ -2,7 +2,7 @@
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css");
 
 :root {
-  -background: #F5F7FA;
+  --background: #F5F7FA;
   color: #0f172a; /* slate-900 */
   /* brand tokens */
   --brand-teal: #0d9488;   /* teal-600 */
@@ -13,6 +13,42 @@
   --muted-600: #475569;    /* slate-600 */
   --line-200: #e2e8f0;     /* slate-200 */
   --bg-soft: #f1f5f9;      /* slate-100 */
+  
+  /* Novas variáveis para modo escuro */
+  --cor-fundo: #F5F7FA;
+  --cor-borda: #e2e8f0;
+  --cor-texto-principal: #0f172a;
+  --cor-texto-secundario: #475569;
+  --cor-acento-healthone: #0d9488;
+  --cor-acento-healthone-claro: #e0f7fa;
+  --cor-card: #ffffff;
+  --cor-card-hover: #f8fafc;
+  --cor-sidebar-vidro: rgba(255, 255, 255, 0.8);
+  --raio-borda: 12px;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.07);
+  --blur-fundo: 10px;
+  --transicao: all 0.3s ease-in-out;
+}
+
+/* Modo Escuro */
+.modo-escuro {
+  --cor-fundo: #0f172a;
+  --cor-borda: #334155;
+  --cor-texto-principal: #f1f5f9;
+  --cor-texto-secundario: #cbd5e1;
+  --cor-acento-healthone: #14b8a6;
+  --cor-acento-healthone-claro: #134e4a;
+  --cor-card: #1e293b;
+  --cor-card-hover: #334155;
+  --cor-sidebar-vidro: rgba(30, 41, 59, 0.8);
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --background: #0f172a;
+  --ink-900: #f1f5f9;
+  --ink-700: #cbd5e1;
+  --muted-600: #94a3b8;
+  --muted-500: #64748b;
+  --line-200: #334155;
+  --bg-soft: #1e293b;
 }
 
 body,
@@ -31,9 +67,79 @@ body,
       rgba(63, 187, 192, 0.1),
       transparent 40%
     );
+  transition: var(--transicao);
 }
 
-/* SIDEBAR */
+.modo-escuro body,
+.modo-escuro .app {
+  background-image: radial-gradient(
+      circle at 5% 15%,
+      rgba(20, 184, 166, 0.15),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 95% 85%,
+      rgba(20, 184, 166, 0.1),
+      transparent 40%
+    );
+}
+
+/* ====================== SCROLLBAR E BORDAS DA TABELA ====================== */
+/* Container da tabela - REMOVE BORDA BRANCA EXTERNA */
+.table-scroll {
+  max-height: 60vh;
+  overflow: auto;
+  border: 1px solid var(--cor-borda) !important;
+  border-radius: 8px;
+  background: var(--cor-card);
+}
+
+/* Remove TODAS as bordas brancas da scrollbar */
+.table-scroll::-webkit-scrollbar-track {
+  background: var(--cor-fundo);
+  border-radius: 6px;
+  border: none; /* Remove borda branca */
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+  background: var(--cor-borda);
+  border-radius: 6px;
+  border: 3px solid var(--cor-fundo); /* Borda com cor do fundo */
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--cor-acento-healthone);
+}
+
+/* PARA FIREFOX - remove bordas brancas */
+.table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #555 #1c1c1c;
+}
+
+/* Se ainda houver borda branca, force a remoção completa */
+.table-scroll * {
+  border-color: var(--cor-borda) !important;
+}
+
+/* Remove bordas brancas das células da tabela */
+.table {
+  border-collapse: collapse;
+}
+
+.table td, .table th {
+  border: none;
+  background: transparent;
+}
+
+/* Remove qualquer outline ou borda de foco que possa parecer branco */
+.table-scroll:focus,
+.table-scroll:active {
+  outline: none;
+  border-color: var(--cor-borda);
+}
+
+/* ====================== SIDEBAR ====================== */
 .sidebar {
   position: fixed;
   top: 0;
@@ -59,6 +165,7 @@ body,
   font-size: 22px;
   font-weight: 700;
   border-bottom: 1px solid var(--cor-borda);
+  color: var(--cor-texto-principal);
 }
 
 .sidebar-header i {
@@ -165,9 +272,11 @@ body,
 
 /* TABELA */
 .card {
-  background: #fff;
+  background: var(--cor-card);
   border-radius: var(--raio-borda);
   box-shadow: var(--sombra);
+  border: 1px solid var(--cor-borda);
+  transition: var(--transicao);
 }
 
 .card-header {
@@ -191,16 +300,24 @@ thead th {
   color: var(--cor-texto-secundario);
   padding: 8px 12px;
   text-transform: uppercase;
+  background: var(--cor-card);
 }
 
 tbody tr {
-  background: #fff;
+  background: var(--cor-card);
   border-radius: var(--raio-borda);
+  transition: var(--transicao);
+}
+
+tbody tr:hover {
+  background: var(--cor-card-hover);
 }
 
 tbody tr td {
   padding: 12px;
   font-size: 14px;
+  color: var(--cor-texto-principal);
+  border-bottom: 1px solid var(--cor-borda);
 }
 
 .empty.note {
@@ -210,7 +327,6 @@ tbody tr td {
 }
 
 /* ===================== MODAL - NOVA CONSULTA ===================== */
-
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -223,14 +339,15 @@ tbody tr td {
 }
 
 .modal {
-  background: #ffffff;
+  background: var(--cor-card);
   border-radius: 14px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--sombra);
   width: 100%;
   max-width: 420px;
   padding: 28px 24px;
   animation: fadeInUp 0.25s ease;
   position: relative;
+  border: 1px solid var(--cor-borda);
 }
 
 @keyframes fadeInUp {
@@ -251,21 +368,21 @@ tbody tr td {
   right: 14px;
   background: transparent;
   border: none;
-  color: #64748b;
+  color: var(--cor-texto-secundario);
   font-size: 20px;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .modal .close-btn:hover {
-  color: #0d9488;
+  color: var(--cor-acento-healthone);
 }
 
 .modal h3 {
   font-family: "Inter", sans-serif;
   font-weight: 600;
   font-size: 1.1rem;
-  color: #0f172a;
+  color: var(--cor-texto-principal);
   margin-bottom: 16px;
   text-align: left;
 }
@@ -279,7 +396,7 @@ tbody tr td {
 
 .field label {
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--cor-texto-secundario);
   font-weight: 500;
 }
 
@@ -289,18 +406,18 @@ tbody tr td {
   font-family: "Inter", sans-serif;
   font-size: 0.95rem;
   padding: 10px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--cor-borda);
   border-radius: 8px;
   outline: none;
   transition: all 0.2s ease;
-  background: #ffffff;
-  color: #0f172a;
+  background: var(--cor-card);
+  color: var(--cor-texto-principal);
 }
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-  border-color: #0d9488;
+  border-color: var(--cor-acento-healthone);
   box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }
 
@@ -328,30 +445,79 @@ tbody tr td {
 }
 
 .modal .actions .btn {
-  background-color: #0d9488;
+  background-color: var(--cor-acento-healthone);
   color: #fff;
   border: none;
   box-shadow: 0 2px 6px rgba(13, 148, 136, 0.3);
 }
 
 .modal .actions .btn:hover {
-  background-color: #08917e;
+  background-color: var(--cor-acento-healthone);
+  opacity: 0.9;
   transform: translateY(-1px);
 }
 
 .modal .actions .ghost {
-  background-color: #f1f5f9;
-  color: #475569;
-  border: 1px solid #cbd5e1;
+  background-color: var(--bg-soft);
+  color: var(--cor-texto-secundario);
+  border: 1px solid var(--cor-borda);
 }
 
 .modal .actions .ghost:hover {
-  background-color: #e2e8f0;
+  background-color: var(--cor-borda);
 }
 
 .modal .actions .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* INPUTS E BOTÕES */
+input[type="search"] {
+  padding: 8px 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  background: var(--cor-card);
+  color: var(--cor-texto-principal);
+  min-width: 320px;
+}
+
+input[type="search"]:focus {
+  border-color: var(--cor-acento-healthone);
+  outline: none;
+}
+
+.btn {
+  background: var(--cor-acento-healthone);
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.ghost {
+  background: transparent;
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto-secundario);
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.ghost:hover {
+  border-color: var(--cor-acento-healthone);
+  color: var(--cor-acento-healthone);
 }
 
 @media (max-width: 480px) {
@@ -364,12 +530,13 @@ tbody tr td {
 .table-scroll {
   max-height: 60vh;
   overflow: auto;
-  border: 1px solid #eee;
+  border: 1px solid var(--cor-borda);
   border-radius: 8px;
 }
+
 .table thead.thead {
   position: sticky;
   top: 0;
-  background: #fff;
+  background: var(--cor-card);
   z-index: 1;
 }

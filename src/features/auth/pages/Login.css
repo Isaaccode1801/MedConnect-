@@ -1,0 +1,361 @@
+/* Login.css - Tema claro (default) */
+.login-container {
+  --bg-primary: #f9fafb;
+  --bg-card: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --border-color: #d1d5db;
+  --input-bg: #ffffff;
+  --input-text: #111827;
+  --input-placeholder: #9ca3af;
+  --error-bg: #fef2f2;
+  --error-border: #fca5a5;
+  --error-text: #b91c1c;
+  --success-bg: #ecfdf5;
+  --success-border: #6ee7b7;
+  --success-text: #065f46;
+  --button-primary-bg: #2563eb;
+  --button-primary-hover: #1d4ed8;
+  --button-google-bg: #ffffff;
+  --button-google-hover: #f9fafb;
+  --button-google-text: #374151;
+  --button-google-border: #d1d5db;
+  --divider-color: #e5e7eb;
+  --icon-color: #9ca3af;
+  --checkbox-bg: #ffffff;
+  --checkbox-border: #d1d5db;
+  --modal-bg: #ffffff;
+  --modal-backdrop: rgba(0, 0, 0, 0.27);
+}
+
+/* Tema escuro */
+.modo-escuro .login-container {
+  --bg-primary: #111827;
+  --bg-card: #1f2937;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --border-color: #374151;
+  --input-bg: #374151;
+  --input-text: #f9fafb;
+  --input-placeholder: #6b7280;
+  --error-bg: #7f1d1d;
+  --error-border: #b91c1c;
+  --error-text: #fecaca;
+  --success-bg: #065f46;
+  --success-border: #047857;
+  --success-text: #a7f3d0;
+  --button-primary-bg: #2563eb;
+  --button-primary-hover: #1d4ed8;
+  --button-google-bg: #374151;
+  --button-google-hover: #4b5563;
+  --button-google-text: #f9fafb;
+  --button-google-border: #4b5563;
+  --divider-color: #374151;
+  --icon-color: #6b7280;
+  --checkbox-bg: #374151;
+  --checkbox-border: #4b5563;
+  --modal-bg: #1f2937;
+  --modal-backdrop: rgba(0, 0, 0, 0.45);
+}
+
+.login-container.dark {
+  --button-primary-bg: #1e4ec9; /* Azul mais escuro */
+  --button-primary-hover: #1a44b5; /* Hover mais escuro */
+  /* Mantenha todas as outras variáveis como estão */
+}
+
+/* OU se preferir uma abordagem mais específica: */
+.login-container.dark .login-button-primary {
+  background-color: #1e4ec9 !important; /* Azul mais escuro */
+  box-shadow: 0 16px 32px rgba(30, 78, 201, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+}
+
+.login-container.dark .login-button-primary:hover:not(:disabled) {
+  background-color: #1a44b5 !important; /* Hover mais escuro */
+}
+
+/* Estilos base */
+.login-container {
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 36rem; /* Aumentado na largura (era 32rem) */
+  min-height: 700px; /* Reduzido na altura (era 720px+) */
+  border-radius: 1rem;
+  background-color: var(--bg-card);
+  padding: 3rem 3.5rem 2.5rem; /* Padding ajustado */
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.08), 0 6px 20px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.login-title {
+  color: var(--text-primary);
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 0.8rem; /* Reduzido */
+  transition: color 0.3s ease;
+}
+
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem; /* Reduzido */
+  line-height: 1.4;
+  transition: color 0.3s ease;
+}
+
+/* Reduzir espaçamento entre os campos do formulário */
+.login-form.space-y-10 {
+  gap: 1.5rem; /* Reduzido */
+}
+
+/* Form elements */
+.login-label {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  transition: color 0.3s ease;
+}
+
+.login-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  padding-left: 2.75rem;
+  padding-right: 1rem;
+  height: 3.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+  transition: all 0.3s ease;
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.login-input::placeholder {
+  color: var(--input-placeholder);
+}
+
+.login-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--icon-color);
+  transition: color 0.3s ease;
+}
+
+/* Buttons */
+.login-button-primary {
+  width: 100%;
+  background-color: var(--button-primary-bg);
+  color: white;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  height: 3.75rem;
+  font-size: 1rem;
+  line-height: 1.2;
+  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.25), 0 2px 6px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+.login-button-primary:hover:not(:disabled) {
+  background-color: var(--button-primary-hover);
+}
+
+.login-button-google {
+  width: 100%;
+  background-color: var(--button-google-bg);
+  border: 1px solid var(--button-google-border);
+  color: var(--button-google-text);
+  border-radius: 0.75rem;
+  height: 3.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.login-button-google:hover:not(:disabled) {
+  background-color: var(--button-google-hover);
+}
+
+/* Utility classes */
+.login-error {
+  border-radius: 0.5rem;
+  border: 1px solid var(--error-border);
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  line-height: 1.4;
+  transition: all 0.3s ease;
+}
+
+.login-success {
+  border-radius: 0.5rem;
+  border: 1px solid var(--success-border);
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  line-height: 1.4;
+  transition: all 0.3s ease;
+}
+
+.login-divider {
+  flex-grow: 1;
+  height: 1px;
+  background-color: var(--divider-color);
+  transition: background-color 0.3s ease;
+}
+
+.login-divider-text {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1;
+  transition: color 0.3s ease;
+}
+
+/* Modal */
+.login-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: var(--modal-backdrop);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-modal-content {
+  position: relative;
+  width: 92vw;
+  max-width: 32rem;
+  border-radius: 1.5rem;
+  background-color: var(--modal-bg);
+  padding: 2.25rem 2rem;
+  line-height: 1.55;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+}
+
+.login-modal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  transition: color 0.3s ease;
+}
+
+.login-modal-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+}
+
+.login-modal-button {
+  padding: 0 1.25rem;
+  height: 2.75rem;
+  border-radius: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.login-modal-button-cancel {
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  background-color: transparent;
+}
+
+.login-modal-button-cancel:hover {
+  background-color: var(--button-google-hover);
+}
+
+.login-modal-button-submit {
+  background-color: var(--button-primary-bg);
+  color: white;
+}
+
+.login-modal-button-submit:hover:not(:disabled) {
+  background-color: var(--button-primary-hover);
+}
+
+/* Checkbox */
+.login-checkbox {
+  height: 1rem;
+  width: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--checkbox-border);
+  background-color: var(--checkbox-bg);
+  color: #2563eb;
+  transition: all 0.3s ease;
+}
+
+.login-checkbox:focus {
+  outline: none;
+}
+
+/* Botões de texto (Esqueci minha senha e Cadastre-se) */
+.login-container .text-button {
+  background: transparent !important;
+  border: none !important;
+  color: var(--button-primary-bg);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  text-decoration: none;
+}
+
+.login-container .text-button:hover {
+  text-decoration: underline;
+}
+
+/* Remove qualquer fundo dos botões de texto no modo escuro */
+.login-container.dark .text-button {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Especificamente para a área do "Lembrar senha / Esqueci senha" */
+.login-container .login-remember-section {
+  background: transparent !important;
+  border: none !important;
+}
+
+.login-container .login-remember-section button {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Para o botão Cadastre-se no footer */
+.login-container .login-signup-section {
+  background: transparent !important;
+  border: none !important;
+}
+
+.login-container .login-signup-section button {
+  background: transparent !important;
+  border: none !important;
+}

@@ -13,6 +13,7 @@ import {
   Upload,
   Loader2,
 } from "lucide-react";
+import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
 /*
 CSS sugerido (global):
@@ -375,6 +376,7 @@ export default function DoctorProfile() {
           </div>
         </div>
       </div>
+      <AccessibilityMenu />
     </div>
   );
 }

@@ -6,13 +6,10 @@ import "./AccessibilityMenu.css";
 
 export default function AccessibilityMenu() {
   const [acessOpen, setAcessOpen] = useState(false);
-  const { isDark, toggle: toggleDarkMode } = useDarkMode();
+  const { isDark, toggle: toggleDarkMode, enable, disable } = useDarkMode(); // ✅ Já tem disable aqui
   const [daltonico, setDaltonico] = useState(() => 
     JSON.parse(localStorage.getItem("modoDaltonico") || "false")
   );
-
-  // Efeito para modo escuro
-  
 
   // Efeito para modo daltônico
   useEffect(() => {
@@ -39,11 +36,8 @@ export default function AccessibilityMenu() {
   const resetA11y = () => {
     document.documentElement.style.fontSize = "";
     setDaltonico(false);
-    const { disable } = useDarkMode();
-    disable();
+    disable(); // ✅ Agora usa a função já desestruturada
   };
-
-  
 
   return (
     <>

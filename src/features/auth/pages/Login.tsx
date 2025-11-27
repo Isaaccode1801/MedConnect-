@@ -4,6 +4,8 @@ import { supabase } from "@/lib/supabase";
 import medLogo from "@/assets/Medconnect.logo.png";
 import { Mail, Lock, X } from "lucide-react";
 import AccessibilityMenu from "@/components/ui/AccessibilityMenu";
+import { useDarkMode } from "@/hooks/useDarkMode"; // Import do seu hook
+import "./Login.css";
 
 function resolveRouteByRole(role: string) {
   switch ((role || "").toLowerCase()) {
@@ -31,6 +33,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // ====== USANDO SEU HOOK EXISTENTE ======
+  const { isDark } = useDarkMode();
 
   // ====== ESTADO DO MODAL DE RESET ======
   const [showReset, setShowReset] = useState(false);
@@ -197,28 +202,26 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-12" style={{ backgroundColor: "#f9fafb" }}>
+    <div className={`login-container ${isDark ? 'dark' : ''}`}>
       {/* Card */}
-      <div className="w-full max-w-xl rounded-2xl shadow-xl bg-white"
-           style={{ padding: "4rem 3.5rem 3rem", boxShadow: "0 30px 80px rgba(0,0,0,0.08), 0 6px 20px rgba(0,0,0,0.04)" }}>
+      <div className="login-card">
         {/* Header (logo only, centered) */}
-        <div className="flex justify-center mb-10">
-          <img src={medLogo} alt="MedConnect Logo" className="h-44 w-auto" />
+        <div className="flex justify-center mb-6"> {/* mb-6 em vez de mb-8 ou mb-10 */}
+          <img src={medLogo} alt="MedConnect Logo" className="h-44 w-auto" /> {/* h-32 em vez de h-44 */}
         </div>
 
         <div>
-          <h1 className="text-gray-900 font-semibold mt-4 mb-8" style={{ fontSize: "1.7rem", lineHeight: "1.25" }}>
+          <h1 className="login-title">
             Bem-vindo de volta
           </h1>
-          <p className="text-gray-500" style={{ fontSize: ".95rem", marginTop: "1rem", marginBottom: "2rem", lineHeight: "1.4" }}>
+          <p className="login-subtitle">
             Faça login para acessar o painel
           </p>
         </div>
 
         {/* Erro */}
         {errorMsg && (
-          <div className="rounded-lg border text-sm px-4 py-3 mb-8"
-               style={{ backgroundColor: "#FEF2F2", borderColor: "#FCA5A5", color: "#B91C1C", lineHeight: "1.4" }}>
+          <div className="login-error mb-8">
             {errorMsg}
           </div>
         )}
@@ -227,7 +230,7 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-10">
           {/* Email */}
           <div className="flex flex-col gap-3">
-            <label htmlFor="email" className="text-gray-700 font-medium" style={{ fontSize: ".9rem" }}>
+            <label htmlFor="email" className="login-label">
               E-mail
             </label>
             <div className="relative">
@@ -239,17 +242,15 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={submitting}
-                className="w-full rounded-xl border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                style={{ paddingLeft: "2.75rem", paddingRight: "1rem", height: "3.75rem", fontSize: "1rem", lineHeight: "1.4", fontWeight: 500, backgroundColor: "#fff" }}
+                className="login-input"
               />
-              <Mail className="absolute text-gray-400" size={20}
-                    style={{ left: "0.75rem", top: "50%", transform: "translateY(-50%)" }} />
+              <Mail className="login-icon" size={20} />
             </div>
           </div>
 
           {/* Senha */}
           <div className="flex flex-col gap-3">
-            <label htmlFor="password" className="text-gray-700 font-medium" style={{ fontSize: ".9rem" }}>
+            <label htmlFor="password" className="login-label">
               Senha
             </label>
             <div className="relative">
@@ -261,24 +262,23 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={submitting}
-                className="w-full rounded-xl border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                style={{ paddingLeft: "2.75rem", paddingRight: "1rem", height: "3.75rem", fontSize: "1rem", lineHeight: "1.4", fontWeight: 500, backgroundColor: "#fff" }}
+                className="login-input"
               />
-              <Lock className="absolute text-gray-400" size={20}
-                    style={{ left: "0.75rem", top: "50%", transform: "translateY(-50%)" }} />
+              <Lock className="login-icon" size={20} />
             </div>
           </div>
 
           {/* remember / forgot */}
-          <div className="mt-4 mb-6 flex items-start justify-between text-gray-600 text-sm">
+          <div className="mt-4 mb-6 flex items-start justify-between text-sm" style={{ color: 'var(--text-secondary)' }}>
             <label className="flex items-center gap-2 cursor-pointer select-none" style={{ lineHeight: "1.3" }}>
-              <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+              <input type="checkbox" className="login-checkbox" />
               <span>Lembrar por 30 dias</span>
             </label>
 
             <button
               type="button" onClick={openReset}
-              className="text-blue-600 hover:underline" style={{ lineHeight: "1.3" }}
+              className="text-button"
+              style={{ color: 'var(--button-primary-bg)', lineHeight: "1.3" }}
               aria-haspopup="dialog" aria-expanded={showReset}
             >
               Esqueci minha senha
@@ -288,26 +288,24 @@ export default function Login() {
           {/* Botão Entrar */}
           <button
             type="submit" disabled={submitting}
-            className="w-full font-semibold text-white rounded-xl transition disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ backgroundColor: "#2563eb", height: "3.75rem", fontSize: "1rem", lineHeight: "1.2",
-                     boxShadow: "0 16px 32px rgba(37,99,235,0.25), 0 2px 6px rgba(0,0,0,0.12)", marginTop: "1.5rem" }}
+            className="login-button-primary"
+            style={{ marginTop: "1.5rem" }}
           >
             {submitting ? "Entrando..." : "Entrar"}
           </button>
 
           {/* Divider visual */}
           <div className="flex items-center justify-center" style={{ marginTop: "0.5rem", marginBottom: "-0.5rem" }}>
-            <div style={{ flexGrow: 1, height: "1px", backgroundColor: "#E5E7EB" }} />
-            <span className="mx-3 text-gray-400" style={{ fontSize: ".8rem", lineHeight: "1" }}>ou</span>
-            <div style={{ flexGrow: 1, height: "1px", backgroundColor: "#E5E7EB" }} />
+            <div className="login-divider" />
+            <span className="login-divider-text mx-3">ou</span>
+            <div className="login-divider" />
           </div>
 
           {/* Botão Google */}
           <button
             type="button" onClick={handleGoogleLogin} disabled={submitting}
-            className="w-full border bg-white flex items-center justify-center gap-3 rounded-xl hover:bg-gray-50 transition disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ borderColor: "#D1D5DB", height: "3.75rem", fontSize: "0.95rem", fontWeight: 500, color: "#374151",
-                     lineHeight: "1.2", marginTop: "1rem" }}
+            className="login-button-google flex items-center justify-center gap-3"
+            style={{ marginTop: "1rem" }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 533.5 544.3" className="h-5 w-5" aria-hidden="true">
               <path fill="#4285f4" d="M533.5 278.4c0-18.4-1.6-36.2-4.7-53.4H272v101h146.9c-6.3 34-25.4 62.8-54.4 82v68h87.9c51.4-47.4 81.1-117.3 81.1-197.6z" />
@@ -320,143 +318,98 @@ export default function Login() {
         </form>
 
         {/* CTA cadastro */}
-        <p className="text-gray-500 text-center" style={{ fontSize: ".9rem", lineHeight: "1.4", marginTop: "3rem" }}>
+        <p className="text-center" style={{ fontSize: ".9rem", lineHeight: "1.4", marginTop: "3rem", color: 'var(--text-secondary)' }}>
           Não tem uma conta?{" "}
-          <button type="button" className="text-blue-600 hover:underline font-medium">Cadastre-se</button>
+          <button type="button" style={{ color: 'var(--button-primary-bg)' }} className="text-button">Cadastre-se</button>
         </p>
 
         <AccessibilityMenu />
       </div>
 
       {/* ===== MODAL RESET SENHA ===== */}
-{/* ===== MODAL RESET SENHA (versão espaçada) ===== */}
-{showReset && (
-  <div
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="reset-title"
-    className="fixed inset-0 z-50 flex items-center justify-center"
-  >
-    {/* backdrop */}
-    <div
-      className="absolute inset-0 bg-black/45"
-      onClick={() => setShowReset(false)}
-    />
-
-    {/* dialog */}
-    <div
-      className="relative w-[92vw] max-w-lg rounded-3xl bg-white shadow-2xl"
-      style={{
-        padding: "2.25rem 2rem", // ~ p-9
-        lineHeight: 1.55,
-      }}
-    >
-      {/* header */}
-      <div className="flex items-start justify-between mb-6">
-        <h2
-          id="reset-title"
-          className="text-xl md:text-2xl font-semibold text-gray-900"
-          style={{ letterSpacing: "-0.01em" }}
-        >
-          Resetar senha
-        </h2>
-        <button
-          aria-label="Fechar"
-          className="p-3 -mr-1 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition"
+      {showReset && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reset-title"
+          className="login-modal-backdrop"
           onClick={() => setShowReset(false)}
         >
-          <X size={22} />
-        </button>
-      </div>
-
-      <p className="text-sm md:text-[15px] text-gray-600 mb-5">
-        Enviaremos um link de redefinição para o e-mail informado.
-      </p>
-
-      {/* form */}
-      <form onSubmit={handleRequestPasswordReset} className="space-y-5">
-        <div className="space-y-2.5">
-          <label
-            htmlFor="reset-email"
-            className="block text-[13px] font-medium text-gray-700"
-          >
-            E-mail cadastrado
-          </label>
-          <input
-            id="reset-email"
-            type="email"
-            required
-            value={resetEmail}
-            onChange={(e) => setResetEmail(e.target.value)}
-            className="w-full rounded-2xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            style={{
-              height: "3.25rem", // campos mais altos
-              padding: "0 1rem",
-              fontSize: "0.95rem",
-            }}
-            placeholder="usuario@exemplo.com"
-            autoFocus
-          />
-        </div>
-
-        {/* mensagens */}
-        {resetErr && (
           <div
-            className="rounded-xl border text-sm px-4 py-3"
-            style={{
-              backgroundColor: "#FEF2F2",
-              borderColor: "#FCA5A5",
-              color: "#B91C1C",
-            }}
+            className="login-modal-content"
+            onClick={(e) => e.stopPropagation()}
           >
-            {resetErr}
-          </div>
-        )}
+            {/* header */}
+            <div className="flex items-start justify-between mb-6">
+              <h2 id="reset-title" className="login-modal-title">
+                Resetar senha
+              </h2>
+              <button
+                aria-label="Fechar"
+                className="p-3 -mr-1 rounded-xl hover:bg-gray-100 transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+                onClick={() => setShowReset(false)}
+              >
+                <X size={22} />
+              </button>
+            </div>
 
-        {resetMsg && (
-          <div
-            className="rounded-xl border text-sm px-4 py-3"
-            style={{
-              backgroundColor: "#ECFDF5",
-              borderColor: "#6EE7B7",
-              color: "#065F46",
-            }}
-          >
-            {resetMsg}
-          </div>
-        )}
+            <p className="login-modal-text mb-5">
+              Enviaremos um link de redefinição para o e-mail informado.
+            </p>
 
-        {/* actions */}
-        <div className="flex items-center justify-end gap-3 pt-1">
-          <button
-            type="button"
-            className="px-5 h-11 rounded-2xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
-            onClick={() => setShowReset(false)}
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            disabled={resetLoading || cooldown > 0}
-            className="px-6 h-11 rounded-2xl text-white font-medium disabled:opacity-60 transition"
-            style={{ backgroundColor: "#2563eb" }}
-          >
-            {resetLoading
-              ? "Enviando..."
-              : cooldown > 0
-              ? `Aguarde ${cooldown}s`
-              : "Enviar link"}
-          </button>
+            {/* form */}
+            <form onSubmit={handleRequestPasswordReset} className="space-y-5">
+              <div className="space-y-2.5">
+                <label htmlFor="reset-email" className="login-label">
+                  E-mail cadastrado
+                </label>
+                <input
+                  id="reset-email"
+                  type="email"
+                  required
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="login-input"
+                  style={{ height: "3.25rem", padding: "0 1rem", fontSize: "0.95rem" }}
+                  placeholder="usuario@exemplo.com"
+                  autoFocus
+                />
+              </div>
+
+              {/* mensagens */}
+              {resetErr && <div className="login-error">{resetErr}</div>}
+              {resetMsg && <div className="login-success">{resetMsg}</div>}
+
+              {/* actions */}
+              <div className="flex items-center justify-end gap-3 pt-1">
+                <button
+                  type="button"
+                  className="login-modal-button login-modal-button-cancel"
+                  onClick={() => setShowReset(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={resetLoading || cooldown > 0}
+                  className="login-modal-button login-modal-button-submit"
+                >
+                  {resetLoading
+                    ? "Enviando..."
+                    : cooldown > 0
+                    ? `Aguarde ${cooldown}s`
+                    : "Enviar link"}
+                </button>
+              </div>
+            </form>
+
+            <p className="mt-5 text-xs" style={{ color: 'var(--text-muted)' }}>
+              * Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha.
+            </p>
+          </div>
         </div>
-      </form>
-
-      <p className="mt-5 text-xs text-gray-500">
-        * Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha.
-      </p>
-    </div>
-  </div>
-)}
-
+      )}
     </div>
   );
 }
