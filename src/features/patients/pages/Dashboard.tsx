@@ -184,7 +184,38 @@ export default function PatientDashboard() {
           </div>
         </div>
         <div className="header-right">
-          <button className="btn-inicio" onClick={() => void navigate('/')}>Voltar para a tela inicial</button>
+          <button
+            className="btn-inicio"
+            onClick={async () => {
+              try {
+                const token = (await supabase.auth.getSession()).data.session?.access_token;
+
+                const myHeaders = new Headers();
+                if (token) {
+                  myHeaders.append("Authorization", `Bearer ${token}`);
+                }
+                myHeaders.append("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+                const requestOptions = {
+                  method: "POST",
+                  headers: myHeaders,
+                  redirect: "follow",
+                };
+
+                await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/logout`, requestOptions);
+              } catch (_) {}
+
+              try {
+                localStorage.removeItem("user_token");
+                localStorage.removeItem("user_role");
+                localStorage.removeItem("avatar_path");
+              } catch {}
+
+              navigate("/", { replace: true });
+            }}
+          >
+            Voltar para a tela inicial
+          </button>
           <button 
             className="btn-inicio"
             onClick={() => void navigate('/patient/consultas')}

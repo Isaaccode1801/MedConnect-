@@ -199,6 +199,34 @@ export default function DoctorLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  async function handleLogout() {
+    const token = await getAccessToken();
+
+    try {
+      const myHeaders = new Headers();
+      if (token) {
+        myHeaders.append("Authorization", `Bearer ${token}`);
+      }
+      myHeaders.append("apikey", SUPABASE_ANON || "");
+
+      const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        redirect: "follow",
+      };
+
+      await fetch(`${SUPABASE_URL}/auth/v1/logout`, requestOptions);
+    } catch (_) {}
+
+    try {
+      localStorage.removeItem("user_token");
+      localStorage.removeItem("user_role");
+      localStorage.removeItem("avatar_path");
+    } catch {}
+
+    navigate("/", { replace: true });
+  }
+
   // ---------------- Render ----------------
 
   const renderNavContent = () => (
@@ -208,8 +236,13 @@ export default function DoctorLayout() {
           <button
             key={link.key}
             onClick={() => {
-              navigate(link.path);
-              setIsMobileMenuOpen(false);
+              if (link.key === "voltar") {
+                setIsMobileMenuOpen(false);
+                handleLogout();
+              } else {
+                navigate(link.path);
+                setIsMobileMenuOpen(false);
+              }
             }}
             className={getLinkClass(link)}
             title={link.title || link.label}

@@ -12,13 +12,30 @@ export default function Sidebar() {
   function handleLogout(e) {
     e.preventDefault();
 
-    try {
+    async function doLogout() {
+      const token = localStorage.getItem("user_token");
+
+      try {
+        const myHeaders = new Headers();
+        myHeaders.append("Authorization", `Bearer ${token}`);
+        myHeaders.append("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+        const requestOptions = {
+          method: "POST",
+          headers: myHeaders,
+          redirect: "follow"
+        };
+
+        await fetch("https://yuanqfswhberkoevtmfr.supabase.co/auth/v1/logout", requestOptions);
+      } catch (_) {}
+
       localStorage.removeItem("user_token");
       localStorage.removeItem("user_role");
-    } catch (_) {}
 
-    // volta pra landing page "/"
-    navigate("/", { replace: true });
+      navigate("/", { replace: true });
+    }
+
+    doLogout();
   }
 
   return (

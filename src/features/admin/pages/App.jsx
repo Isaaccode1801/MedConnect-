@@ -30,9 +30,37 @@ export default function App() {
     setIsSidebarCollapsed((s) => !s);
   }
 
-  function handleLogout() {
-    // apenas navega para a raiz; o comportamento original de logout não foi alterado
-    navigate('/');
+  async function handleLogout() {
+    let token = null;
+
+    try {
+      const session = await supabase.auth.getSession();
+      token = session.data.session?.access_token;
+    } catch (_) {}
+
+    try {
+      const myHeaders = new Headers();
+      if (token) {
+        myHeaders.append("Authorization", `Bearer ${token}`);
+      }
+      myHeaders.append("apikey", import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+      const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        redirect: "follow",
+      };
+
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/logout`, requestOptions);
+    } catch (_) {}
+
+    try {
+      localStorage.removeItem("user_token");
+      localStorage.removeItem("user_role");
+      localStorage.removeItem("avatar_path");
+    } catch {}
+
+    navigate("/", { replace: true });
   }
 
   useEffect(() => {
