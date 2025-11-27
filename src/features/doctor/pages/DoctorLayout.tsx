@@ -212,7 +212,6 @@ export default function DoctorLayout() {
       const requestOptions = {
         method: "POST",
         headers: myHeaders,
-        redirect: "follow",
       };
 
       await fetch(`${SUPABASE_URL}/auth/v1/logout`, requestOptions);

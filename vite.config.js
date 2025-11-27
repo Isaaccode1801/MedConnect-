@@ -1,3 +1,4 @@
+// Ficheiro: vite.config.ts (VERSÃO CORRETA E LIMPA)
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
@@ -12,4 +13,5 @@ export default defineConfig({
             '@': fileURLToPath(new URL('./src', import.meta.url)),
         },
     },
+    // O BLOCO 'server' FOI REMOVIDO
 });

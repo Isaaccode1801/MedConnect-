@@ -199,7 +199,7 @@ export default function PatientDashboard() {
                 const requestOptions = {
                   method: "POST",
                   headers: myHeaders,
-                  redirect: "follow",
+                  
                 };
 
                 await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/logout`, requestOptions);
