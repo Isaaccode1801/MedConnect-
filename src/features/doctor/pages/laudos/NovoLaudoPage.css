@@ -207,6 +207,20 @@
   margin-top: 4px;
 }
 
+/* Em telas pequenas, empilha os botões para evitar quebra e desalinhamento */
+@media (max-width: 640px) {
+  .actions-row {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .actions-row .btn-cancelar,
+  .actions-row .btn-salvar {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* ================== BOTÕES PRINCIPAIS ================== */
 .btn-cancelar {
   border: 1px solid var(--line);

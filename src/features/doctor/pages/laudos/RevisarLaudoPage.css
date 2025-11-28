@@ -5,7 +5,7 @@
   max-width: 900px; /* Limita a largura para melhor leitura */
   margin: 0 auto;
   font-family: Arial, sans-serif;
-  color: var(--ink); /* Variável do UsersList.css */
+  color: var(--ink, #0f172a); /* fallback caso variável não exista */
 }
 
 .revisao-header {
@@ -20,17 +20,17 @@
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  color: var(--brand); /* Variável do UsersList.css */
+  color: var(--brand, #3fbbc0); /* fallback caso variável não exista */
   font-weight: 600;
   font-size: 15px;
 }
 .revisao-back-btn:hover {
-  color: var(--brand-600); /* Variável do UsersList.css */
+  color: var(--brand-600, #37a7ab); /* fallback */
 }
 
 .revisao-actions .btn.primary {
-  /* Estilo já vem de UsersList.css */
-  background-color: var(--success-fg); /* Verde para "Aprovar" */
+  /* Estilo já vem de UsersList.css - adiciona fallback de cor */
+  background-color: var(--success-fg, #10b981); /* Verde para "Aprovar" */
 }
 .revisao-actions .btn.primary:hover {
   background-color: #047857;

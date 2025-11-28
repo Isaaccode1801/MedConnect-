@@ -297,30 +297,16 @@ export default function DoctorDashboard() {
             <div className="bg-gradient-to-r from-teal-500 via-cyan-500 to-teal-400">
               <div className="grid grid-cols-1 md:grid-cols-[1.6fr_1fr] items-center">
                 <div className="dashboard-card-content">
-                  <h2 className="text-white text-2xl md:text-3xl font-semibold leading-tight">
-                    Olá, Dr(a).{" "}
-                    <span className="highlight">
-                      {loading ? "..." : doctorName}
-                    </span>{" "}
-                    👋
-                  </h2>
-                  <CardDescription className="text-white/90 mt-3">
-                    Organize sua semana em poucos cliques
-                  </CardDescription>
-                  <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <a
-                      href="#"
-                      className="inline-flex items-center gap-2 rounded-lg bg-white text-slate-900 text-sm font-medium px-4 py-2 shadow hover:brightness-95 transition"
-                    >
-                      Olhar a Tabela <ChevronRight className="h-4 w-4" />
-                    </a>
-                    <a
-                      href="#"
-                      className="inline-flex items-center gap-2 rounded-lg bg-white/15 text-white ring-1 ring-white/40 text-sm font-medium px-4 py-2 hover:bg-white/20 transition"
-                    >
-                      Ver laudos
-                    </a>
+                  <div className="hero-text-panel">
+                    <h2 className="hero-title">
+                      <span className="hero-greet">Olá, Dr(a).</span>
+                      <span className="hero-name highlight">{loading ? "..." : doctorName} <span role="img" aria-label="aceno">👋</span></span>
+                    </h2>
+                    <CardDescription className="hero-subtitle mt-3">
+                      Organize sua semana com facilidade — visualize consultas e gerencie sua disponibilidade em poucos cliques.
+                    </CardDescription>
                   </div>
+                  {/* Botões removidos conforme solicitado (mantivemos somente texto e saudação) */}
                 </div>
 
                 {/* >>> AQUI: avatar real (fallback: medica.jpeg) <<< */}

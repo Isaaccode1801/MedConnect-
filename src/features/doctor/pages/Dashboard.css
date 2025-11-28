@@ -637,3 +637,114 @@ aside .dashboard-card-content {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* ================= HERO ADJUSTS ================= */
+/* Espaçamento entre o HERO (gradiente) e o próximo cartão */
+.rounded-2xl.overflow-hidden + .dashboard-card {
+  margin-top: var(--spacing-md);
+}
+
+/* Ajustes de padding do conteúdo dentro do HERO (aplica-se apenas ao container gradiente) */
+.rounded-2xl.overflow-hidden > .bg-gradient-to-r .dashboard-card-content {
+  padding: clamp(18px, 2.6vw, 28px);
+}
+
+/* Melhor comportamento de quebra da saudação (nome longo / emoji) */
+.rounded-2xl .dashboard-card-content h2 {
+  margin: 0;
+  line-height: 1.05;
+  word-break: break-word;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.rounded-2xl .dashboard-card-content h2 .highlight {
+  color: var(--brand-teal);
+  font-weight: 800;
+  white-space: nowrap; /* mantém o nome e o emoji juntos quando possível */
+  max-width: 60ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Reduz o impacto visual do overlay atrás do avatar e força o avatar acima */
+.dashboard-card-content.relative > .absolute {
+  pointer-events: none;
+  opacity: 0.06;
+  transform: scale(0.92);
+  filter: blur(6px);
+  z-index: 0;
+}
+.dashboard-card-content.relative > img {
+  position: relative;
+  z-index: 2;
+}
+
+/* Responsivo: garante que o avatar reduza em telas pequenas e a coluna não colida */
+@media (max-width: 768px) {
+  .rounded-2xl .dashboard-card-content img {
+    width: 160px !important;
+    height: 160px !important;
+  }
+  .rounded-2xl .dashboard-card-content { padding: var(--spacing-sm); }
+}
+
+/* ===== Melhorias de contraste para o texto do HERO ===== */
+.rounded-2xl {
+  /* garante que o gradiente não quebre contraste visual */
+  position: relative;
+}
+
+/* Painel branco por trás do texto do HERO para legibilidade */
+.hero-text-panel {
+  background: #ffffff;
+  color: #0f172a; /* texto principal em preto */
+  display: inline-block;
+  padding: 20px 24px; /* aumentado para melhor leitura */
+  border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(2,8,23,0.08);
+  max-width: min(72%, 820px); /* largura um pouco maior */
+  min-width: 320px; /* garante legibilidade mínima */
+}
+
+.hero-title {
+  margin: 0;
+  font-size: clamp(1.375rem, 3vw, 2rem); /* cresce levemente */
+  font-weight: 800;
+  color: #08121a; /* preto suave */
+}
+
+.hero-subtitle {
+  margin: 8px 0 0 0;
+  color: #26343f; /* preto mais suave para subtítulo */
+  font-weight: 600;
+  font-size: 1rem; /* subtítulo mais legível */
+}
+
+/* Mantém o destaque do médico em verde */
+.hero-text-panel .highlight { color: var(--brand-teal); }
+
+@media (max-width: 768px) {
+  .hero-text-panel { padding: 14px; max-width: 100%; min-width: unset; }
+  .hero-title { font-size: 1.25rem; }
+  .hero-name { font-size: 1.25rem; }
+}
+
+/* Estilos adicionais para saudação e nome */
+.hero-greet {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  opacity: 0.95;
+}
+.hero-name {
+  display: block;
+  margin-top: 6px;
+  font-size: clamp(1.375rem, 2.8vw, 1.85rem); /* um pouco maior */
+  letter-spacing: -0.02em;
+}
+
+/* Ajustes finos para alinhamento dentro do hero */
+.hero-text-panel { line-height: 1.18; }

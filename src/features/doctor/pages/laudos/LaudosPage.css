@@ -13,6 +13,7 @@
 /* Toolbar */
 .laudos-toolbar {
   display: flex;
+.btn svg { display: inline-block; vertical-align: middle; width: 16px; height: 16px; }
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -21,6 +22,8 @@
 
 .btn {
   height: 40px;
+.laudos-toolbar > * { flex: 0 0 auto; }
+.laudos-toolbar .toolbar-actions { margin-left: auto; display:flex; gap:8px; align-items:center; }
   padding: 0 16px;
   border-radius: 8px;
   font-size: 14px;
@@ -45,10 +48,12 @@
 
 .input-search {
   flex: 1 1 auto;
+  padding: 8px; /* pequeno espaçamento para evitar colisão com borda em telas pequenas */
   height: 44px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 0 12px;
+.laudos-table tbody td { vertical-align: middle; }
   font-size: 14px;
   outline: none;
 }
@@ -59,6 +64,11 @@
   overflow-x: auto;
   background: #fff;
   border: 1px solid #e2e8f0;
+@media (max-width: 640px) {
+  .laudos-toolbar { gap: 8px; }
+  .laudos-toolbar .text-xs { margin-left: 0; width: 100%; text-align: right; }
+  .filters-popover { right: 8px; left: 8px; min-width: auto; }
+}
   border-radius: 12px;
 }
 
