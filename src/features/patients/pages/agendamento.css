@@ -29,20 +29,37 @@ body {
   display:flex; align-items:center; gap:16px; justify-content:space-between;
   flex-wrap: wrap; /* Permite quebra de linha em telas pequenas */
 }
+/* Appbar: título maior e subtítulo legível (diretório) */
+.appbar .appbar-inner > div h1 {
+  font-size: 2.4rem; /* maior para leitura confortável */
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-text-primary, #0f172a);
+  line-height: 1.05;
+}
+.appbar .appbar-inner > div small {
+  display: block;
+  font-size: 1.05rem; /* subtítulo legível */
+  color: var(--color-text-muted, #6b7280);
+  margin-top: 6px;
+  font-weight: 600;
+}
 .brand{
   display:flex; align-items:center; gap:12px;
 }
 .brand h1{
   color: var(--color-text-primary) !important;
   letter-spacing:.2px;
-  font-size: 1.25rem;
+  font-size: 2rem; /* aumentado para maior destaque */
   margin: 0;
+  line-height: 1.05;
 }
 .brand small{
   color: var(--color-text-muted) !important;
   display: block;
-  margin-top: 2px;
-  font-weight: 500;
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 .logo-link img.logo {
   height: 56px; /* Logo maior */
@@ -74,10 +91,77 @@ body {
   width: 100%;
 }
 
+/* Padroniza altura e comportamento dos controles do toolbar */
+.toolbar {
+  --toolbar-control-height: 48px; /* padroniza controles e aumenta levemente conforme solicitado */
+}
+.toolbar .field,
+.toolbar .switch {
+  height: var(--toolbar-control-height);
+  min-height: var(--toolbar-control-height);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+}
+.toolbar .field span { display: inline-flex; align-items: center; justify-content: center; height: 100%; color: var(--color-text-muted); }
+.toolbar .field input,
+.toolbar .field select {
+  height: calc(var(--toolbar-control-height) - 8px);
+  padding: 0 8px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.toolbar .switch input { width: 18px; height: 18px; }
+.toolbar .btn {
+  height: var(--toolbar-control-height);
+  min-height: var(--toolbar-control-height);
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px; /* um pouco maior para padronizar e não reduzir */
+  box-sizing: border-box;
+  gap: 10px;
+}
+
+/* Garante truncamento elegante em células da tabela quando muito longas */
+.row td {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Campo de pesquisa ocupa espaço flexível */
 .toolbar .field:first-child {
   flex: 1;
   min-width: 200px;
+}
+
+/* Força alinhamento e altura consistente para todos os controles da toolbar */
+.toolbar > .field,
+.toolbar > .switch,
+.toolbar > .btn {
+  height: var(--toolbar-control-height);
+  min-height: var(--toolbar-control-height);
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.toolbar > .field input,
+.toolbar > .field select {
+  height: calc(var(--toolbar-control-height) - 8px);
+}
+
+/* Ajuste específico para o botão Limpar filtros seguir o mesmo visual */
+.toolbar .btn.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Filtros e Switch com largura fixa */
@@ -120,37 +204,50 @@ body {
   display:flex; align-items:center; gap:10px; 
   background: var(--color-bg-card) !important;
   border: 1px solid var(--color-border) !important;
-  padding: 12px 14px !important;
+  padding: 0 14px !important; /* remover padding vertical para não empurrar linhas */
   border-radius: 10px !important;
+  box-sizing: border-box;
 }
 .field span {
   color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
 }
 .field input,.field select{
-  width:100%; background:transparent; border:0; 
+  flex: 1 1 auto; /* permite que o input cresça corretamente ao lado do ícone */
+  min-width: 0; /* permite truncamento dentro do flex item */
+  width: auto;
+  background:transparent; border:0; 
   color:var(--color-text-primary) !important; 
   outline:none; font-size:14px;
 }
 
 .btn{
-  appearance:none; 
-  border:1px solid var(--color-primary);
+  appearance: none;
+  border: 1px solid var(--color-primary);
   background: var(--color-primary) !important;
   color: white !important;
-  padding:10px 14px; 
-  border-radius:12px; 
-  font-weight:600; 
-  cursor:pointer;
-  box-shadow: var(--shadow-md) !important;
-  transition: transform .1s ease, filter .2s ease;
-  white-space:nowrap;
+  padding: 0 18px;
+  height: 48px;
+  line-height: 1;
+  min-height: 48px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(15,118,110,0.06);
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
 }
-.btn:hover{ 
-  filter: brightness(.95); 
-  transform: translateY(-1px); /* Efeito hover */
+.btn:hover{
+  filter: brightness(.98);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(15,118,110,0.08);
 }
 .btn:active{ transform: translateY(1px); }
 .btn:disabled {
@@ -165,6 +262,14 @@ body {
   color: var(--text) !important;
   border-color: var(--border) !important;
   box-shadow: none !important;
+  padding: 0 16px;
+  height: 48px;
+  min-height: 48px;
+  border-radius: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .btn.secondary:hover {
   background: #f9f9f9 !important;
@@ -172,10 +277,18 @@ body {
 }
 
 .switch{
-  display:flex; align-items:center; gap:10px; padding:12px 14px !important; border-radius:10px !important;
-  border:1px solid var(--border) !important; background:#ffffff !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px !important;
+  height: var(--toolbar-control-height);
+  min-height: var(--toolbar-control-height);
+  border-radius: 10px !important;
+  border: 1px solid var(--border) !important;
+  background: #ffffff !important;
   color: var(--text); /* Garante que o texto seja legível */
   cursor: pointer;
+  box-sizing: border-box;
 }
 .switch input{ accent-color: var(--brand-primary); width:18px; height:18px; cursor: pointer; }
 .switch label { cursor: pointer; user-select: none; } /* Permite clicar no texto */
@@ -264,7 +377,25 @@ body {
   display:flex; gap:8px; flex-wrap:wrap; justify-content: flex-end;
 }
 .btn.icon{
-  padding:8px 10px; font-size:13px; border-radius:10px;
+  padding: 8px 14px; font-size:13px; border-radius:10px;
+  display:inline-flex; align-items:center; gap:8px;
+  height: 48px; min-height: 48px;
+}
+.actions .btn{ white-space: nowrap; }
+
+/* foco visível e acessível */
+.btn:focus{
+  outline: 3px solid rgba(20,184,166,0.18);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(20,184,166,0.06);
+}
+
+/* placeholder e input do search: manter em uma linha e com boa leitura */
+.toolbar .field input::placeholder{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-text-muted);
 }
 .btn.danger{
   background: linear-gradient(180deg, #ef4444, #d01e1e) !important;

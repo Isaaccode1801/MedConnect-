@@ -72,15 +72,38 @@
   gap: 1rem;
 }
 
+/* Melhorias de alinhamento e comportamento dos botões no header */
+.header-right {
+  align-items: center; /* garante alinhamento vertical consistente */
+  flex-wrap: wrap; /* evita que um botão quebre o layout em telas pequenas */
+}
+
+.header-right button {
+  white-space: nowrap; /* evita quebra de linha dentro do botão */
+  min-height: 48px; /* aumenta para padronizar com toolbar */
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
 .btn-inicio,
 .btn-consulta {
-  padding: 0.625rem 1.5rem;
-  border-radius: 8px;
+  padding: 0 18px;
+  border-radius: 12px;
   border: none;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.875rem;
+  transition: all 0.16s ease;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  min-height: 48px;
 }
 
 .btn-inicio {
@@ -105,6 +128,12 @@
   border-color: #5eead4;
   transform: translateY(-1px);
 }
+
+/* Sombras e estados mais suaves para o header */
+.btn-inicio { box-shadow: 0 6px 18px rgba(20,184,166,0.06); }
+.btn-consulta { box-shadow: 0 6px 14px rgba(13,148,136,0.05); }
+.btn-inicio:disabled, .btn-consulta:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-inicio span, .btn-consulta span { display: inline-flex; align-items: center; gap: 8px; }
 
 /* Main Content */
 .dashboard-main {
@@ -564,8 +593,13 @@
   .header-left,
   .header-right {
     width: 100%;
-    justify-content: space-between;
     gap: .75rem;
+  }
+
+  /* No mobile, empurra os botões para o final da linha para evitar desalinhamentos
+     ao empilhar os blocos do header */
+  .dashboard-header .header-right {
+    justify-content: flex-end;
   }
   
   .welcome-title {
@@ -579,6 +613,30 @@
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Evita que nomes longos ou valores quebrem o layout: truncamento com elipse */
+.user-name,
+.perfil-info h3,
+.perfil-item .value {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ajustes para a lista horizontal de consultas (layout do card horizontal) */
+.consultas-lista-horizontal {
+  padding: 8px 4px 8px 4px;
+  align-items: stretch;
+}
+
+.consulta-item-horizontal {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.consulta-item-horizontal:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 26px -12px rgba(2,6,23,0.22);
 }
 
 

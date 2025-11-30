@@ -688,7 +688,7 @@ export default function AgendamentoPage() {
 
       <div className="agendamento-page-container">
         {/* Appbar */}
-        <div className="appbar" style={{ marginTop: '24px' }}>
+        <div className="appbar" style={{ marginTop: '8px' }}>
           <div className="appbar-inner">
             <div>
               <h1>Diretório de Médicos</h1>
