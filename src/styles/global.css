@@ -16,7 +16,7 @@
   --color-border-strong: #cbd5e0;
   
   --color-primary: #3fbbc0;
-  --color-primary-dark: #2ca5aa;
+  --color-primary-dark: #0d9488;
   --color-accent: #06b6d4;
   
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -25,14 +25,20 @@
   
   --loader-border: rgba(255, 255, 255, 0.25);
   --loader-color: #fff;
+
+  --scrollbar-track: #f1f1f1;
+  --scrollbar-thumb: #c1c1c1;
+  --scrollbar-thumb-hover: #a8a8a8;
+
+  --grind-color: rgba(255, 255, 255, 0.15)
 }
 
 /* MODO ESCURO */
 .modo-escuro {
-  --color-bg-primary: #0f1419;
+  --color-bg-primary: #1e1e1e;
   --color-bg-secondary: #1a202c;
-  --color-bg-tertiary: #2d3748;
-  --color-bg-card: #1e293b;
+  --color-bg-tertiary: #333;
+  --color-bg-card: #2a2a2a;
   
   --color-text-primary: #f7fafc;
   --color-text-secondary: #e2e8f0;
@@ -51,6 +57,12 @@
   
   --loader-border: rgba(255, 255, 255, 0.3);
   --loader-color: #4fd1c7;
+
+  --scrollbar-track: #1e1e1e;
+  --scrollbar-thumb: #6b7280;
+  --scrollbar-thumb-hover: #9ca3af;
+
+  --grind-color: rgba(0, 0, 0, 0.1)
 }
 
 /* ===== ESTILOS BASE ===== */
@@ -111,6 +123,18 @@ body {
 .btn:hover, .btn-inicio:hover, .btn-consulta:hover {
   background: var(--color-primary-dark);
   transform: translateY(-1px);
+}
+
+.btn.primary,
+a.btn.primary {
+    --color-primary: #3fbbc0 !important;
+    --color-primary-dark: #2ca5aa !important;
+    background: var(--color-primary) !important;
+}
+
+.btn.primary:hover,
+a.btn.primary:hover {
+    background: var(--color-primary-dark) !important;
 }
 
 .btn-secondary, .btn.secondary {
@@ -218,3 +242,14 @@ a:hover {
   text-decoration: underline;
 }
 
+.theme-button-primary {
+  background-color: var(--color-primary) !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+}

@@ -1,36 +1,36 @@
-/* Dashboard.css – VERSÃO COMPLETA (CORREÇÃO SAUDAÇÃO) */
+/* Dashboard.css – VERSÃO COMPLETA COM MODO ESCURO */
 
 /* Page wrapper com variáveis CSS otimizadas */
 .doctor-dashboard {
-  background: #F5F7FA;
-  color: #0f172a; /* slate-900 */
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
   min-height: 100vh;
   
-  /* Brand colors */
-  --brand-teal: #0d9488;    /* teal-600 */
-  --brand-cyan: #06b6d4;    /* cyan-500 */
+  /* Brand colors - usando variáveis do sistema */
+  --brand-teal: var(--color-primary);
+  --brand-cyan: var(--color-accent);
   --brand-emerald: #10b981;
   
-  /* Text colors */
-  --ink-900: #0f172a;        /* slate-900 */
-  --ink-700: #334155;        /* slate-700 */
-  --ink-600: #475569;
-  --muted-500: #64748b;    /* slate-500 */
-  --muted-400: #94a3b8;
+  /* Text colors - usando variáveis do sistema */
+  --ink-900: var(--color-text-primary);
+  --ink-700: var(--color-text-secondary);
+  --ink-600: var(--color-text-secondary);
+  --muted-500: var(--color-text-muted);
+  --muted-400: var(--color-text-muted);
   
-  /* Background colors */
-  --bg-white: #ffffff;
-  --bg-soft: #f1f5f9;      /* slate-100 */
-  --bg-lighter: #f8fafc;
+  /* Background colors - usando variáveis do sistema */
+  --bg-white: var(--color-bg-card);
+  --bg-soft: var(--color-bg-tertiary);
+  --bg-lighter: var(--color-bg-secondary);
   
-  /* Borders */
-  --line-200: #e2e8f0;      /* slate-200 */
-  --line-300: #cbd5e1;
+  /* Borders - usando variáveis do sistema */
+  --line-200: var(--color-border);
+  --line-300: var(--color-border-strong);
   
   /* Shadows otimizadas */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(2, 6, 23, 0.06), 0 2px 6px rgba(2, 6, 23, 0.03);
-  --shadow-lg: 0 8px 20px rgba(2, 6, 23, 0.08), 0 4px 10px rgba(2, 6, 23, 0.04);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
   
   /* Border radius */
   --radius-sm: 0.5rem;
@@ -216,7 +216,7 @@
 
 /* Utility helpers */
 .dashboard-muted { 
-  color: var(--muted-600); 
+  color: var(--muted-500); 
   font-size: clamp(0.8125rem, 1.2vw, 0.875rem);
 } 
 
@@ -250,6 +250,7 @@ aside .dashboard-card-content {
     padding: var(--spacing-xs) var(--spacing-sm);
   }
 }
+
 /* ===== HEADER DOCTOR - Responsivo e Otimizado ===== */
 .doctor-header {
   position: sticky;
@@ -262,6 +263,13 @@ aside .dashboard-card-content {
   box-shadow: var(--shadow-sm);
 }
 
+/* Modo escuro para header */
+.modo-escuro .doctor-header {
+  background: rgba(26, 32, 44, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
 /* Header estático em mobile/tablet */
 @media (max-width: 1024px) {
   .doctor-header {
@@ -269,6 +277,10 @@ aside .dashboard-card-content {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background: var(--bg-white); 
+  }
+  
+  .modo-escuro .doctor-header {
+    background: var(--color-bg-secondary);
   }
 }
 
@@ -278,12 +290,10 @@ aside .dashboard-card-content {
   margin: 0 auto;
   padding: clamp(0.875rem, 1.5vw, 1.25rem) clamp(1rem, 2vw, 2rem);
   display: grid;
-  /* Desktop: [Brand] [Busca] [Nav] */
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: clamp(1rem, 2vw, 2rem);
 }
-
 
 .doctor-header__brand {
   display: flex;
@@ -305,7 +315,7 @@ aside .dashboard-card-content {
 .brand-icon__inner {
   width: 100%;
   height: 100%;
-  background: white;
+  background: var(--color-bg-card);
   border-radius: calc(var(--radius-md) - 2px);
   display: grid;
   place-items: center;
@@ -384,7 +394,6 @@ aside .dashboard-card-content {
 }
 
 /* ----- ESTILOS DA NAVEGAÇÃO DESKTOP ----- */
-
 .doctor-header__nav-container-desktop {
   display: flex;
   align-items: center;
@@ -441,30 +450,28 @@ aside .dashboard-card-content {
   outline-offset: 2px; 
 }
 
-
 /* ----- ESTILOS DO CALENDÁRIO ----- */
 .rdp-day_consulta {
   font-weight: bold;
-  background-color: #f0fdfa; 
-  color: #0d9488; 
+  background-color: var(--color-bg-tertiary);
+  color: var(--brand-teal);
   border-radius: 50%;
-  border: 1px solid #0d9488;
+  border: 1px solid var(--brand-teal);
 }
 
 .dashboard-calendar {
   width: 100%;
   max-width: 100%; 
   margin: 0 auto;
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
 }
 
 @media (min-width: 1024px) {
   .dashboard-calendar {
-    font-size: 1rem; /* 16px */
+    font-size: 1rem;
     max-width: 300px; 
   }
 }
-
 
 /* ================================================================
    HEADER MÓVEL E SIDEBAR
@@ -472,38 +479,31 @@ aside .dashboard-card-content {
 */
 
 /* --- 1. MODIFICAÇÕES NO HEADER PARA MOBILE --- */
-
 @media (max-width: 1024px) {
-  /* Layout mobile/tablet: [Brand] [Hamburger] (2 colunas) */
   .doctor-header__inner {
     grid-template-columns: 1fr auto; 
     gap: var(--spacing-sm);
     padding: 0 var(--spacing-md); 
   }
 
-  /* Esconde a busca em mobile/tablet */
   .doctor-header__search {
     display: none;
   }
   
-  /* Esconde a navegação e o perfil do DESKTOP em telemóveis */
   .doctor-header__nav-container-desktop {
     display: none;
   }
   
-  /* Garante que a marca fica alinhada à esquerda */
   .doctor-header__brand {
     justify-content: flex-start;
   }
   
-  /* --- CORREÇÃO: Saudação some em mobile/tablet --- */
   .doctor-greeting {
     display: none;
   }
 }
 
 /* --- 2. O BOTÃO HAMBURGER --- */
-
 .mobile-menu-toggle {
   display: none; 
   background: none;
@@ -521,13 +521,11 @@ aside .dashboard-card-content {
 
 @media (max-width: 1024px) {
   .mobile-menu-toggle {
-    display: block; /* Aparece em telemóveis/tablets */
+    display: block;
   }
 }
 
-
 /* --- 3. O OVERLAY (FUNDO ESCURO) --- */
-
 .mobile-sidebar-overlay {
   position: fixed;
   inset: 0;
@@ -536,14 +534,12 @@ aside .dashboard-card-content {
   animation: fadeIn 0.3s ease;
 }
 
-/* Impede o scroll da página quando o menu está aberto */
 .doctor-dashboard.mobile-menu-is-open {
   overflow: hidden;
   height: 100vh;
 }
 
 /* --- 4. A SIDEBAR MÓVEL --- */
-
 .mobile-sidebar {
   position: fixed;
   top: 0;
@@ -596,7 +592,6 @@ aside .dashboard-card-content {
 }
 
 /* --- 5. A NAVEGAÇÃO DENTRO DA SIDEBAR --- */
-
 .mobile-sidebar .doctor-header__nav {
   flex-direction: column;
   align-items: stretch; 
@@ -617,6 +612,7 @@ aside .dashboard-card-content {
   box-shadow: none;
   font-weight: 600;
 }
+
 .mobile-sidebar .nav-link.active:hover {
   filter: none;
 }
@@ -639,17 +635,14 @@ aside .dashboard-card-content {
 }
 
 /* ================= HERO ADJUSTS ================= */
-/* Espaçamento entre o HERO (gradiente) e o próximo cartão */
 .rounded-2xl.overflow-hidden + .dashboard-card {
   margin-top: var(--spacing-md);
 }
 
-/* Ajustes de padding do conteúdo dentro do HERO (aplica-se apenas ao container gradiente) */
 .rounded-2xl.overflow-hidden > .bg-gradient-to-r .dashboard-card-content {
   padding: clamp(18px, 2.6vw, 28px);
 }
 
-/* Melhor comportamento de quebra da saudação (nome longo / emoji) */
 .rounded-2xl .dashboard-card-content h2 {
   margin: 0;
   line-height: 1.05;
@@ -659,16 +652,16 @@ aside .dashboard-card-content {
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .rounded-2xl .dashboard-card-content h2 .highlight {
   color: var(--brand-teal);
   font-weight: 800;
-  white-space: nowrap; /* mantém o nome e o emoji juntos quando possível */
+  white-space: nowrap;
   max-width: 60ch;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Reduz o impacto visual do overlay atrás do avatar e força o avatar acima */
 .dashboard-card-content.relative > .absolute {
   pointer-events: none;
   opacity: 0.06;
@@ -676,12 +669,12 @@ aside .dashboard-card-content {
   filter: blur(6px);
   z-index: 0;
 }
+
 .dashboard-card-content.relative > img {
   position: relative;
   z-index: 2;
 }
 
-/* Responsivo: garante que o avatar reduza em telas pequenas e a coluna não colida */
 @media (max-width: 768px) {
   .rounded-2xl .dashboard-card-content img {
     width: 160px !important;
@@ -692,41 +685,45 @@ aside .dashboard-card-content {
 
 /* ===== Melhorias de contraste para o texto do HERO ===== */
 .rounded-2xl {
-  /* garante que o gradiente não quebre contraste visual */
   position: relative;
 }
 
-/* Painel branco por trás do texto do HERO para legibilidade */
+/* Painel adaptado para modo escuro */
 .hero-text-panel {
-  background: #ffffff;
-  color: #0f172a; /* texto principal em preto */
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
   display: inline-block;
-  padding: 20px 24px; /* aumentado para melhor leitura */
+  padding: 20px 24px;
   border-radius: 14px;
-  box-shadow: 0 8px 28px rgba(2,8,23,0.08);
-  max-width: min(72%, 820px); /* largura um pouco maior */
-  min-width: 320px; /* garante legibilidade mínima */
+  box-shadow: var(--shadow-lg);
+  max-width: min(72%, 820px);
+  min-width: 320px;
 }
 
 .hero-title {
   margin: 0;
-  font-size: clamp(1.375rem, 3vw, 2rem); /* cresce levemente */
+  font-size: clamp(1.375rem, 3vw, 2rem);
   font-weight: 800;
-  color: #08121a; /* preto suave */
+  color: var(--color-text-primary);
 }
 
 .hero-subtitle {
   margin: 8px 0 0 0;
-  color: #26343f; /* preto mais suave para subtítulo */
+  color: var(--color-text-secondary);
   font-weight: 600;
-  font-size: 1rem; /* subtítulo mais legível */
+  font-size: 1rem;
 }
 
-/* Mantém o destaque do médico em verde */
-.hero-text-panel .highlight { color: var(--brand-teal); }
+.hero-text-panel .highlight { 
+  color: var(--brand-teal); 
+}
 
 @media (max-width: 768px) {
-  .hero-text-panel { padding: 14px; max-width: 100%; min-width: unset; }
+  .hero-text-panel { 
+    padding: 14px; 
+    max-width: 100%; 
+    min-width: unset; 
+  }
   .hero-title { font-size: 1.25rem; }
   .hero-name { font-size: 1.25rem; }
 }
@@ -736,15 +733,39 @@ aside .dashboard-card-content {
   display: block;
   font-size: 1rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-text-primary);
   opacity: 0.95;
 }
+
 .hero-name {
   display: block;
   margin-top: 6px;
-  font-size: clamp(1.375rem, 2.8vw, 1.85rem); /* um pouco maior */
+  font-size: clamp(1.375rem, 2.8vw, 1.85rem);
   letter-spacing: -0.02em;
 }
 
-/* Ajustes finos para alinhamento dentro do hero */
-.hero-text-panel { line-height: 1.18; }
+.hero-text-panel { 
+  line-height: 1.18; 
+}
+
+/* Ajustes específicos para modo escuro */
+.modo-escuro .brand-icon__inner {
+  background: var(--color-bg-card);
+}
+
+.modo-escuro .hero-text-panel {
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-lg);
+}
+
+.modo-escuro .mobile-sidebar {
+  background: var(--color-bg-secondary);
+}
+
+.modo-escuro .mobile-sidebar__header {
+  border-bottom-color: var(--color-border);
+}
+
+.modo-escuro .mobile-sidebar .doctor-header__profile {
+  border-top-color: var(--color-border);
+}

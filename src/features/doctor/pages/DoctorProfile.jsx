@@ -24,7 +24,7 @@ CSS sugerido (global):
 
 function UserIcon() {
   return (
-    <UserCircle2 style={{ width: 100, height: 100, color: "#9ca3af" }} strokeWidth={1} />
+    <UserCircle2 style={{ width: 100, height: 100, color: "var(--color-text-muted)" }} strokeWidth={1} />
   );
 }
 
@@ -324,8 +324,8 @@ export default function DoctorProfile() {
         <div style={styles.rightColumn}>
           <div style={styles.card}>
             <div style={styles.cardHeader}>
-              <h3 style={{ margin: 0 }}>Informações do Perfil</h3>
-              <Link to="/doctor/perfil/editar" style={styles.editButton}>
+              <h3 style={{ margin: 0, color: "var(--color-text-primary)" }}>Informações do Perfil</h3>
+              <Link to="/doctor/perfil/editar" style={styles.editButton} className="theme-button-primary">
                 Editar
               </Link>
             </div>
@@ -385,44 +385,61 @@ export default function DoctorProfile() {
 const styles = {
   pageContainer: {
     padding: "24px",
-    backgroundColor: "#f9fafb",
+    backgroundColor: "var(--color-bg-primary)",
     minHeight: "100vh",
     fontFamily: "Arial, sans-serif",
   },
-  loadingText: { fontSize: "18px", color: "#6b7280" },
+  loadingText: { fontSize: "18px", color: "var(--color-text-muted)" },
   pageHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "24px",
   },
-  pageTitle: { margin: 0, fontSize: "32px", fontWeight: 700, color: "#111827" },
+  pageTitle: { 
+    margin: 0, 
+    fontSize: "32px", 
+    fontWeight: 700, 
+    color: "var(--color-text-primary)" 
+  },
   backButton: {
     display: "flex",
     alignItems: "center",
     gap: "6px",
     textDecoration: "none",
-    color: "#2563eb",
+    color: "var(--color-primary)",
     fontWeight: 500,
     fontSize: "15px",
   },
   errorText: {
     padding: "12px 16px",
-    backgroundColor: "#fee2e2",
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
     color: "#991b1b",
     borderRadius: "8px",
     marginBottom: "16px",
-    border: "1px solid #fecaca",
+    border: "1px solid rgba(239, 68, 68, 0.2)",
   },
-  layoutContainer: { display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "24px" },
-  leftColumn: { flex: "1", minWidth: "280px", maxWidth: "320px" },
-  rightColumn: { flex: "2", minWidth: "300px" },
+  layoutContainer: { 
+    display: "flex", 
+    flexDirection: "row", 
+    flexWrap: "wrap", 
+    gap: "24px" 
+  },
+  leftColumn: { 
+    flex: "1", 
+    minWidth: "280px", 
+    maxWidth: "320px" 
+  },
+  rightColumn: { 
+    flex: "2", 
+    minWidth: "300px" 
+  },
   card: {
-    backgroundColor: "#ffffff",
-    border: "1px solid #e5e7eb",
+    backgroundColor: "var(--color-bg-card)",
+    border: "1px solid var(--color-border)",
     borderRadius: "12px",
     padding: "24px",
-    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)",
+    boxShadow: "var(--shadow-sm)",
   },
   avatarContainer: {
     position: "relative",
@@ -432,13 +449,17 @@ const styles = {
     width: 120,
     height: 120,
     borderRadius: "50%",
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "var(--color-bg-tertiary)",
     margin: "0 auto 16px auto",
     overflow: "hidden",
     cursor: "pointer",
-    border: "2px dashed #d1d5db",
+    border: "2px dashed var(--color-border)",
   },
-  avatarImage: { width: "100%", height: "100%", objectFit: "cover" },
+  avatarImage: { 
+    width: "100%", 
+    height: "100%", 
+    objectFit: "cover" 
+  },
   avatarOverlay: {
     position: "absolute",
     inset: 0,
@@ -466,20 +487,25 @@ const styles = {
     textAlign: "center",
     fontSize: 22,
     fontWeight: 600,
-    color: "#111827",
+    color: "var(--color-text-primary)",
   },
-  profileSpecialty: { margin: 0, color: "#4b5563", textAlign: "center", fontSize: 16 },
+  profileSpecialty: { 
+    margin: 0, 
+    color: "var(--color-text-secondary)", 
+    textAlign: "center", 
+    fontSize: 16 
+  },
   cardHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: "1px solid #e5e7eb",
+    borderBottom: "1px solid var(--color-border)",
     paddingBottom: "16px",
     marginBottom: "24px",
   },
   editButton: {
     padding: "8px 16px",
-    backgroundColor: "#2563eb",
+    backgroundColor: "var(--color-primary)",
     color: "#ffffff",
     textDecoration: "none",
     borderRadius: "8px",
@@ -491,9 +517,28 @@ const styles = {
     gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
     gap: "24px",
   },
-  infoItem: { display: "flex", flexDirection: "column", gap: "8px" },
-  infoLabelContainer: { display: "flex", alignItems: "center", gap: "8px" },
-  infoIcon: { color: "#6b7280", flexShrink: 0 },
-  infoLabel: { fontSize: 14, color: "#6b7280", fontWeight: 600 },
-  infoValue: { fontSize: 16, color: "#111827", fontWeight: 500 },
+  infoItem: { 
+    display: "flex", 
+    flexDirection: "column", 
+    gap: "8px" 
+  },
+  infoLabelContainer: { 
+    display: "flex", 
+    alignItems: "center", 
+    gap: "8px" 
+  },
+  infoIcon: { 
+    color: "var(--color-text-muted)", 
+    flexShrink: 0 
+  },
+  infoLabel: { 
+    fontSize: 14, 
+    color: "var(--color-text-secondary)", 
+    fontWeight: 600 
+  },
+  infoValue: { 
+    fontSize: 16, 
+    color: "var(--color-text-primary)", 
+    fontWeight: 500 
+  },
 };

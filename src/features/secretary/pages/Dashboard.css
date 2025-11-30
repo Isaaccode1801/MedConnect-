@@ -3,17 +3,42 @@
   --cor-borda: #e2e8f0;
   --cor-texto-principal: #0f172a;
   --cor-texto-secundario: #475569;
-  --cor-acento-healthone: #0d9488; /* teal */
+  --cor-acento-healthone: #0d9488;
   --cor-acento-healthone-claro: #e0f7fa;
+  --cor-card: #ffffff;
+  --cor-card-hover: #f8fafc;
+  --cor-texto-card: #0f172a;
+  --cor-texto-card-secundario: #475569;
+  --cor-chart-bg: rgba(134, 239, 172, 0.6);
+  --cor-chart-border: rgba(34, 197, 94, 0.9);
   --raio-borda: 12px;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.07);
   --blur-fundo: 10px;
   --transicao: all 0.3s ease-in-out;
-  /* Novos tokens para sidebar teal igual ao Admin */
   --sidebar-bg: #0d9488;
   --sidebar-text: #ffffff;
   --sidebar-active-bg: #ffffff;
   --sidebar-active-text: #0d9488;
+}
+
+.modo-escuro {
+  --cor-fundo: #2a2a2a;
+  --cor-borda: #334155;
+  --cor-texto-principal: #f1f5f9;
+  --cor-texto-secundario: #cbd5e1;
+  --cor-acento-healthone: #14b8a6;
+  --cor-acento-healthone-claro: #134e4a;
+  --cor-card: #2a2a2a;
+  --cor-card-hover: #334155;
+  --cor-texto-card: #f1f5f9;
+  --cor-texto-card-secundario: #94a3b8;
+  --cor-chart-bg: rgba(45, 212, 191, 0.4);
+  --cor-chart-border: rgba(45, 212, 191, 0.8);
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --sidebar-bg: #0f766e;
+  --sidebar-text: #f0fdfa;
+  --sidebar-active-bg: #f0fdfa;
+  --sidebar-active-text: #0f766e;
 }
 
 * {
@@ -30,6 +55,13 @@ body {
     radial-gradient(circle at 5% 15%, rgba(63, 187, 192, 0.15), transparent 40%),
     radial-gradient(circle at 95% 85%, rgba(63, 187, 192, 0.1), transparent 40%);
   min-height: 100vh;
+  transition: var(--transicao);
+}
+
+.modo-escuro body {
+  background-image:
+    radial-gradient(circle at 5% 15%, rgba(20, 184, 166, 0.15), transparent 40%),
+    radial-gradient(circle at 95% 85%, rgba(20, 184, 166, 0.1), transparent 40%);
 }
 
 /* ====================== SIDEBAR ====================== */
@@ -163,7 +195,7 @@ body.sidebar-fechada #toggle-sidebar-btn {
 
 /* ====================== HEADER ====================== */
 .header {
-  background: var(--cor-sidebar-vidro);
+  background: var(--cor-card);
   backdrop-filter: blur(var(--blur-fundo));
   border: 1px solid var(--cor-borda);
   padding: 15px 20px;
@@ -173,12 +205,14 @@ body.sidebar-fechada #toggle-sidebar-btn {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: var(--transicao);
 }
 
 .header h1 {
   font-size: 22px;
   color: var(--cor-texto-principal);
   margin: 0;
+  transition: var(--transicao);
 }
 
 .header .profile {
@@ -202,30 +236,33 @@ body.sidebar-fechada #toggle-sidebar-btn {
 }
 
 .card-custom {
-  background: #fff;
+  background: var(--cor-card);
   border-radius: var(--raio-borda);
   padding: 20px;
   box-shadow: var(--sombra);
-  transition: transform 0.2s;
+  transition: var(--transicao);
   border: 1px solid var(--cor-borda);
 }
 
 .card-custom:hover {
   transform: translateY(-5px);
+  background: var(--cor-card-hover);
 }
 
 .card-custom h3 {
   font-size: 1.1rem;
-  color: var(--cor-texto-principal);
+  color: var(--cor-texto-card);
   margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: var(--transicao);
 }
 
 .card-custom p {
-  color: var(--cor-texto-secundario);
+  color: var(--cor-texto-card-secundario);
   font-size: 0.9rem;
+  transition: var(--transicao);
 }
 
 .btn-dashboard {
@@ -485,4 +522,12 @@ body.sidebar-fechada #toggle-sidebar-btn {
 
 .empty.note.error {
   color: #dc2626;
+}
+
+.modo-escuro .btn-dashboard {
+  background: linear-gradient(90deg, #14b8a6 0%, #06b6d4 100%);
+}
+
+.modo-escuro .btn-dashboard:hover {
+  background: #06b6d4;
 }

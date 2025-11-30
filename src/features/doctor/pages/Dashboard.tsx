@@ -35,7 +35,7 @@ type UserInfoResponse = {
   profile?: { avatar_url?: string | null; full_name?: string | null };
 };
 
-// --- Componentes Primitivos (sem alterações) ---
+// --- Componentes Primitivos (apenas cores atualizadas) ---
 function Card({
   className = "",
   children,
@@ -289,7 +289,7 @@ export default function DoctorDashboard() {
 
   // Retorno
   return (
-    <main>
+    <main className="doctor-dashboard">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
         <div className="lg:col-span-9 space-y-8">
           {/* HERO */}
@@ -306,14 +306,13 @@ export default function DoctorDashboard() {
                       Organize sua semana com facilidade — visualize consultas e gerencie sua disponibilidade em poucos cliques.
                     </CardDescription>
                   </div>
-                  {/* Botões removidos conforme solicitado (mantivemos somente texto e saudação) */}
                 </div>
 
-                {/* >>> AQUI: avatar real (fallback: medica.jpeg) <<< */}
+                {/* Avatar */}
                 <div className="relative dashboard-card-content flex items-center justify-center">
                   <div className="absolute inset-0 bg-white/10 blur-2xl rounded-full" />
                   <img
-                    src={avatarUrl  }
+                    src={avatarUrl}
                     alt="Foto do médico"
                     className="relative h-48 w-48 md:h-56 md:w-56 rounded-2xl object-cover ring-4 ring-white/30 shadow-xl"
                   />
@@ -342,17 +341,17 @@ export default function DoctorDashboard() {
             <KpiCard
               title="Pacientes (Total)"
               value={loading ? "..." : `${kpiCounts.patients} pessoas`}
-              icon={<Users className="h-5 w-5 text-teal-600" />}
+              icon={<Users className="h-5 w-5" />}
             />
             <KpiCard
               title="Laudos Emitidos"
               value={loading ? "..." : kpiCounts.laudos.toString()}
-              icon={<FileText className="h-5 w-5 text-cyan-600" />}
+              icon={<FileText className="h-5 w-5" />}
             />
             <KpiCard
               title="Consultas Realizadas"
               value={loading ? "..." : kpiCounts.consultas.toString()}
-              icon={<Activity className="h-5 w-5 text-emerald-600" />}
+              icon={<Activity className="h-5 w-5" />}
             />
           </div>
         </div>
@@ -366,10 +365,10 @@ export default function DoctorDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               {loading && (
-                <p className="dashboard-soft text-sm">Buscando agenda...</p>
+                <p className="text-sm text-slate-500">Buscando agenda...</p>
               )}
               {!loading && proximasConsultas.length === 0 && (
-                <p className="dashboard-soft text-sm">
+                <p className="text-sm text-slate-500">
                   Nenhuma consulta futura encontrada.
                 </p>
               )}
@@ -391,7 +390,7 @@ export default function DoctorDashboard() {
   );
 }
 
-/* ---------- componentes locais (sem alterações) ---------- */
+/* ---------- componentes locais (cores mantidas originais) ---------- */
 function KpiCard({
   title,
   value,
@@ -404,8 +403,8 @@ function KpiCard({
   return (
     <Card className="kpi-card">
       <CardHeader>
-        <div className="flex items-center gap-3 text-sm text-slate-500">
-          <span className="inline-grid place-items-center h-9 w-9 rounded-lg bg-slate-100">
+        <div className="flex items-center gap-3 text-sm var(--color-text-primary)">
+          <span className="inline-grid place-items-center h-9 w-9 rounded-lg var(--color-bg-card)">
             {icon}
           </span>
           <span>{title}</span>
@@ -433,7 +432,7 @@ function UpcomingAppointmentItem({
     <div className="last-visit flex items-center gap-4">
       <div className={`h-9 w-9 rounded-lg bg-gradient-to-br ${color}`} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate text-slate-900">{name}</p>
+        <p className="text-sm font-medium text-slate-900 truncate">{name}</p>
         <p className="text-xs text-slate-500 truncate">{date}</p>
       </div>
       <ChevronRight className="h-4 w-4 text-slate-400" />

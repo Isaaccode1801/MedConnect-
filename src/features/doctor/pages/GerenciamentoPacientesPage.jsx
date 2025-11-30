@@ -96,37 +96,37 @@ export default function GerenciamentoPacientesPage() {
     }, [pacientes, searchTerm]);
 
     return (
-        <div className="container" style={{ padding: '20px' }}>
-            <section className="card" style={{ background: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+        <div className="container theme-page" style={{ padding: '20px', background: 'var(--color-bg-primary)', minHeight: '100vh' }}>
+            <section className="card theme-card" style={{ borderRadius: '12px', padding: '24px', boxShadow: 'var(--shadow-sm)' }}>
                 
                 {/* Header da Tabela */}
                 <div className="head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', marginBottom: '24px', gap: '16px' }}>
-                    <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700, color: '#1e293b' }}>Pacientes</h1>
+                    <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>Pacientes</h1>
                     
                     <div style={{ display: 'flex', gap: '12px', flex: 1, justifyContent: 'flex-end', minWidth: '300px' }}>
-                        <div className="search" style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', borderRadius: '8px', padding: '8px 16px', flex: 1, maxWidth: '400px', border: '1px solid #e2e8f0' }}>
-                            <FaSearch style={{ color: '#64748b', marginRight: '10px' }}/>
+                        <div className="search" style={{ display: 'flex', alignItems: 'center', background: 'var(--color-bg-tertiary)', borderRadius: '8px', padding: '8px 16px', flex: 1, maxWidth: '400px', border: '1px solid var(--color-border)' }}>
+                            <FaSearch style={{ color: 'var(--color-text-muted)', marginRight: '10px' }}/>
                             <input
                                 placeholder="Buscar por nome, CPF..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#334155', fontSize: '0.95rem' }}
+                                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', color: 'var(--color-text-primary)', fontSize: '0.95rem' }}
                             />
                         </div>
 
-                        <Link to="/doctor/pacientes/novo" className="btn primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#06b6d4', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
+                        <Link to="/doctor/pacientes/novo" className="btn primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-primary)', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
                             <FaPlus size={12}/> Novo
                         </Link>
                     </div>
                 </div>
 
-                {error && <div style={{ padding: '12px', color: '#b91c1c', background: '#fef2f2', borderRadius: '8px', marginBottom: '16px' }}>{error}</div>}
+                {error && <div style={{ padding: '12px', color: '#b91c1c', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', marginBottom: '16px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>{error}</div>}
 
                 {/* Tabela */}
                 <div className="table-wrap" style={{ overflowX: 'auto' }}>
                     <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#64748b', textAlign: 'left' }}>
+                            <tr style={{ borderBottom: '2px solid var(--color-border)', color: 'var(--color-text-secondary)', textAlign: 'left' }}>
                                 <th style={{ padding: '12px' }}>Nome</th>
                                 <th style={{ padding: '12px' }}>CPF</th>
                                 <th style={{ padding: '12px' }}>Telefone</th>
@@ -136,16 +136,16 @@ export default function GerenciamentoPacientesPage() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Carregando...</td></tr>
+                                <tr><td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Carregando...</td></tr>
                             ) : filteredPacientes.length === 0 ? (
-                                <tr><td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Nenhum paciente encontrado.</td></tr>
+                                <tr><td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Nenhum paciente encontrado.</td></tr>
                             ) : (
                                 filteredPacientes.map((p) => (
-                                    <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                        <td style={{ padding: '12px', fontWeight: 500, color: '#334155' }}>{p.full_name}</td>
-                                        <td style={{ padding: '12px', color: '#64748b' }}>{formatCPF(p.cpf)}</td>
-                                        <td style={{ padding: '12px', color: '#64748b' }}>{p.phone_mobile || '—'}</td>
-                                        <td style={{ padding: '12px', color: '#64748b' }}>{p.city || '—'}</td>
+                                    <tr key={p.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                                        <td style={{ padding: '12px', fontWeight: 500, color: 'var(--color-text-primary)' }}>{p.full_name}</td>
+                                        <td style={{ padding: '12px', color: 'var(--color-text-secondary)' }}>{formatCPF(p.cpf)}</td>
+                                        <td style={{ padding: '12px', color: 'var(--color-text-secondary)' }}>{p.phone_mobile || '—'}</td>
+                                        <td style={{ padding: '12px', color: 'var(--color-text-secondary)' }}>{p.city || '—'}</td>
                                         <td style={{ padding: '12px', textAlign: 'right' }}>
                                             <button onClick={() => handleView(p.id)} style={iconBtnStyle} title="Ver Carteirinha"><FaEye /></button>
                                             <button onClick={() => handleEdit(p.id)} style={iconBtnStyle} title="Editar"><FaPencilAlt /></button>
@@ -158,7 +158,7 @@ export default function GerenciamentoPacientesPage() {
                     </table>
                 </div>
 
-                <div className="table-footer" style={{ marginTop: '16px', color: '#94a3b8', fontSize: '0.85rem' }}>
+                <div className="table-footer" style={{ marginTop: '16px', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
                     Mostrando {filteredPacientes.length} de {pacientes.length} registros
                 </div>
             </section>
@@ -198,9 +198,9 @@ function PatientCardModal({ patient, onClose }) {
             
             <div 
                 style={{
-                    background: '#fff', width: '100%', maxWidth: '500px',
+                    background: 'var(--color-bg-card)', width: '100%', maxWidth: '500px',
                     borderRadius: '16px', overflow: 'hidden',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    boxShadow: 'var(--shadow-lg)',
                     animation: 'fadeIn 0.2s ease-out'
                 }}
                 onClick={e => e.stopPropagation()} // Evita fechar ao clicar dentro
@@ -277,17 +277,17 @@ function PatientCardModal({ patient, onClose }) {
 
                 {/* Footer / Ações */}
                 <div style={{ 
-                    padding: '16px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0',
+                    padding: '16px 24px', background: 'var(--color-bg-tertiary)', borderTop: '1px solid var(--color-border)',
                     display: 'flex', justifyContent: 'flex-end', gap: '12px'
                 }}>
                     <button onClick={onClose} style={{
-                        background: 'transparent', border: '1px solid #cbd5e1', color: '#64748b',
+                        background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)',
                         padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600
                     }}>
                         Fechar
                     </button>
                     <button onClick={handlePrint} style={{
-                        background: '#0f172a', border: 'none', color: '#fff',
+                        background: 'var(--color-primary)', border: 'none', color: '#fff',
                         padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600,
                         display: 'flex', alignItems: 'center', gap: '8px'
                     }}>
@@ -307,15 +307,15 @@ function PatientCardModal({ patient, onClose }) {
 // --- Estilos Inline Reutilizáveis ---
 const iconBtnStyle = {
     background: 'transparent', border: 'none', cursor: 'pointer',
-    padding: '8px', color: '#64748b', fontSize: '16px',
+    padding: '8px', color: 'var(--color-text-secondary)', fontSize: '16px',
     marginLeft: '4px', transition: 'color 0.2s'
 };
 
 const labelStyle = {
     display: 'block', fontSize: '0.75rem', textTransform: 'uppercase',
-    letterSpacing: '0.05em', color: '#94a3b8', marginBottom: '4px', fontWeight: 600
+    letterSpacing: '0.05em', color: 'var(--color-text-muted)', marginBottom: '4px', fontWeight: 600
 };
 
 const valueStyle = {
-    fontSize: '1rem', color: '#1e293b', fontWeight: 500, wordBreak: 'break-word'
+    fontSize: '1rem', color: 'var(--color-text-primary)', fontWeight: 500, wordBreak: 'break-word'
 };

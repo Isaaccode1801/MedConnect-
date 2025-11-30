@@ -36,8 +36,8 @@ export default function DoctorLayout() {
       width: "40px",
       height: "40px",
       borderRadius: "50%",
-      backgroundColor: "#e2e8f0",
-      color: "#1e293b",
+      backgroundColor: "var(--color-bg-tertiary)",
+      color: "var(--color-text-primary)",
       border: "none",
       cursor: "pointer",
       marginLeft: "16px",
@@ -275,8 +275,8 @@ export default function DoctorLayout() {
   );
 
   return (
-    <div className={`doctor-dashboard ${isMobileMenuOpen ? "mobile-menu-is-open" : ""}`}>
-      <header className="doctor-header">
+    <div className={`doctor-dashboard theme-page ${isMobileMenuOpen ? "mobile-menu-is-open" : ""}`}>
+      <header className="doctor-header theme-header">
         <div className="doctor-header__inner">
           {/* Marca */}
           <div className="doctor-header__brand">
@@ -285,7 +285,7 @@ export default function DoctorLayout() {
                 <Stethoscope className="brand-icon__svg" />
               </div>
             </div>
-            <span className="brand-name">Medconnect</span>
+            <span className="brand-name theme-text-primary">Medconnect</span>
           </div>
 
           {/* Busca (desktop) */}
@@ -300,7 +300,7 @@ export default function DoctorLayout() {
             onClick={() => setIsMobileMenuOpen(true)}
             title="Abrir menu"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-6 w-6 theme-text-primary" />
           </button>
         </div>
       </header>
@@ -311,15 +311,15 @@ export default function DoctorLayout() {
       )}
 
       {/* Sidebar mobile */}
-      <aside className={`mobile-sidebar ${isMobileMenuOpen ? "is-open" : ""}`}>
+      <aside className={`mobile-sidebar theme-card ${isMobileMenuOpen ? "is-open" : ""}`}>
         <div className="mobile-sidebar__header">
-          <span className="brand-name">Medconnect</span>
+          <span className="brand-name theme-text-primary">Medconnect</span>
           <button
             className="mobile-sidebar__close"
             onClick={() => setIsMobileMenuOpen(false)}
             title="Fechar menu"
           >
-            <X className="h-6 w-6" />
+            <X className="h-6 w-6 theme-text-primary" />
           </button>
         </div>
         <div className="mobile-sidebar__content">{renderNavContent()}</div>

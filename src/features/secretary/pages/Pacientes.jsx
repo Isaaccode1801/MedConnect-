@@ -264,7 +264,7 @@ export default function PacientesPage() {
   }, []);
 
   return (
-    <div>
+    <div className="secretary-page-wrap theme-page">
       <div className="app">
         {/* HEADER LIMPO E UNIFICADO */}
         <header
@@ -276,19 +276,11 @@ export default function PacientesPage() {
             marginTop: 10,
           }}
         >
-          <h1 
-            style={{ 
-              margin: 0, 
-              fontSize: "28px", 
-              fontWeight: "700", 
-              color: "#1e293b",
-              letterSpacing: "-0.5px"
-            }}
-          >
+          <h1 className="theme-text-primary" style={{ margin: 0, fontSize: "28px", fontWeight: "700", letterSpacing: "-0.5px" }}>
             Gerenciamento de Pacientes
           </h1>
 
-          <button className="btn" onClick={abrirModalParaAdicionar} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button className="btn btn-primary" onClick={abrirModalParaAdicionar} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: '18px', lineHeight: 0 }}>+</span> Adicionar Paciente
           </button>
         </header>
@@ -298,29 +290,26 @@ export default function PacientesPage() {
           className="top-cards"
           style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}
         >
-          <div className="card">
-            <small>Total cadastrados</small>
-            <div className="value">{total}</div>
+          <div className="card theme-card">
+            <small className="theme-text-secondary">Total cadastrados</small>
+            <div className="value theme-text-primary">{total}</div>
           </div>
-          <div className="card">
-            <small>Presentes agora</small>
-            <div className="value">{present}</div>
+          <div className="card theme-card">
+            <small className="theme-text-secondary">Presentes agora</small>
+            <div className="value theme-text-primary">{present}</div>
           </div>
-          <div className="card">
-            <small>Ausentes</small>
-            <div className="value">{absent}</div>
+          <div className="card theme-card">
+            <small className="theme-text-secondary">Ausentes</small>
+            <div className="value theme-text-primary">{absent}</div>
           </div>
         </div>
 
         {/* TABELA CONTAINER */}
         <div
-          className="panel"
+          className="panel theme-card"
           style={{
-            background: "#fff",
             borderRadius: 12,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.04)", // Sombra mais suave
             padding: 20,
-            border: "1px solid #f1f5f9"
           }}
         >
           <div
@@ -332,16 +321,16 @@ export default function PacientesPage() {
               marginBottom: 16,
             }}
           >
-            <h2 style={{ marginTop: 0, fontSize: '18px', fontWeight: 600, color: '#334155' }}>Lista Completa</h2>
+            <h2 className="theme-text-primary" style={{ marginTop: 0, fontSize: '18px', fontWeight: 600 }}>Lista Completa</h2>
             <input
               placeholder="🔍 Pesquisar por nome ou CPF..."
               value={pesquisa}
               onChange={(e) => setPesquisa(e.target.value)}
+              className="theme-input"
               style={{
                 width: "300px",
                 padding: "8px 12px",
                 borderRadius: "8px",
-                border: "1px solid #cbd5e1",
                 fontSize: "14px",
                 outline: "none",
                 transition: "border 0.2s"
@@ -350,14 +339,15 @@ export default function PacientesPage() {
           </div>
 
           <div
+            className="table-wrapper theme-card"
             style={{
               width: "100%",
               overflowX: "auto",
               borderRadius: "8px",
-              border: "1px solid #e2e8f0",
             }}
           >
             <table
+              className="table-pacientes"
               style={{
                 width: "100%",
                 minWidth: "800px",
@@ -366,34 +356,31 @@ export default function PacientesPage() {
               }}
             >
               <thead>
-                <tr
-                  style={{
-                    background: "#f8fafc",
-                    color: "#64748b",
-                    textTransform: "uppercase",
-                    fontSize: "0.75rem",
-                    letterSpacing: "0.05em",
-                    borderBottom: "1px solid #e2e8f0"
-                  }}
-                >
-                  <th style={thCellStyle}>Nome</th>
-                  <th style={thCellStyle}>CPF</th>
-                  <th style={thCellStyle}>Telefone</th>
-                  <th style={thCellStyle}>Status</th>
-                  <th style={{ ...thCellStyle, textAlign: "right", paddingRight: 20 }}>Ações</th>
+                <tr style={{
+                  background: "var(--color-bg-tertiary)",
+                  textTransform: "uppercase",
+                  fontSize: "0.75rem",
+                  letterSpacing: "0.05em",
+                  borderBottom: "1px solid var(--color-border)"
+                }}>
+                  <th style={thCellStyle} className="theme-text-secondary">Nome</th>
+                  <th style={thCellStyle} className="theme-text-secondary">CPF</th>
+                  <th style={thCellStyle} className="theme-text-secondary">Telefone</th>
+                  <th style={thCellStyle} className="theme-text-secondary">Status</th>
+                  <th style={{ ...thCellStyle, textAlign: "right", paddingRight: 20 }} className="theme-text-secondary">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {pacientesFiltrados.map((p) => (
-                  <tr key={p.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                  <tr key={p.id} className="theme-table-row" style={{ borderBottom: "1px solid var(--color-border)" }}>
                     <td style={tdCellStyle}>
-                      <span style={{ fontWeight: 500, color: '#0f172a' }}>{p.nome}</span>
+                      <span className="theme-text-primary" style={{ fontWeight: 500 }}>{p.nome}</span>
                     </td>
-                    <td style={tdCellStyle}>{p.cpf}</td>
-                    <td style={tdCellStyle}>{p.telefone}</td>
+                    <td style={tdCellStyle} className="theme-text-secondary">{p.cpf}</td>
+                    <td style={tdCellStyle} className="theme-text-secondary">{p.telefone}</td>
                     <td style={tdCellStyle}>
                       <span 
-                        className="badge" 
+                        className="badge theme-badge" 
                         style={p.presente ? badgePresent : badgeAbsent}
                       >
                         {p.presente ? "Presente" : "Ausente"}
@@ -401,7 +388,7 @@ export default function PacientesPage() {
                     </td>
                     <td style={{ ...tdCellStyle, textAlign: "right", paddingRight: 10 }}>
                       <button
-                        className="ghost-icon"
+                        className="action-btn theme-action-btn"
                         title="Editar"
                         onClick={() => abrirModalParaEditar(p)}
                         style={iconBtn}
@@ -409,7 +396,7 @@ export default function PacientesPage() {
                         ✏️
                       </button>
                       <button
-                        className="ghost-icon"
+                        className="action-btn theme-action-btn theme-action-btn-danger"
                         title="Remover"
                         onClick={() => handleRemover(p.id)}
                         style={{...iconBtn, color: '#ef4444'}}
@@ -423,10 +410,10 @@ export default function PacientesPage() {
                   <tr>
                     <td
                       colSpan={5}
+                      className="theme-text-muted"
                       style={{
                         textAlign: "center",
                         padding: "32px",
-                        color: "#94a3b8",
                       }}
                     >
                       Nenhum paciente encontrado.
@@ -442,12 +429,12 @@ export default function PacientesPage() {
       {/* MODAL */}
       {modalOpen && (
         <div className="modal-backdrop" style={modalOverlay}>
-          <div className="modal" style={modalContent}>
+          <div className="modal theme-card" style={modalContent}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-              <h3 style={{ margin: 0, fontSize: '20px' }}>
+              <h3 className="theme-text-primary" style={{ margin: 0, fontSize: '20px' }}>
                 {editingId ? "Editar Paciente" : "Novo Paciente"}
               </h3>
-              <button onClick={fecharModal} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px', color: '#64748b' }}>×</button>
+              <button onClick={fecharModal} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '20px', color: 'var(--color-text-muted)' }}>×</button>
             </div>
 
             <div style={{ display: 'grid', gap: 12 }}>
@@ -461,52 +448,111 @@ export default function PacientesPage() {
             </div>
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 }}>
-              <button onClick={fecharModal} style={ghostBtn}>Cancelar</button>
-              <button onClick={handleSalvar} style={btnStyle}>Salvar Dados</button>
+              <button className="btn btn-secondary" onClick={fecharModal}>Cancelar</button>
+              <button className="btn btn-primary" onClick={handleSalvar}>Salvar Dados</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Styles globais */}
+      {/* Styles atualizados para modo escuro */}
       <style>{`
-        :root{
-          --bg:#ffffff;
-          --card:#f9fafb;
-          --primary:#06b6d4;
-          --primary-hover:#0891b2;
-          --muted:#64748b;
-          --accent:#16a34a;
-          --danger:#ef4444;
-        }
-        body{ font-family: 'Inter', system-ui, sans-serif; background-color: #f8fafc; }
-        
-        .card{
-          background: #fff;
-          padding: 16px 20px;
-          border-radius: 10px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-          min-width: 140px;
+        .secretary-page-wrap {
           flex: 1;
-          border: 1px solid #f1f5f9;
+          min-height: 100vh;
+          background: var(--color-bg-primary);
+          padding-left: 2px;
+          color: var(--color-text-primary);
+          -webkit-font-smoothing: antialiased;
         }
-        .card small{ display:block; color:var(--muted); margin-bottom:6px; font-size: 0.85rem; font-weight: 500; }
-        .value{ font-weight:700; font-size:24px; color: #0f172a; }
 
-        .btn{
-          background: var(--primary);
-          color: #fff;
+        .theme-page { background: var(--color-bg-primary); }
+        .theme-text-primary { color: var(--color-text-primary); }
+        .theme-text-secondary { color: var(--color-text-secondary); }
+        .theme-text-muted { color: var(--color-text-muted); }
+        .theme-card { 
+          background: var(--color-bg-card); 
+          border: 1px solid var(--color-border);
+          color: var(--color-text-primary);
+          box-shadow: var(--shadow-sm);
+        }
+        .theme-input {
+          background: var(--color-bg-card);
+          color: var(--color-text-primary);
+          border: 1px solid var(--color-border);
+        }
+        .theme-input::placeholder {
+          color: var(--color-text-muted);
+        }
+        .theme-table-row:hover {
+          background: var(--color-bg-tertiary);
+        }
+        .theme-badge {
+          font-weight: 600;
+          font-size: 0.82rem;
+        }
+        .theme-action-btn {
+          color: var(--color-text-primary);
+        }
+        .theme-action-btn:hover {
+          background: var(--color-bg-tertiary);
+        }
+        .theme-action-btn-danger:hover {
+          background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Botões usando variáveis CSS */
+        .btn {
+          background: var(--color-primary);
+          color: white;
           border: none;
           padding: 10px 16px;
           border-radius: 8px;
           cursor: pointer;
           font-weight: 600;
           font-size: 14px;
-          transition: background 0.2s;
+          transition: all 0.2s ease;
         }
-        .btn:hover { background: var(--primary-hover); }
+        .btn-primary {
+          background: var(--color-primary);
+          color: white;
+        }
+        .btn-secondary {
+          background: var(--color-bg-tertiary);
+          color: var(--color-text-primary);
+          border: 1px solid var(--color-border);
+        }
+        .btn:hover {
+          opacity: 0.9;
+          transform: translateY(-1px);
+        }
 
-        .ghost-icon:hover { background: #f1f5f9; border-radius: 4px; }
+        .card {
+          padding: 16px 20px;
+          border-radius: 10px;
+          min-width: 140px;
+          flex: 1;
+        }
+
+        .card small { 
+          display: block; 
+          margin-bottom: 6px; 
+          font-size: 0.85rem; 
+          font-weight: 500; 
+        }
+
+        .value { 
+          font-weight: 700; 
+          font-size: 24px; 
+        }
+
+        .table-wrapper {
+          border: 1px solid var(--color-border);
+        }
+
+        @media (max-width: 768px) {
+          .secretary-page-wrap { padding-left: 88px; }
+        }
       `}</style>
       <AccessibilityMenu />
     </div>
@@ -518,21 +564,21 @@ export default function PacientesPage() {
 function Field({ label, value, onChange, type = "text" }) {
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
-      <label style={{ marginBottom: 6, fontSize: 13, color: "#475569", fontWeight: 600 }}>{label}</label>
+      <label className="theme-text-secondary" style={{ marginBottom: 6, fontSize: 13, fontWeight: 600 }}>{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        className="theme-input"
         style={{
           padding: "10px",
           borderRadius: "6px",
-          border: "1px solid #cbd5e1",
           fontSize: "14px",
           outline: "none",
           transition: "border-color 0.2s"
         }}
-        onFocus={(e) => e.target.style.borderColor = "#06b6d4"}
-        onBlur={(e) => e.target.style.borderColor = "#cbd5e1"}
+        onFocus={(e) => e.target.style.borderColor = "var(--color-primary)"}
+        onBlur={(e) => e.target.style.borderColor = "var(--color-border)"}
       />
     </div>
   );
@@ -546,12 +592,11 @@ const thCellStyle = {
 
 const tdCellStyle = {
   padding: "14px 16px",
-  color: "#334155",
 };
 
 const badgePresent = {
-  background: "#dcfce7",
-  color: "#166534",
+  background: "#374151",
+  color: "#f3f4f6",
   padding: "4px 8px",
   borderRadius: "6px",
   fontSize: "12px",
@@ -559,8 +604,8 @@ const badgePresent = {
 };
 
 const badgeAbsent = {
-  background: "#fee2e2",
-  color: "#991b1b",
+  background: "#6b7280",
+  color: "#f9fafb",
   padding: "4px 8px",
   borderRadius: "6px",
   fontSize: "12px",
@@ -576,34 +621,21 @@ const iconBtn = {
   marginLeft: "4px"
 };
 
-const ghostBtn = {
-  background: "transparent",
-  border: "1px solid #cbd5e1",
-  color: "#475569",
-  padding: "10px 16px",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: "14px",
-};
-
-const btnStyle = {
-  background: "#06b6d4",
-  color: "#fff",
-  border: "none",
-  padding: "10px 20px",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: "14px",
-};
-
 const modalOverlay = {
-  position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.5)",
-  backdropFilter: "blur(2px)", alignItems: "center", justifyContent: "center", display: "flex", zIndex: 9999
+  position: "fixed", 
+  inset: 0, 
+  background: "rgba(15, 23, 42, 0.5)",
+  backdropFilter: "blur(2px)", 
+  alignItems: "center", 
+  justifyContent: "center", 
+  display: "flex", 
+  zIndex: 9999
 };
 
 const modalContent = {
-  background: "#fff", padding: 24, borderRadius: 16, width: "100%", maxWidth: 420,
-  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+  padding: 24, 
+  borderRadius: 16, 
+  width: "100%", 
+  maxWidth: 420,
+  boxShadow: "var(--shadow-lg)"
 };

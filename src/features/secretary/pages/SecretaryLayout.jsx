@@ -230,7 +230,7 @@ export default function SecretaryLayout() {
           <button
             onClick={handleLogout}
             style={{
-              background: "transparent",
+              background: "#0d9488",
               border: "none",
               color: "#fff",
               cursor: "pointer",
@@ -307,7 +307,7 @@ export default function SecretaryLayout() {
             </button>
 
             <div style={{ fontSize: "0.9rem", lineHeight: 1.1, textAlign: "right" }}>
-              <div style={{ fontWeight: 700, color: "#111827" }}>
+              <div style={{ fontWeight: 700, color: "var(--color-text-primary)" }}>
                 {loadingMe ? "Carregando..." : displayName}
               </div>
               <div style={{ color: "#6B7280", fontSize: "0.82rem" }}>

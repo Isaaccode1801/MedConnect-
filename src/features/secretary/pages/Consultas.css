@@ -32,13 +32,13 @@
 
 /* Modo Escuro */
 .modo-escuro {
-  --cor-fundo: #0f172a;
+  --cor-fundo: #1c1c1c;
   --cor-borda: #334155;
   --cor-texto-principal: #f1f5f9;
   --cor-texto-secundario: #cbd5e1;
   --cor-acento-healthone: #14b8a6;
   --cor-acento-healthone-claro: #134e4a;
-  --cor-card: #1e293b;
+  --cor-card: #2a2a2a;
   --cor-card-hover: #334155;
   --cor-sidebar-vidro: rgba(30, 41, 59, 0.8);
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.3);
@@ -114,7 +114,7 @@ body,
 /* PARA FIREFOX - remove bordas brancas */
 .table-scroll {
   scrollbar-width: thin;
-  scrollbar-color: #555 #1c1c1c;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 /* Se ainda houver borda branca, force a remoção completa */

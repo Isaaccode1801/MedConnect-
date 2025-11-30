@@ -1,21 +1,12 @@
 // Ficheiro: @/features/doctor/pages/GerenciamentoConsultas.tsx
-// Página de consultas com botão "Criar disponibilidade" e modal para inserir em doctor_availability.
-// Versão revisada: remove variáveis não usadas, corrige tipagens e implementa fallback exaustivo do ENUM de weekday.
+// Versão realmente reduzida - modal compacto
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-
-import '@/styles/GerenciamentoPacientesPage.css';
-
-// Ícones
-import { Stethoscope, Search } from 'lucide-react';
 import { FaSearch, FaEye, FaCheck, FaTimes, FaUserMd, FaPlus } from 'react-icons/fa';
 import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 
-// -----------------------------
-// Tipos
-// -----------------------------
 interface Consulta {
   id: string;
   scheduled_at: string;
@@ -30,34 +21,7 @@ interface Consulta {
 
 type AppointmentType = 'presencial' | 'telemedicina';
 
-// -----------------------------
-// Helpers / Constantes
-// -----------------------------
 const WEEKDAYS_LABELS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-
-// Candidatos EXAUSTIVOS de rótulos de weekday (índice 0..6)
-const CANDIDATE_SETS: string[][] = [
-  // pt-BR longos (com/sem acento)
-  ['domingo','segunda','terça','quarta','quinta','sexta','sábado'],
-  ['domingo','segunda','terca','quarta','quinta','sexta','sabado'],
-  // pt abreviados (com/sem acento)
-  ['dom','seg','ter','qua','qui','sex','sáb'],
-  ['dom','seg','ter','qua','qui','sex','sab'],
-  // EN curto e longo
-  ['sun','mon','tue','wed','thu','fri','sat'],
-  ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'],
-  // Title Case
-  ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
-  ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'],
-  ['Domingo','Segunda','Terca','Quarta','Quinta','Sexta','Sabado'],
-  // CAPS
-  ['DOMINGO','SEGUNDA','TERÇA','QUARTA','QUINTA','SEXTA','SÁBADO'],
-  ['DOMINGO','SEGUNDA','TERCA','QUARTA','QUINTA','SEXTA','SABADO'],
-  ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'],
-  ['DOM','SEG','TER','QUA','QUI','SEX','SAB'],
-  // números como texto
-  ['0','1','2','3','4','5','6'],
-];
 
 function formatCPF(v: string | undefined | null): string {
   if (!v) return '—';
@@ -67,8 +31,7 @@ function formatCPF(v: string | undefined | null): string {
 
 function formatData(isoString: string): string {
   try {
-    const data = new Date(isoString);
-    return data.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+    return new Date(isoString).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
   } catch {
     return 'Data inválida';
   }
@@ -76,71 +39,43 @@ function formatData(isoString: string): string {
 
 function formatHora(isoString: string): string {
   try {
-    const data = new Date(isoString);
-    return data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+    return new Date(isoString).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
   } catch {
     return '--:--';
   }
 }
 
-// tenta “aprender” um rótulo existente (se houver registro já criado)
-async function detectWeekdaySample(): Promise<string | null> {
-  try {
-    const { data, error } = await supabase.from('doctor_availability').select('weekday').limit(1);
-    if (error || !data || !data[0]?.weekday) return null;
-    return String(data[0].weekday);
-  } catch {
-    return null;
-  }
-}
-
-// -----------------------------
-// Componente
-// -----------------------------
 export default function GerenciamentoConsultasPage() {
   const navigate = useNavigate();
-
-  // estado consultas
   const [searchTerm, setSearchTerm] = useState('');
   const [consultas, setConsultas] = useState<Consulta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // estado médico
   const [doctorName, setDoctorName] = useState('Médico(a)');
   const [doctorId, setDoctorId] = useState<string | null>(null);
-
-  // modal disponibilidade
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
-
-  // form disponibilidade
-  const [formWeekday, setFormWeekday] = useState<number>(1); // segunda
+  const [formWeekday, setFormWeekday] = useState<number>(1);
   const [formStart, setFormStart] = useState<string>('08:00');
   const [formEnd, setFormEnd] = useState<string>('12:00');
   const [formSlot, setFormSlot] = useState<number>(30);
   const [formType, setFormType] = useState<AppointmentType>('presencial');
   const [formActive, setFormActive] = useState<boolean>(true);
 
-  // modal de detalhes da consulta
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedConsulta, setSelectedConsulta] = useState<Consulta | null>(null);
-
-  // carregar consultas + médico
   const carregarConsultas = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const { data: userResp, error: authError } = await supabase.auth.getUser();
-      if (authError || !userResp?.user) throw new Error('Sessão não encontrada. Faça login novamente.');
+      if (authError || !userResp?.user) throw new Error('Sessão não encontrada.');
 
       const { data: doctorData, error: doctorError } = await supabase
         .from('doctors')
         .select('id, full_name')
         .eq('user_id', userResp.user.id)
         .single();
-      if (doctorError || !doctorData) throw new Error('Registro de médico não encontrado para este usuário.');
+      if (doctorError || !doctorData) throw new Error('Médico não encontrado.');
 
       setDoctorId(doctorData.id);
       setDoctorName(doctorData.full_name || 'Médico(a)');
@@ -165,8 +100,7 @@ export default function GerenciamentoConsultasPage() {
 
       setConsultas(formatted);
     } catch (err: any) {
-      console.error('Erro ao carregar consultas:', err);
-      setError(err.message || 'Falha ao carregar a lista.');
+      setError(err.message || 'Falha ao carregar.');
       setConsultas([]);
     } finally {
       setLoading(false);
@@ -176,41 +110,6 @@ export default function GerenciamentoConsultasPage() {
   useEffect(() => {
     carregarConsultas();
   }, [carregarConsultas]);
-
-  const handleUpdateStatus = async (id: string, newStatus: Consulta['status']) => {
-    const ok = window.confirm(`Tem certeza que deseja alterar o status desta consulta para "${newStatus}"?`);
-    if (!ok) return;
-
-    const prev = [...consultas];
-    setConsultas(prevList => prevList.map(c => (c.id === id ? { ...c, status: newStatus } : c)));
-
-    try {
-      const { error: upErr } = await supabase.from('appointments').update({ status: newStatus }).eq('id', id);
-      if (upErr) throw upErr;
-    } catch (err: any) {
-      console.error('Falha ao atualizar status:', err);
-      alert(`Falha ao atualizar status: ${err.message}`);
-      setConsultas(prev);
-    }
-  };
-
-  const handleViewPatient = (patientId?: string) => {
-    if (!patientId) {
-      alert('Erro: Paciente não associado.');
-      return;
-    }
-    navigate(`/doctor/pacientes/${patientId}`);
-  };
-
-  const handleOpenConsultaDetails = (consulta: Consulta) => {
-    setSelectedConsulta(consulta);
-    setShowDetailsModal(true);
-  };
-
-  const handleCloseConsultaDetails = () => {
-    setShowDetailsModal(false);
-    setSelectedConsulta(null);
-  };
 
   const filteredConsultas = useMemo(() => {
     const lower = searchTerm.toLowerCase();
@@ -224,124 +123,54 @@ export default function GerenciamentoConsultasPage() {
     });
   }, [consultas, searchTerm]);
 
-  // modal handlers
-  const resetCreateForm = () => {
-    setFormWeekday(1);
-    setFormStart('08:00');
-    setFormEnd('12:00');
-    setFormSlot(30);
-    setFormType('presencial');
-    setFormActive(true);
-    setCreateError(null);
-  };
-
-  const openCreateModal = async () => {
-    resetCreateForm();
-    // não precisamos detectar antecipadamente; faremos fallback na inserção
-    setShowCreateModal(true);
-  };
-
-  const closeCreateModal = () => setShowCreateModal(false);
-
-  // tentativa única com um rótulo
-  async function tryInsertAvailabilityWithLabel(label: string) {
-    if (!doctorId) throw new Error('Sessão inválida. Entre novamente.');
-    return supabase
-      .from('doctor_availability')
-      .insert({
-        doctor_id: doctorId,
-        weekday: label, // ENUM label
-        start_time: formStart,
-        end_time: formEnd,
-        slot_minutes: formSlot,
-        appointment_type: formType,
-        active: formActive,
-      })
-      .select('id')
-      .single();
-  }
-
   const handleCreateAvailability = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateError(null);
 
-    // validações básicas
-    const [sh, sm] = (formStart || '').split(':').map(Number);
-    const [eh, em] = (formEnd || '').split(':').map(Number);
-    if ([sh, sm, eh, em].some(Number.isNaN)) {
-      setCreateError('Horários inválidos.');
+    if (!doctorId) {
+      setCreateError('Sessão inválida.');
       return;
     }
+
+    const [sh, sm] = formStart.split(':').map(Number);
+    const [eh, em] = formEnd.split(':').map(Number);
     const startTotal = sh * 60 + sm;
     const endTotal = eh * 60 + em;
+    
     if (startTotal >= endTotal) {
-      setCreateError('O horário inicial deve ser menor que o final.');
-      return;
-    }
-    if (formSlot < 15 || formSlot > 120) {
-      setCreateError('A duração do slot deve estar entre 15 e 120 minutos.');
-      return;
-    }
-    if (formWeekday < 0 || formWeekday > 6) {
-      setCreateError('Dia da semana inválido (0=Dom, ..., 6=Sáb).');
-      return;
-    }
-    if (!doctorId) {
-      setCreateError('Sessão inválida. Entre novamente.');
+      setCreateError('Horário inicial deve ser menor que o final.');
       return;
     }
 
     setCreating(true);
     try {
-      // prioriza um sample existente, se houver
-      const sample = await detectWeekdaySample();
-      const orderedSets = [...CANDIDATE_SETS];
-      if (sample) {
-        const idx = orderedSets.findIndex(set => set.includes(sample));
-        if (idx > 0) {
-          const picked = orderedSets.splice(idx, 1)[0];
-          orderedSets.unshift(picked);
-        }
-      }
+      const { error: insertError } = await supabase
+        .from('doctor_availability')
+        .insert({
+          doctor_id: doctorId,
+          weekday: WEEKDAYS_LABELS[formWeekday].toLowerCase(),
+          start_time: formStart,
+          end_time: formEnd,
+          slot_minutes: formSlot,
+          appointment_type: formType,
+          active: formActive,
+        });
 
-      let lastErr: any = null;
-      let success = false;
-
-      for (const set of orderedSets) {
-        const label = set[formWeekday]; // 0..6
-        const resp = await tryInsertAvailabilityWithLabel(label);
-        if (!resp.error) {
-          success = true;
-          break;
-        }
-        lastErr = resp.error;
-        // se erro não for ENUM (22P02), interrompe (ex.: RLS/sobreposição)
-        if (resp.error?.code && resp.error.code !== '22P02') break;
-      }
-
-      if (!success) throw lastErr || new Error('Falha ao criar disponibilidade.');
+      if (insertError) throw insertError;
 
       setShowCreateModal(false);
-      setCreateError(null);
     } catch (err: any) {
-      console.error('Falha ao criar disponibilidade:', err);
-      setCreateError(
-        err?.message ||
-        'Não foi possível criar a disponibilidade. Verifique regras de sobreposição/permissões.'
-      );
+      setCreateError(err?.message || 'Erro ao criar disponibilidade.');
     } finally {
       setCreating(false);
     }
   };
 
-  // -----------------------------
-  // Render
-  // -----------------------------
   return (
-    <>
-      <main className="container">
+    <div className="page-container">
+      <main className="main-container">
         <section className="card">
-          <div className="head">
+          <div className="card-header">
             <div className="title">
               <h1>Minhas Consultas</h1>
               <span className="badge">Agenda</span>
@@ -349,10 +178,9 @@ export default function GerenciamentoConsultasPage() {
 
             <div className="toolbar">
               <div className="search">
-                <FaSearch style={{ color: '#6b7a88', marginRight: '8px' }} />
+                <FaSearch />
                 <input
-                  id="q_table"
-                  placeholder="Buscar por nome ou CPF do paciente..."
+                  placeholder="Buscar por nome ou CPF..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -360,24 +188,18 @@ export default function GerenciamentoConsultasPage() {
 
               <button
                 type="button"
-                className="page-btn "
-                style={{ marginLeft: '12px' }}
-                onClick={openCreateModal}
-                title="Criar disponibilidade"
+                className="btn-primary"
+                onClick={() => setShowCreateModal(true)}
               >
-                <FaPlus style={{ marginRight: 6 }} />
+                <FaPlus />
                 Criar disponibilidade
               </button>
             </div>
           </div>
 
-          {error && (
-            <div style={{ padding: '1rem 1.2rem', color: 'red', background: '#ffebee' }}>
-              Erro: {error}
-            </div>
-          )}
+          {error && <div className="error-message">Erro: {error}</div>}
 
-          <div className="table-wrap">
+          <div className="table-container">
             <table className="table">
               <thead>
                 <tr>
@@ -392,55 +214,29 @@ export default function GerenciamentoConsultasPage() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>Carregando consultas...</td>
+                    <td colSpan={6}>Carregando consultas...</td>
                   </tr>
                 ) : filteredConsultas.length === 0 ? (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
-                      Nenhuma consulta encontrada{searchTerm ? ' para "' + searchTerm + '"' : ''}.
-                    </td>
+                    <td colSpan={6}>Nenhuma consulta encontrada</td>
                   </tr>
                 ) : (
                   filteredConsultas.map((c) => (
-                    <tr className="row" key={c.id}>
+                    <tr key={c.id}>
                       <td>{c.patients?.full_name || 'Paciente não encontrado'}</td>
                       <td>{formatCPF(c.patients?.cpf)}</td>
                       <td>{formatData(c.scheduled_at)}</td>
                       <td>{formatHora(c.scheduled_at)}</td>
                       <td>
-                        <span className={`badge status-${c.status || 'default'}`}>
-                          {c.status === 'requested'
-                            ? 'Solicitada'
-                            : c.status === 'confirmed'
-                            ? 'Confirmada'
-                            : c.status === 'completed'
-                            ? 'Realizada'
-                            : c.status === 'cancelled'
-                            ? 'Cancelada'
-                            : c.status.charAt(0).toUpperCase() + c.status.slice(1)}
+                        <span className={`status-badge status-${c.status}`}>
+                          {c.status === 'requested' ? 'Solicitada' :
+                           c.status === 'confirmed' ? 'Confirmada' :
+                           c.status === 'completed' ? 'Realizada' :
+                           c.status === 'cancelled' ? 'Cancelada' : c.status}
                         </span>
                       </td>
-                      <td className="col-actions">
-                        {c.status === 'requested' && (
-                          <button className="page-btn btn-confirm" onClick={() => handleUpdateStatus(c.id, 'confirmed')} title="Confirmar Consulta">
-                            <FaCheck />
-                          </button>
-                        )}
-                        {c.status === 'confirmed' && (
-                          <button className="page-btn btn-complete" onClick={() => handleUpdateStatus(c.id, 'completed')} title="Marcar como Realizada">
-                            <FaUserMd />
-                          </button>
-                        )}
-                        {(c.status === 'requested' || c.status === 'confirmed') && (
-                          <button className="page-btn btn-del" onClick={() => handleUpdateStatus(c.id, 'cancelled')} title="Cancelar Consulta">
-                            <FaTimes />
-                          </button>
-                        )}
-                        <button
-                          className="page-btn btn-view"
-                          onClick={() => handleOpenConsultaDetails(c)}
-                          title="Ver detalhes da consulta"
-                        >
+                      <td className="actions">
+                        <button title="Ver detalhes">
                           <FaEye />
                         </button>
                       </td>
@@ -450,265 +246,410 @@ export default function GerenciamentoConsultasPage() {
               </tbody>
             </table>
           </div>
-
-          <div className="table-footer">
-            <small className="muted" id="countLabel">
-              Mostrando {filteredConsultas.length} de {consultas.length} consulta(s)
-              {searchTerm && ` (filtrado de ${consultas.length})`}
-            </small>
-          </div>
         </section>
       </main>
 
-      {/* MODAL: Detalhes da consulta */}
-      {showDetailsModal && selectedConsulta && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="modal-overlay"
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "1rem",
-            zIndex: 1000,
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) handleCloseConsultaDetails();
-          }}
-        >
-          <div
-            className="modal-card"
-            style={{
-              width: "100%",
-              maxWidth: 520,
-              background: "#fff",
-              borderRadius: 12,
-              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                padding: "1rem 1.25rem",
-                borderBottom: "1px solid #eef2f7",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <div>
-                <h2 style={{ margin: 0, fontSize: 18 }}>Detalhes da consulta</h2>
-                <small className="muted">
-                  Paciente:{" "}
-                  {selectedConsulta.patients?.full_name || "Paciente não encontrado"}
-                </small>
-              </div>
-              <button
-                type="button"
-                className="page-btn btn-secondary"
-                onClick={handleCloseConsultaDetails}
-              >
-                Fechar
-              </button>
-            </div>
-
-            <div style={{ padding: "1rem 1.25rem", fontSize: "0.95rem" }}>
-              <div style={{ marginBottom: 10 }}>
-                <strong>Data:</strong>{" "}
-                {formatData(selectedConsulta.scheduled_at)}
-              </div>
-              <div style={{ marginBottom: 10 }}>
-                <strong>Horário:</strong>{" "}
-                {formatHora(selectedConsulta.scheduled_at)}
-              </div>
-              <div style={{ marginBottom: 10 }}>
-                <strong>Status:</strong>{" "}
-                <span className={`badge status-${selectedConsulta.status || "default"}`}>
-                  {selectedConsulta.status === "requested"
-                    ? "Solicitada"
-                    : selectedConsulta.status === "confirmed"
-                    ? "Confirmada"
-                    : selectedConsulta.status === "completed"
-                    ? "Realizada"
-                    : selectedConsulta.status === "cancelled"
-                    ? "Cancelada"
-                    : selectedConsulta.status
-                    ? selectedConsulta.status.charAt(0).toUpperCase() +
-                      selectedConsulta.status.slice(1)
-                    : "—"}
-                </span>
-              </div>
-              <div style={{ marginBottom: 10 }}>
-                <strong>Paciente:</strong>{" "}
-                {selectedConsulta.patients?.full_name || "Paciente não encontrado"}
-              </div>
-              <div style={{ marginBottom: 10 }}>
-                <strong>CPF:</strong>{" "}
-                {formatCPF(selectedConsulta.patients?.cpf)}
-              </div>
-              <div style={{ marginBottom: 10 }}>
-                <strong>Telefone:</strong>{" "}
-                {selectedConsulta.patients?.phone_mobile || "—"}
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: "0.85rem 1.25rem",
-                borderTop: "1px solid #eef2f7",
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 8,
-              }}
-            >
-              <button
-                type="button"
-                className="page-btn btn-secondary"
-                onClick={handleCloseConsultaDetails}
-              >
-                Fechar
-              </button>
-              <button
-                type="button"
-                className="page-btn btn-primary"
-                onClick={() => {
-                  handleCloseConsultaDetails();
-                  handleViewPatient(selectedConsulta.patients?.id);
-                }}
-              >
-                Ver prontuário
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: Criar disponibilidade */}
+      {/* MODAL CRIAR DISPONIBILIDADE - COMPACTO */}
       {showCreateModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="modal-overlay"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.45)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem',
-            zIndex: 1000,
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeCreateModal();
-          }}
-        >
-          <div
-            className="modal-card"
-            style={{
-              width: '100%',
-              maxWidth: 520,
-              background: '#fff',
-              borderRadius: 12,
-              boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-              overflow: 'hidden',
-            }}
-          >
-            <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid #eef2f7' }}>
-              <h2 style={{ margin: 0, fontSize: 18 }}>Criar disponibilidade</h2>
-              <small className="muted">Médico: {doctorName}</small>
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="modal-compact" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Criar disponibilidade</h3>
+              <small>Médico: {doctorName}</small>
             </div>
 
             <form onSubmit={handleCreateAvailability}>
-              <div style={{ padding: '1rem 1.25rem' }}>
-                {createError && (
-                  <div style={{ marginBottom: 12, padding: '8px 10px', color: '#b00020', background: '#ffebee', borderRadius: 8 }}>
-                    {createError}
-                  </div>
-                )}
+              <div className="modal-body">
+                {createError && <div className="error">{createError}</div>}
 
-                <div className="form-group" style={{ marginBottom: 12 }}>
-                  <label className="text-sm text-gray-700 block" htmlFor="weekday">
-                    Dia da semana
-                  </label>
+                <div className="form-group">
+                  <label>Dia da semana</label>
                   <select
-                    id="weekday"
-                    className="input"
                     value={formWeekday}
-                    onChange={(e) => setFormWeekday(parseInt(e.target.value, 10))}
-                    style={{ width: '100%' }}
+                    onChange={(e) => setFormWeekday(Number(e.target.value))}
                   >
                     {WEEKDAYS_LABELS.map((label, idx) => (
-                      <option value={idx} key={idx}>
-                        {idx} — {label}
-                      </option>
+                      <option value={idx} key={idx}>{idx} — {label}</option>
                     ))}
                   </select>
                 </div>
 
-                <div className="form-row" style={{ display: 'flex', gap: 12 }}>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label className="text-sm text-gray-700 block" htmlFor="start_time">Início</label>
-                    <input id="start_time" type="time" className="input" value={formStart} onChange={(e) => setFormStart(e.target.value)} required />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Início</label>
+                    <input 
+                      type="time" 
+                      value={formStart} 
+                      onChange={(e) => setFormStart(e.target.value)} 
+                      required 
+                    />
                   </div>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label className="text-sm text-gray-700 block" htmlFor="end_time">Fim</label>
-                    <input id="end_time" type="time" className="input" value={formEnd} onChange={(e) => setFormEnd(e.target.value)} required />
+                  <div className="form-group">
+                    <label>Fim</label>
+                    <input 
+                      type="time" 
+                      value={formEnd} 
+                      onChange={(e) => setFormEnd(e.target.value)} 
+                      required 
+                    />
                   </div>
                 </div>
 
-                <div className="form-row" style={{ display: 'flex', gap: 12 }}>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label className="text-sm text-gray-700 block" htmlFor="slot_minutes">Duração do slot (min)</label>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Duração (min)</label>
                     <input
-                      id="slot_minutes"
                       type="number"
                       min={15}
                       max={120}
-                      step={5}
-                      className="input"
                       value={formSlot}
-                      onChange={(e) => setFormSlot(parseInt(e.target.value || '0', 10))}
+                      onChange={(e) => setFormSlot(Number(e.target.value))}
                       required
                     />
                   </div>
-
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label className="text-sm text-gray-700 block" htmlFor="appointment_type">Tipo</label>
-                    <select id="appointment_type" className="input" value={formType} onChange={(e) => setFormType(e.target.value as AppointmentType)}>
-                      <option value="presencial">presencial</option>
-                      <option value="telemedicina">telemedicina</option>
+                  <div className="form-group">
+                    <label>Tipo</label>
+                    <select 
+                      value={formType} 
+                      onChange={(e) => setFormType(e.target.value as AppointmentType)}
+                    >
+                      <option value="presencial">Presencial</option>
+                      <option value="telemedicina">Telemedicina</option>
                     </select>
                   </div>
                 </div>
 
-                <div className="form-group" style={{ marginTop: 6 }}>
-                  <label className="text-sm text-gray-700" htmlFor="active" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input id="active" type="checkbox" checked={formActive} onChange={(e) => setFormActive(e.target.checked)} />
+                <div className="form-checkbox">
+                  <label>
+                    <input 
+                      type="checkbox" 
+                      checked={formActive} 
+                      onChange={(e) => setFormActive(e.target.checked)} 
+                    />
                     Ativo
                   </label>
                 </div>
-
-                <div style={{ marginTop: 6 }}>
-                  <small className="muted">
-                    created_by/updated_by são preenchidos pelo backend. Regras: sem sobreposição; início &lt; fim.
-                  </small>
-                </div>
               </div>
 
-              <div style={{ padding: '0.85rem 1.25rem', borderTop: '1px solid #eef2f7', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                <button type="button" className="page-btn btn-secondary" onClick={closeCreateModal} disabled={creating}>Cancelar</button>
-                <button type="submit" className="page-btn btn-primary" disabled={creating}>{creating ? 'Criando...' : 'Criar'}</button>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  onClick={() => setShowCreateModal(false)}
+                  disabled={creating}
+                >
+                  Cancelar
+                </button>
+                <button type="submit" disabled={creating}>
+                  {creating ? 'Criando...' : 'Criar'}
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </>
+
+      <AccessibilityMenu />
+
+      <style>{`
+        .page-container {
+          padding: 20px;
+          min-height: 100vh;
+          background: var(--color-bg-primary);
+        }
+        
+        .main-container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        
+        .card {
+          background: var(--color-bg-card);
+          border-radius: 8px;
+          box-shadow: var(--shadow-sm);
+          border: 1px solid var(--color-border);
+        }
+        
+        .card-header {
+          padding: 20px;
+          border-bottom: 1px solid var(--color-border);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 16px;
+        }
+        
+        .title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
+        .title h1 {
+          margin: 0;
+          font-size: 1.5rem;
+          color: var(--color-text-primary);
+        }
+        
+        .badge {
+          background: var(--color-bg-tertiary);
+          color: var(--color-text-muted);
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 0.8rem;
+        }
+        
+        .toolbar {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
+        .search {
+          display: flex;
+          align-items: center;
+          background: var(--color-bg-card);
+          border: 1px solid var(--color-border);
+          border-radius: 6px;
+          padding: 8px 12px;
+          min-width: 300px;
+        }
+        
+        .search input {
+          background: transparent;
+          border: none;
+          outline: none;
+          margin-left: 8px;
+          width: 100%;
+          color: var(--color-text-primary);
+        }
+        
+        .search input::placeholder {
+          color: var(--color-text-muted);
+        }
+        
+        .btn-primary {
+          background: var(--color-primary);
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 6px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        
+        .btn-primary:hover {
+          background: var(--color-primary-dark);
+        }
+        
+        .error-message {
+          background: rgba(239, 68, 68, 0.1);
+          color: #dc2626;
+          padding: 12px 20px;
+          border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .table-container {
+          overflow-x: auto;
+        }
+        
+        .table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        
+        .table th {
+          background: var(--color-bg-tertiary);
+          padding: 12px 16px;
+          text-align: left;
+          font-weight: 600;
+          color: var(--color-text-primary);
+          border-bottom: 1px solid var(--color-border);
+        }
+        
+        .table td {
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--color-border);
+          color: var(--color-text-primary);
+        }
+        
+        .status-badge {
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          font-weight: 500;
+        }
+        
+        .status-requested { background: #fef3c7; color: #92400e; }
+        .status-confirmed { background: #dbeafe; color: #1e40af; }
+        .status-completed { background: #dcfce7; color: #166534; }
+        .status-cancelled { background: #fee2e2; color: #991b1b; }
+        
+        .actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+        }
+        
+        .actions button {
+          background: var(--color-bg-tertiary);
+          color: var(--color-text-primary);
+          border: 1px solid var(--color-border);
+          padding: 6px;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        
+        /* MODAL COMPACTO */
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          padding: 20px;
+        }
+        
+        .modal-compact {
+          background: var(--color-bg-card);
+          border-radius: 8px;
+          width: 100%;
+          max-width: 400px;
+          max-height: 90vh;
+          overflow-y: auto;
+          border: 1px solid var(--color-border);
+        }
+        
+        .modal-header {
+          padding: 16px 20px;
+          border-bottom: 1px solid var(--color-border);
+        }
+        
+        .modal-header h3 {
+          margin: 0 0 4px 0;
+          color: var(--color-text-primary);
+        }
+        
+        .modal-header small {
+          color: var(--color-text-muted);
+        }
+        
+        .modal-body {
+          padding: 20px;
+        }
+        
+        .form-group {
+          margin-bottom: 16px;
+        }
+        
+        .form-group label {
+          display: block;
+          margin-bottom: 4px;
+          color: var(--color-text-primary);
+          font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid var(--color-border);
+          border-radius: 6px;
+          font-size: 14px;
+          background: var(--color-bg-card);
+          color: var(--color-text-primary);
+        }
+        
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        
+        .form-checkbox {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .form-checkbox label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 0;
+          cursor: pointer;
+          color: var(--color-text-primary);
+        }
+        
+        .error {
+          background: rgba(239, 68, 68, 0.1);
+          color: #dc2626;
+          padding: 8px 12px;
+          border-radius: 6px;
+          margin-bottom: 16px;
+          font-size: 0.9rem;
+          border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .modal-footer {
+          padding: 16px 20px;
+          border-top: 1px solid var(--color-border);
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+        }
+        
+        .modal-footer button {
+          padding: 8px 16px;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          font-weight: 500;
+        }
+        
+        .modal-footer button:first-child {
+          background: var(--color-bg-tertiary);
+          color: var(--color-text-primary);
+          border: 1px solid var(--color-border);
+        }
+        
+        .modal-footer button:last-child {
+          background: var(--color-primary);
+          color: white;
+        }
+        
+        .modal-footer button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+        
+        @media (max-width: 768px) {
+          .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          
+          .toolbar {
+            width: 100%;
+          }
+          
+          .search {
+            min-width: auto;
+            flex: 1;
+          }
+          
+          .form-row {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+    </div>
   );
 }

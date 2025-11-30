@@ -18,7 +18,27 @@
   --mc-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
 }
 
-/* Wrapper branco com leve destaque */
+/* ===================== Tokens (tema escuro) ===================== */
+.modo-escuro {
+  --mc-bg: #1e1e1e;             /* fundo escuro */
+  --mc-card: #333;           /* cartão / contêiner escuro */
+  --mc-muted: #a0aec0;          /* texto auxiliar claro */
+  --mc-text: #f7fafc;           /* texto principal branco */
+  --mc-border: #4a5568;         /* bordas escuras */
+  --mc-header-bg: #333;      /* cabeçalho de grade escuro */
+  --mc-header-grad: linear-gradient(180deg, #333 0%, #2a2a2a );
+
+  --mc-teal-50: #1a3a3a;
+  --mc-teal-100: #1e4a47;
+  --mc-teal-200: #2a5c57;
+  --mc-teal-500: #2dd4bf;
+  --mc-teal-600: #20c9b6;
+
+  --mc-focus: #63b3ed;          /* azul claro p/ foco no escuro */
+  --mc-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+}
+
+/* Wrapper com tema adaptável */
 .mc-calendar-wrap.mc-light {
   width: 100%;
   background: var(--mc-card);
@@ -57,19 +77,31 @@
   letter-spacing: 0.2px;
 }
 
-/* Botões base (brancos) */
+/* Botões base com tema adaptável */
 .mc-btn {
   border-radius: 12px;
   border: 1px solid var(--mc-border);
   padding: 8px 12px;
   font-weight: 700;
   font-size: 13px;
-  background: #fff;
+  background: var(--mc-card);
   color: var(--mc-text);
   transition: all .15s ease;
 }
-.mc-btn:hover { background: #ffffff; box-shadow: 0 6px 16px rgba(20,184,166,0.12); }
-.mc-btn.ghost { background: #fff; }
+
+.mc-btn:hover { 
+  background: var(--mc-bg); 
+  box-shadow: 0 6px 16px rgba(20,184,166,0.12); 
+}
+
+.mc-btn.ghost { 
+  background: var(--mc-card); 
+}
+
+/* Modo escuro para botões */
+.modo-escuro .mc-btn:hover {
+  box-shadow: 0 6px 16px rgba(45, 212, 191, 0.2);
+}
 
 /* Navegação anterior/próximo */
 .mc-icon-btn {
@@ -80,14 +112,28 @@
   justify-content: center;
   border-radius: 10px;
   border: 1px solid var(--mc-border);
-  background: #fff;
+  background: var(--mc-card);
   font-weight: 700;
   color: var(--mc-text);
   transition: box-shadow .15s ease, transform .06s ease;
 }
-.mc-icon-btn:hover { box-shadow: 0 6px 16px rgba(20,184,166,0.12); }
-.mc-icon-btn:active { transform: translateY(1px); }
-.mc-nav { display: inline-flex; gap: 6px; }
+
+.mc-icon-btn:hover { 
+  box-shadow: 0 6px 16px rgba(20,184,166,0.12); 
+}
+
+.modo-escuro .mc-icon-btn:hover {
+  box-shadow: 0 6px 16px rgba(45, 212, 191, 0.2);
+}
+
+.mc-icon-btn:active { 
+  transform: translateY(1px); 
+}
+
+.mc-nav { 
+  display: inline-flex; 
+  gap: 6px; 
+}
 
 /* Segmentado (Dia/Semana/Mês/Agenda) */
 .mc-segment {
@@ -98,6 +144,7 @@
   display: inline-flex;
   gap: 4px;
 }
+
 .mc-seg {
   padding: 8px 12px;
   border-radius: 10px;
@@ -108,10 +155,16 @@
   color: var(--mc-text);
   transition: background .15s ease, box-shadow .15s ease;
 }
+
 .mc-seg:hover {
-  background: #fff;
+  background: var(--mc-card);
   box-shadow: 0 6px 16px rgba(20,184,166,0.10);
 }
+
+.modo-escuro .mc-seg:hover {
+  box-shadow: 0 6px 16px rgba(45, 212, 191, 0.15);
+}
+
 .mc-seg.active {
   background: var(--mc-teal-50);
   color: var(--mc-text);
@@ -131,6 +184,23 @@
   color: var(--mc-text);
   font-weight: 700;
   border-bottom: 1px solid var(--mc-border);
+}
+
+/* Células do calendário */
+.rbc-day-bg,
+.rbc-date-cell,
+.rbc-row-content,
+.rbc-time-content {
+  background: var(--mc-bg);
+  color: var(--mc-text);
+}
+
+.rbc-date-cell {
+  color: var(--mc-text);
+}
+
+.rbc-off-range-bg {
+  background: var(--mc-header-bg);
 }
 
 /* Altura dos slots/células (mais legível) */
@@ -155,11 +225,14 @@
   flex-direction: column;
   gap: 2px;
 }
+
 .event-card .event-time {
   font-size: 12px;
   font-weight: 800;
   opacity: 0.95;
+  color: inherit;
 }
+
 .event-card .event-title {
   font-size: 13.5px;
   font-weight: 800;
@@ -167,6 +240,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: inherit;
 }
 
 .rbc-event {
@@ -175,6 +249,13 @@
   background: linear-gradient(180deg, rgba(20,184,166,0.97) 0%, rgba(13,148,136,0.95) 100%);
   color: #fff;
   box-shadow: 0 8px 18px rgba(13,148,136,0.22);
+}
+
+/* Modo escuro para eventos */
+.modo-escuro .rbc-event {
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  background: linear-gradient(180deg, rgba(45, 212, 191, 0.9) 0%, rgba(32, 201, 182, 0.85) 100%);
+  box-shadow: 0 8px 18px rgba(45, 212, 191, 0.25);
 }
 
 /* Hover sutil nos blocos vazios disponíveis */
@@ -186,8 +267,13 @@
 .slot-unavailable {
   pointer-events: none;
   filter: grayscale(0.15);
-  background:
-    repeating-linear-gradient(45deg, #f7fafc 0, #f7fafc 8px, #f1f5f9 8px, #f1f5f9 16px) !important;
+  background: repeating-linear-gradient(
+    45deg, 
+    var(--mc-header-bg) 0, 
+    var(--mc-header-bg) 8px, 
+    var(--mc-border) 8px, 
+    var(--mc-border) 16px
+  ) !important;
   opacity: .7;
 }
 
@@ -203,6 +289,25 @@
 .mc-seg:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(14,165,233,.25);
+}
+
+.modo-escuro .mc-btn:focus,
+.modo-escuro .mc-icon-btn:focus,
+.modo-escuro .mc-seg:focus {
+  box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.4);
+}
+
+/* ===================== Estados do Calendário ===================== */
+.rbc-today {
+  background-color: var(--mc-teal-50);
+}
+
+.modo-escuro .rbc-today {
+  background-color: var(--mc-teal-100);
+}
+
+.rbc-selected-cell {
+  background-color: var(--mc-teal-100);
 }
 
 /* ===================== Responsividade ===================== */
@@ -235,7 +340,38 @@
   font-size: 13px;
 }
 
+/* Modo escuro para botões internos */
+.modo-escuro .mc-calendar-wrap .p-4 .space-y-2 .flex button {
+  background: var(--mc-card);
+  color: var(--mc-text);
+  border: 1px solid var(--mc-border);
+}
+
 @media (max-width: 640px) {
-  .mc-calendar-wrap .p-4 > .flex.gap-2.mt-3 { justify-content: stretch; flex-direction: column-reverse; gap: 8px; }
-  .mc-calendar-wrap .p-4 > .flex.gap-2.mt-3 button { width: 100%; }
+  .mc-calendar-wrap .p-4 > .flex.gap-2.mt-3 { 
+    justify-content: stretch; 
+    flex-direction: column-reverse; 
+    gap: 8px; 
+  }
+  .mc-calendar-wrap .p-4 > .flex.gap-2.mt-3 button { 
+    width: 100%; 
+  }
+}
+
+/* ===================== Scrollbar para modo escuro ===================== */
+.modo-escuro .rbc-time-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modo-escuro .rbc-time-content::-webkit-scrollbar-track {
+  background: var(--mc-header-bg);
+}
+
+.modo-escuro .rbc-time-content::-webkit-scrollbar-thumb {
+  background: var(--mc-border);
+  border-radius: 4px;
+}
+
+.modo-escuro .rbc-time-content::-webkit-scrollbar-thumb:hover {
+  background: var(--mc-muted);
 }

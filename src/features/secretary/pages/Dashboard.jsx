@@ -2,6 +2,49 @@ import { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 import AccessibilityMenu from "../../../components/ui/AccessibilityMenu";
 import { listarConsultasComNomes, listarMedicos, listPacientes } from "../../../lib/pacientesService";
+// =========================================================
+// 1. IMPORTAÇÃO DO HOOK DE TEMA
+import { useDarkMode } from "../../../hooks/useDarkMode"; 
+// =========================================================
+
+// =================================================================
+// FUNÇÃO DE CONFIGURAÇÃO DE OPÇÕES (Controla a cor da grade/texto)
+// =================================================================
+function getChartOptions(isDarkMode = false) {
+  // Cores de Grade e Texto, ajustadas para visibilidade em cada tema
+  const GRID_COLOR = isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'; 
+  const TEXT_COLOR = isDarkMode ? '#F2F2F2' : '#333333';
+  
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: GRID_COLOR, // Linhas de Grade Horizontais (Eixo Y)
+          drawBorder: false,
+          display: true,
+        },
+        ticks: {
+          color: TEXT_COLOR, // Cor do Texto do Eixo Y
+        },
+      },
+      x: {
+        grid: { 
+          color: GRID_COLOR, // Linhas de Grade Verticais (Eixo X)
+          drawBorder: false,
+          display: true, // Habilita as linhas de grade verticais para formar a grade completa
+        },
+        ticks: {
+          color: TEXT_COLOR, // Cor do Texto do Eixo X
+        },
+      },
+    },
+  };
+}
+// =================================================================
 
 export default function Dashboard() {
   const chartRef = useRef(null);
@@ -11,6 +54,11 @@ export default function Dashboard() {
   const [doctors, setDoctors] = useState([]);
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // =========================================================
+  // 2. CHAMADA DO HOOK DE TEMA
+  const { isDark } = useDarkMode(); 
+  // =========================================================
 
   // formata hora local para "HH:MM"
   function fmtTime(iso) {
@@ -82,6 +130,10 @@ export default function Dashboard() {
     });
 
     const ctx = chartRef.current.getContext("2d");
+    
+    // Variável de tema conectada ao hook
+    const isDarkMode = isDark; 
+
     chartInstance.current = new Chart(ctx, {
       type: "bar",
       data: {
@@ -90,6 +142,7 @@ export default function Dashboard() {
           {
             label: "Consultas agendadas",
             data: counts,
+            // Cores da barra mantidas originais
             backgroundColor: "rgba(134, 239, 172, 0.6)",
             borderColor: "rgba(34, 197, 94, 0.9)",
             borderWidth: 1,
@@ -97,12 +150,8 @@ export default function Dashboard() {
           },
         ],
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } },
-      },
+      // Aplica as opções de grade e texto dinamicamente
+      options: getChartOptions(isDarkMode), 
     });
 
     return () => {
@@ -110,7 +159,10 @@ export default function Dashboard() {
         if (chartInstance.current) chartInstance.current.destroy();
       } catch {}
     };
-  }, [appointments]);
+  // =========================================================
+  // 4. ADICIONADO isDark COMO DEPENDÊNCIA PARA REATIVIDADE DO TEMA
+  }, [appointments, isDark]); 
+  // =========================================================
 
   // derived values
   const now = new Date();
@@ -124,13 +176,13 @@ export default function Dashboard() {
   const todayCount = appointments.filter((a) => a?.scheduled_at && new Date(a.scheduled_at).toISOString().slice(0, 10) === todayStr).length;
 
   return (
-    <div style={{ display: "grid", gap: "1.25rem", gridTemplateColumns: "2fr 1fr" }}>
+    <div style={{ display: "grid", gap: "1.25rem", gridTemplateColumns: "2fr 1fr", background: "var(--color-bg-primary)"}}>
       {/* Coluna estatísticas */}
       <section
         style={{
-          backgroundColor: "#fff",
+          backgroundColor: "var(--color-bg-card)",
           borderRadius: "0.75rem",
-          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+          boxShadow: "var(--shadow-sm)",
           padding: "1rem 1.25rem",
           minHeight: 320,
           display: "flex",
@@ -139,25 +191,25 @@ export default function Dashboard() {
       >
         <header style={{ marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <div>
-            <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a", margin: 0 }}>Consultas por horário (hoje)</h2>
-            <div style={{ fontSize: "0.85rem", color: "#6B7280", marginTop: 4 }}>{loading ? "Carregando..." : `${todayCount} consultas hoje`}</div>
+            <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--color-text-primary)", margin: 0 }}>Consultas por horário (hoje)</h2>
+            <div style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", marginTop: 4 }}>{loading ? "Carregando..." : `${todayCount} consultas hoje`}</div>
           </div>
-          <div style={{ fontSize: "0.85rem", color: "#6B7280" }}>{now.toLocaleDateString(undefined, { weekday: "long" })}</div>
+          <div style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)" }}>{now.toLocaleDateString(undefined, { weekday: "long" })}</div>
         </header>
 
         {/* small stat cards */}
         <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-          <div style={{ background: "#fbfffd", padding: 12, borderRadius: 10, minWidth: 140, boxShadow: "0 6px 14px rgba(2,6,23,0.04)" }}>
-            <div style={{ fontSize: "0.75rem", color: "#6B7280" }}>Próximas</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>{upcoming.length}</div>
+          <div style={{ background: "var(--color-bg-tertiary)", padding: 12, borderRadius: 10, minWidth: 140, boxShadow: "var(--shadow-sm)" }}>
+            <div style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Próximas</div>
+            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text-primary)" }}>{upcoming.length}</div>
           </div>
-          <div style={{ background: "#fbfffd", padding: 12, borderRadius: 10, minWidth: 140, boxShadow: "0 6px 14px rgba(2,6,23,0.04)" }}>
-            <div style={{ fontSize: "0.75rem", color: "#6B7280" }}>Médicos</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>{doctors.length}</div>
+          <div style={{ background: "var(--color-bg-tertiary)", padding: 12, borderRadius: 10, minWidth: 140, boxShadow: "var(--shadow-sm)" }}>
+            <div style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Médicos</div>
+            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text-primary)" }}>{doctors.length}</div>
           </div>
-          <div style={{ background: "#fbfffd", padding: 12, borderRadius: 10, minWidth: 140, boxShadow: "0 6px 14px rgba(2,6,23,0.04)" }}>
-            <div style={{ fontSize: "0.75rem", color: "#6B7280" }}>Pacientes</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>{patients.length}</div>
+          <div style={{ background: "var(--color-bg-tertiary)", padding: 12, borderRadius: 10, minWidth: 140, boxShadow: "var(--shadow-sm)" }}>
+            <div style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>Pacientes</div>
+            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text-primary)" }}>{patients.length}</div>
           </div>
         </div>
 
@@ -169,9 +221,9 @@ export default function Dashboard() {
       {/* Coluna próximos pacientes */}
       <section
         style={{
-          backgroundColor: "#fff",
+          backgroundColor: "var(--color-bg-card)",
           borderRadius: "0.75rem",
-          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+          boxShadow: "var(--shadow-sm)",
           padding: "1rem 1.25rem",
           minHeight: 320,
           display: "flex",
@@ -179,22 +231,22 @@ export default function Dashboard() {
         }}
       >
         <header style={{ marginBottom: "1rem" }}>
-          <h2 style={{ fontSize: "1rem", fontWeight: 600, color: "#1F2937", margin: 0 }}>
+          <h2 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-text-primary)", margin: 0 }}>
             Próximos Pacientes
           </h2>
-          <p style={{ fontSize: "0.8rem", color: "#6B7280", margin: 0 }}>Chegada na recepção</p>
+          <p style={{ fontSize: "0.8rem", color: "var(--color-text-secondary)", margin: 0 }}>Chegada na recepção</p>
         </header>
 
         <ul style={{ listStyle: "none", margin: 0, padding: 0, fontSize: "0.95rem", lineHeight: 1.6 }}>
-          {loading && <li style={{ color: "#6B7280" }}>Carregando próximos pacientes...</li>}
-          {!loading && nextPatients.length === 0 && <li style={{ color: "#6B7280" }}>Nenhuma consulta próxima</li>}
+          {loading && <li style={{ color: "var(--color-text-muted)" }}>Carregando próximos pacientes...</li>}
+          {!loading && nextPatients.length === 0 && <li style={{ color: "var(--color-text-muted)" }}>Nenhuma consulta próxima</li>}
           {!loading && nextPatients.map((a) => (
-            <li key={a.id} style={{ padding: "0.6rem 0", borderBottom: "1px solid #E5E7EB", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <li key={a.id} style={{ padding: "0.6rem 0", borderBottom: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <div style={{ fontWeight: 700, color: "#111827" }}>{a.paciente_nome || "—"}</div>
-                <div style={{ color: "#6B7280", fontSize: "0.9rem" }}>{a.medico_nome || "—"}</div>
+                <div style={{ fontWeight: 700, color: "var(--color-text-primary)" }}>{a.paciente_nome || "—"}</div>
+                <div style={{ color: "var(--color-text-secondary)", fontSize: "0.9rem" }}>{a.medico_nome || "—"}</div>
               </div>
-              <div style={{ color: "#111827", fontWeight: 600 }}>{fmtTime(a.scheduled_at)}</div>
+              <div style={{ color: "var(--color-text-primary)", fontWeight: 600 }}>{fmtTime(a.scheduled_at)}</div>
             </li>
           ))}
         </ul>
