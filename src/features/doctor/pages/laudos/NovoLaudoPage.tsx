@@ -24,6 +24,9 @@ import {
   X,
 } from "lucide-react";
 
+// IMPORTE O COMBODOX
+import BasicCombobox from "@/components/ui/combobox";
+
 import "./NovoLaudoPage.css";
 
 // Tipos
@@ -52,6 +55,42 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
 const GEMINI_API_URL = GEMINI_API_KEY
   ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`
   : "";
+
+// Componente Combobox adaptado para pacientes
+function PacienteCombobox({ 
+  pacientes, 
+  value, 
+  onChange,
+  disabled = false
+}: { 
+  pacientes: Paciente[];
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  // Debug: verifique se os pacientes estão chegando
+  console.log('Pacientes no Combobox:', pacientes);
+
+  // OTIMIZAÇÃO: useMemo para evitar re-mapeamento desnecessário
+  const pacienteOptions = useMemo(() => {
+    return pacientes.map(paciente => ({
+      value: paciente.id,
+      label: paciente.full_name
+    }));
+  }, [pacientes]); // Recalcula apenas se a lista de pacientes mudar
+
+  return (
+    <div className="combobox-container">
+      <BasicCombobox 
+        data={pacienteOptions}
+        onValueChange={onChange}
+        placeholder="Selecione um paciente..."
+        value={value}
+        disabled={disabled}
+      />
+    </div>
+  );
+}
 
 export default function NovoLaudoPage() {
   const nav = useNavigate();
@@ -392,19 +431,15 @@ Após a anamnese, adicione **Plano Sugerido** com possíveis próximos passos. I
           <div className="form-grid">
             <Labeled>
               <span>Paciente</span>
-              <select
-                required
+              <PacienteCombobox 
+                // CORREÇÃO: Adicionando uma key para forçar a remontagem do componente
+                // quando os dados carregarem (pacientes.length > 0)
+                key={pacientes.length > 0 ? 'loaded' : 'loading'} 
+                pacientes={pacientes}
                 value={patientId}
-                onChange={(e) => setPatientId(e.target.value)}
+                onChange={setPatientId}
                 disabled={isSubmitting}
-              >
-                <option value="">Selecione…</option>
-                {pacientes.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.full_name}
-                  </option>
-                ))}
-              </select>
+              />
             </Labeled>
 
             <Labeled>
