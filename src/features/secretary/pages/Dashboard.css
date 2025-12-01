@@ -19,6 +19,15 @@
   --sidebar-text: #ffffff;
   --sidebar-active-bg: #ffffff;
   --sidebar-active-text: #0d9488;
+  /* Aliases usados por alguns componentes em inglês - mantêm a mesma paleta */
+  --color-bg-primary: var(--cor-fundo);
+  --color-bg-card: var(--cor-card);
+  --color-bg-tertiary: var(--cor-card-hover);
+  --color-text-primary: var(--cor-texto-principal);
+  --color-text-secondary: var(--cor-texto-secundario);
+  --color-text-muted: var(--cor-texto-card-secundario);
+  --color-border: var(--cor-borda);
+  --shadow-sm: 0 6px 18px rgba(0,0,0,0.06);
 }
 
 .modo-escuro {
@@ -313,6 +322,11 @@ body.sidebar-fechada #toggle-sidebar-btn {
   background: var(--cor-acento-healthone-claro);
   font-weight: bold;
 }
+/* Garantir que textos longos quebras em células e listas */
+table td, table th, .card-content, .card-custom p, .card-custom h3, .header h1, .header h2 {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
 @media (max-width: 1024px) {
   .sidebar {
     width: 88px; /* Largura da sidebar encolhida */
@@ -419,6 +433,19 @@ body.sidebar-fechada #toggle-sidebar-btn {
   
   .cards, .dashboard-widgets {
     grid-template-columns: 1fr; /* Força 1 coluna */
+  }
+}
+
+/* Layout específico para o Dashboard da secretaria (ajusta o grid definido inline no JSX) */
+.secretary-dashboard-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 2fr 1fr;
+}
+
+@media (max-width: 900px) {
+  .secretary-dashboard-grid {
+    grid-template-columns: 1fr; /* empilha em telas menores */
   }
 }
 

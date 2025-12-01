@@ -30,6 +30,18 @@
   --transicao: all 0.3s ease-in-out;
 }
 
+/* Aliases de variáveis (compatibilidade com componentes que usam nomes em inglês) */
+:root {
+  --color-bg-primary: var(--cor-fundo);
+  --color-bg-card: var(--cor-card);
+  --color-bg-tertiary: var(--bg-soft);
+  --color-text-primary: var(--cor-texto-principal);
+  --color-text-secondary: var(--cor-texto-secundario);
+  --color-text-muted: var(--muted-500);
+  --color-border: var(--cor-borda);
+  --shadow-sm: var(--sombra);
+}
+
 /* Modo Escuro */
 .modo-escuro {
   --cor-fundo: #1c1c1c;
@@ -270,6 +282,82 @@ body,
   padding: 14px 20px;
 }
 
+/* Ajustes estéticos para o cabeçalho (busca + botão) */
+.appbar-inner .brand h1 {
+  font-size: 1.25rem;
+  margin: 0;
+  color: var(--color-text-primary, var(--cor-texto-principal));
+}
+
+.appbar-inner .brand small {
+  color: var(--color-text-secondary, var(--cor-texto-secundario));
+}
+
+/* Toolbar à direita: permite quebra e alinhamento correto em telas pequenas */
+.appbar-inner > div:nth-child(2) {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Container da tabela: adiciona padding interno para afastar da borda */
+.table-scroll {
+  padding: 12px;
+  background: var(--color-bg-card, var(--cor-card));
+}
+
+/* Mantém a largura da tabela, evita que colunas estiquem demais; permite scroll horizontal se necessário */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  table-layout: auto;
+}
+
+/* Alinha verticalmente e previne que texto quebre visualmente */
+tbody tr td {
+  vertical-align: middle;
+  padding: 10px 12px;
+  white-space: normal;
+}
+
+/* Ações: botões alinhados à direita e com tamanho consistente */
+.actions button {
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+/* Evita que o cabeçalho sticky mostre cor branca fixa (suporta modo escuro) */
+thead.thead {
+  position: sticky;
+  top: 0;
+  background: var(--color-bg-card, var(--cor-card));
+  z-index: 2;
+}
+
+/* Pequenos ajustes responsivos */
+@media (max-width: 700px) {
+  .appbar-inner {
+    padding: 10px 12px;
+  }
+
+  .appbar-inner .brand h1 {
+    font-size: 1.05rem;
+  }
+
+  .actions button {
+    padding: 6px 8px;
+    font-size: 0.9rem;
+  }
+}
+
 /* TABELA */
 .card {
   background: var(--cor-card);
@@ -288,10 +376,126 @@ body,
   padding: 12px 18px 18px;
 }
 
+/* Melhorias estéticas da "caixa" que contém a tabela (padding, radius, sombra leve) */
+.card {
+  border-radius: var(--raio-borda);
+  overflow: visible;
+}
+
+.card .card-content {
+  /* Aumenta espaçamento interno para a "caixa" da tabela */
+  padding: 18px;
+}
+
+.table-scroll {
+  /* garante que a caixa da tabela fique visualmente agradável */
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--color-bg-card, var(--cor-card));
+  box-shadow: 0 6px 18px rgba(13,148,136,0.03);
+  position: relative;
+  box-sizing: border-box; /* evita que padding aumente largura total */
+  overflow-x: auto; /* permite scroll horizontal só quando necessário */
+}
+
+/* Ajuste responsivo da tabela: não forçamos min-width para evitar overflow
+   e cortes de texto. A tabela ocupa 100% do container e permite quebra de conteúdo. */
+.table {
+  min-width: 0;
+  width: 100%;
+  table-layout: auto;
+}
+
+/* Evita overlap da scrollbar com os botões de ação: reserva espaço mínimo na última célula */
+.actions {
+  min-width: 120px;
+  text-align: right;
+  padding-right: 6px;
+}
+
+.actions button {
+  white-space: nowrap;
+}
+
+/* Scrollbar mais discreta e consistente com a paleta (vertical e horizontal) */
+.table-scroll::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+.table-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border, var(--cor-borda));
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
 table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 10px;
+}
+
+/* Quebra de texto para evitar overflow em células com textos longos */
+table td, table th {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Regras por coluna para evitar cortes: usar ellipsis em colunas curtas e permitir wrap nas colunas longas */
+table th:nth-child(1), table td:nth-child(1) {
+  /* CPF */
+  width: 160px;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+table th:nth-child(2), table td:nth-child(2) {
+  /* Paciente - permite wrap, mas limita largura para não empurrar demais */
+  max-width: 340px;
+  white-space: normal;
+}
+
+table th:nth-child(3), table td:nth-child(3) {
+  /* Telefone */
+  width: 160px;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+table th:nth-child(4), table td:nth-child(4) {
+  /* Médico - permite quebrar em nomes longos */
+  max-width: 260px;
+  white-space: normal;
+}
+
+table th:nth-child(5), table td:nth-child(5) {
+  /* Data */
+  width: 180px;
+  white-space: nowrap;
+}
+
+table th:nth-child(6), table td:nth-child(6) {
+  /* Duração */
+  width: 90px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+table th:nth-child(7), table td:nth-child(7) {
+  /* Ações - garante que botões não sejam cortados */
+  width: 150px;
+  max-width: 150px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* Garante que o conteúdo da célula use quebra quando necessário e não expanda além do container */
+table td, table th {
+  box-sizing: border-box;
 }
 
 thead th {
@@ -479,7 +683,8 @@ input[type="search"] {
   border-radius: 8px;
   background: var(--cor-card);
   color: var(--cor-texto-principal);
-  min-width: 320px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 input[type="search"]:focus {

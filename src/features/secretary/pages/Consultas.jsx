@@ -577,7 +577,7 @@ export default function Consultas() {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
             {/* 🔎 Barra de pesquisa */}
             <input
               type="search"
@@ -588,7 +588,8 @@ export default function Consultas() {
                 padding: "8px 12px",
                 border: "1px solid #ddd",
                 borderRadius: 8,
-                minWidth: 320,
+                minWidth: 0,
+                maxWidth: 420,
               }}
             />
             <button className="btn" onClick={abrirModalParaNova}>

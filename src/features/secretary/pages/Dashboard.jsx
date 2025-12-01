@@ -176,7 +176,7 @@ export default function Dashboard() {
   const todayCount = appointments.filter((a) => a?.scheduled_at && new Date(a.scheduled_at).toISOString().slice(0, 10) === todayStr).length;
 
   return (
-    <div style={{ display: "grid", gap: "1.25rem", gridTemplateColumns: "2fr 1fr", background: "var(--color-bg-primary)"}}>
+    <div className="secretary-dashboard-grid" style={{ background: "var(--color-bg-primary)" }}>
       {/* Coluna estatísticas */}
       <section
         style={{
