@@ -357,3 +357,13 @@ function SkeletonTable() {
     </div>
   );
 }
+
+/* Pequeno ajuste de CSS local para garantir que o ícone da busca não sobreponha o placeholder */
+// (injetado aqui para prioridade sobre outros arquivos CSS)
+const _style = document.createElement('style');
+_style.innerHTML = `
+.users-card .toolbar .search{ position: relative; min-width:260px; flex:1 }
+.users-card .toolbar .search .icon{ position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size:14px; pointer-events: none; z-index: 2 }
+.users-card .toolbar .search input{ width:100%; padding:10px 14px 10px 44px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--text) }
+`;
+document.head.appendChild(_style);
