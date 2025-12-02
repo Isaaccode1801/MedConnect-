@@ -652,7 +652,7 @@ th.sortable::after{
    MODO ESCURO                  
    =========================== */
 body.modo-escuro {
-  --bg: #121212;
+  --bg2: #1c1c1c;
   --card: #1e1e1e;
   --card-2: #1e1e1e;
   --text: #e0e0e0;
@@ -669,7 +669,7 @@ body.modo-escuro .wrap,
 body.modo-escuro .card,
 body.modo-escuro .modal-content,
 body.modo-escuro .modal-footer {
-  background-color: var(--card) !important;
+  background-color: var(--bg2) !important;
   color: var(--text) !important;
   border-color: var(--border) !important;
   box-shadow: none !important;
@@ -703,7 +703,7 @@ body.modo-escuro button,
 body.modo-escuro .btn,
 body.modo-escuro select,
 body.modo-escuro input {
-  background-color: #2a2a2a !important;
+  background-color: #333 !important;
   color: #f5f5f5 !important;
   border: 1px solid var(--border) !important;
 }

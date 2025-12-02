@@ -750,7 +750,7 @@ body.modo-escuro {
   --card-bg-dash: #252525 !important; /* Fundo dos cards escuro */
   --shadow-dash: 0 10px 25px -10px rgba(0, 0, 0, 0.4) !important;
 
-  background-color: #121212 !important;
+  background-color: #1c1c1c !important;
   color: #e0e0e0 !important;
   
 }

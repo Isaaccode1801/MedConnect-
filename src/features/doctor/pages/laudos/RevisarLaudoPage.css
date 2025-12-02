@@ -78,7 +78,7 @@
 /* Estilos para o conteúdo HTML do Laudo */
 .laudo-html-content {
   line-height: 1.7;
-  color: #374151;
+  color: var(--color-text-primary);
 }
 
 .laudo-html-content h1,

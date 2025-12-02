@@ -23,7 +23,7 @@ body, html, #root {
   height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: var(--text);
-  background: var(--bg);
+  background: var(--bg2);
 }
 
 
@@ -298,8 +298,10 @@ button:hover { transform: translateY(-3px); }
 
 /* Dark Mode */
 
+
+
 body.modo-escuro {
-  background-color: #121212 !important;
+  background-color: #1c1c1c !important;
   color: #e0e0e0 !important;
 }
 
@@ -309,7 +311,7 @@ body.modo-escuro .starter-section,
 body.modo-escuro .starter-logo-wrap,
 body.modo-escuro .role-strip {
   background: none !important;
-  background-color: #121212 !important;
+  background-color: #1c1c1c !important;
 }
 
 /* Remove retângulos pretos que ficaram atrás dos botões */
