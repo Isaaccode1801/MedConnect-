@@ -195,51 +195,52 @@ export default function AppointmentsPage() {
   return (
     <>
       <style>{`
-.appointments-wrapper { background:#fff; border-radius:.75rem; box-shadow:0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1); padding:1.5rem; color:#1F2937; font-family:'Poppins',sans-serif; }
+.appointments-wrapper { background:var(--color-bg-card); border-radius:.75rem; box-shadow:var(--shadow-md); padding:1.5rem; color:var(--color-text-primary); font-family:'Poppins',sans-serif; }
 .appointments-header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; }
-.appointments-title h2 { font-size:1.1rem; font-weight:600; margin:0; color:#1F2937; }
-.appointments-title span { font-size:.8rem; color:#6B7280; }
+.appointments-title h2 { font-size:1.1rem; font-weight:600; margin:0; color:var(--color-text-primary); }
+.appointments-title span { font-size:.8rem; color:var(--color-text-muted); }
 .appointments-actions { display:flex; flex-direction:column; gap:.75rem; align-items:stretch; }
 .filters { display:grid; grid-template-columns:1fr repeat(3, minmax(140px, 1fr)); gap:.5rem; }
 @media (max-width:900px){ .filters{ grid-template-columns:1fr 1fr; } }
-.filter-input,.filter-select{ border:1px solid #D1D5DB; border-radius:.5rem; padding:.55rem .75rem; font-size:.9rem; }
+.filter-input,.filter-select{ border:1px solid var(--color-border); border-radius:.5rem; padding:.55rem .75rem; font-size:.9rem; background:var(--color-bg-card); color:var(--color-text-primary); }
+.filter-input::placeholder { color:var(--color-text-muted); }
 .filters-row{ display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
-.btn-new { background:#0d9488; color:#fff; border:0; border-radius:.5rem; padding:.6rem 1rem; font-size:.9rem; font-weight:500; cursor:pointer; box-shadow:0 10px 20px rgba(13,148,136,.25); transition:all .15s; }
+.btn-new { background:var(--color-primary); color:#fff; border:0; border-radius:.5rem; padding:.6rem 1rem; font-size:.9rem; font-weight:500; cursor:pointer; box-shadow:0 10px 20px rgba(13,148,136,.25); transition:all .15s; }
 .btn-new:hover{ filter:brightness(1.07); transform:translateY(-1px); }
-.btn-clear{ background:transparent; color:#0f766e; border:1px solid #99f6e4; border-radius:.5rem; padding:.55rem .9rem; font-size:.85rem; cursor:pointer; }
-.btn-clear:hover{ background:#ecfeff; }
+.btn-clear{ background:transparent; color:var(--color-primary); border:1px solid rgba(13,148,136,.3); border-radius:.5rem; padding:.55rem .9rem; font-size:.85rem; cursor:pointer; }
+.btn-clear:hover{ background:rgba(13,148,136,.1); }
 .table-scroll{ overflow-x:auto; border-radius:.75rem; }
 .appointments-table{ width:100%; border-collapse:collapse; min-width:760px; }
-.appointments-table th{ text-align:left; font-size:.75rem; text-transform:uppercase; color:#6B7280; font-weight:600; border-bottom:1px solid #E5E7EB; padding:.75rem .75rem; position:sticky; top:0; background:#fff; z-index:1; }
-.appointments-table td{ font-size:.9rem; color:#1F2937; border-bottom:1px solid #E5E7EB; padding:.75rem .75rem; vertical-align:top; }
-.appointments-table tbody tr:nth-child(even){ background:#fafafa; }
-.appointments-table tbody tr:hover{ background:#f1f5f9; }
+.appointments-table th{ text-align:left; font-size:.75rem; text-transform:uppercase; color:var(--color-text-muted); font-weight:600; border-bottom:1px solid var(--color-border); padding:.75rem .75rem; position:sticky; top:0; background:var(--color-bg-card); z-index:1; }
+.appointments-table td{ font-size:.9rem; color:var(--color-text-primary); border-bottom:1px solid var(--color-border); padding:.75rem .75rem; vertical-align:top; }
+.appointments-table tbody tr:nth-child(even){ background:var(--color-bg-tertiary); }
+.appointments-table tbody tr:hover{ background:var(--color-bg-tertiary); }
 .status-pill{ display:inline-block; font-size:.75rem; padding:.25rem .6rem; border-radius:999px; font-weight:500; }
-.status-upcoming{ background:#EFF6FF; color:#1D4ED8; }
-.status-requested{ background:#e0f2fe; color:#0369a1; }
-.status-confirmed{ background:#D1FAE5; color:#065F46; }
-.status-pending{ background:#FEF3C7; color:#92400E; }
-.status-done{ background:#DCFCE7; color:#166534; }
-.status-cancel,.status-cancelled{ background:#FEE2E2; color:#991B1B; }
+.status-upcoming{ background:rgba(59,130,246,0.1); color:#3b82f6; }
+.status-requested{ background:rgba(14,165,233,0.1); color:#0ea5e9; }
+.status-confirmed{ background:rgba(34,197,94,0.1); color:#22c55e; }
+.status-pending{ background:rgba(245,158,11,0.1); color:#f59e0b; }
+.status-done{ background:rgba(22,163,74,0.1); color:#16a34a; }
+.status-cancel,.status-cancelled{ background:rgba(239,68,68,0.1); color:#ef4444; }
 .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:grid; place-items:center; z-index:9999; }
-.modal-card{ background:#fff; border-radius:.75rem; box-shadow:0 25px 60px rgba(0,0,0,.3); width:100%; max-width:400px; padding:1.25rem 1.25rem 1rem; position:relative; font-family:'Poppins',sans-serif; }
+.modal-card{ background:var(--color-bg-card); border-radius:.75rem; box-shadow:var(--shadow-xl); width:100%; max-width:400px; padding:1.25rem 1.25rem 1rem; position:relative; font-family:'Poppins',sans-serif; color:var(--color-text-primary); }
 .modal-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
-.modal-header h3{ margin:0; font-size:1rem; font-weight:600; color:#111827; }
-.close-btn{ background:none; border:0; color:#6B7280; cursor:pointer; font-size:.9rem; }
+.modal-header h3{ margin:0; font-size:1rem; font-weight:600; color:var(--color-text-primary); }
+.close-btn{ background:none; border:0; color:var(--color-text-muted); cursor:pointer; font-size:.9rem; }
 .form-field{ display:flex; flex-direction:column; margin-bottom:.75rem; }
-.form-field label{ font-size:.8rem; font-weight:500; color:#374151; margin-bottom:.4rem; }
-.form-field input,.form-field select{ border:1px solid #D1D5DB; border-radius:.5rem; padding:.6rem .75rem; font-size:.9rem; line-height:1.2rem; font-family:inherit; }
-.submit-btn{ width:100%; background:#0d9488; border:0; border-radius:.5rem; color:#fff; font-weight:600; padding:.7rem 1rem; font-size:.9rem; cursor:pointer; box-shadow:0 15px 30px rgba(13,148,136,.3); transition:all .15s; margin-top:.5rem; }
+.form-field label{ font-size:.8rem; font-weight:500; color:var(--color-text-secondary); margin-bottom:.4rem; }
+.form-field input,.form-field select{ border:1px solid var(--color-border); border-radius:.5rem; padding:.6rem .75rem; font-size:.9rem; line-height:1.2rem; font-family:inherit; background:var(--color-bg-card); color:var(--color-text-primary); }
+.submit-btn{ width:100%; background:var(--color-primary); border:0; border-radius:.5rem; color:#fff; font-weight:600; padding:.7rem 1rem; font-size:.9rem; cursor:pointer; box-shadow:0 15px 30px rgba(13,148,136,.3); transition:all .15s; margin-top:.5rem; }
 .submit-btn[disabled]{ opacity:.6; cursor:not-allowed; box-shadow:none; }
-.msg-ok{ background:#ECFDF5; color:#065F46; border:1px solid #A7F3D0; border-radius:.5rem; font-size:.8rem; padding:.5rem .75rem; margin-bottom:.75rem; }
-.msg-err{ background:#FEF2F2; color:#991B1B; border:1px solid #FECACA; border-radius:.5rem; font-size:.8rem; padding:.5rem .75rem; margin-bottom:.75rem; }
+.msg-ok{ background:rgba(34,197,94,0.1); color:#16a34a; border:1px solid rgba(34,197,94,0.2); border-radius:.5rem; font-size:.8rem; padding:.5rem .75rem; margin-bottom:.75rem; }
+.msg-err{ background:rgba(239,68,68,0.1); color:#dc2626; border:1px solid rgba(239,68,68,0.2); border-radius:.5rem; font-size:.8rem; padding:.5rem .75rem; margin-bottom:.75rem; }
       `}</style>
 
       <div className="appointments-wrapper">
         <div className="appointments-header">
           <div className="appointments-title">
             <h2>Agendamentos</h2>
-            <span>Lista completa de consultas marcadas</span>
+            <span style={{ color: 'var(--color-text-muted)' }}>Lista completa de consultas marcadas</span>
           </div>
           <div className="appointments-actions" style={{minWidth:'280px', flex:1}}>
             <div className="filters">
@@ -258,15 +259,15 @@ export default function AppointmentsPage() {
             <div className="filters-row">
               <button className="btn-new" onClick={abrirModal}>+ Nova Consulta</button>
               <button className="btn-clear" onClick={limparFiltros}>Limpar filtros</button>
-              <div style={{marginLeft:'auto', fontSize:'.8rem', color:'#6B7280'}}>Resultados: {linhasFiltradas.length}</div>
+              <div style={{marginLeft:'auto', fontSize:'.8rem', color:'var(--color-text-muted)'}}>Resultados: {linhasFiltradas.length}</div>
             </div>
           </div>
         </div>
 
         {loading ? (
-          <div style={{ fontSize: ".9rem", color: "#6B7280" }}>Carregando consultas...</div>
+          <div style={{ fontSize: ".9rem", color: "var(--color-text-muted)" }}>Carregando consultas...</div>
         ) : erro ? (
-          <div style={{ fontSize: ".9rem", color: "#B91C1C" }}>{erro}</div>
+          <div style={{ fontSize: ".9rem", color: "#dc2626" }}>{erro}</div>
         ) : (
           <div className="table-scroll">
             <table className="appointments-table">
@@ -282,17 +283,17 @@ export default function AppointmentsPage() {
               <tbody>
                 {linhasFiltradas.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={{ fontSize: ".9rem", color: "#6B7280", paddingTop: "1rem" }}>
+                    <td colSpan={5} style={{ fontSize: ".9rem", color: "var(--color-text-muted)", paddingTop: "1rem" }}>
                       Nenhuma consulta encontrada.
                     </td>
                   </tr>
                 ) : (
                   linhasFiltradas.map((c) => (
                     <tr key={c.id || `${c.patient_id}-${c.scheduled_at}`}>
-                      <td>{c.patient_name || "—"}</td>
-                      <td>{c.doctor_name || "—"}</td>
-                      <td>{formatDateTime(c.scheduled_at)}</td>
-                      <td>{c.duration_minutes ? `${c.duration_minutes} min` : "—"}</td>
+                      <td style={{ color: 'var(--color-text-primary)' }}>{c.patient_name || "—"}</td>
+                      <td style={{ color: 'var(--color-text-primary)' }}>{c.doctor_name || "—"}</td>
+                      <td style={{ color: 'var(--color-text-primary)' }}>{formatDateTime(c.scheduled_at)}</td>
+                      <td style={{ color: 'var(--color-text-primary)' }}>{c.duration_minutes ? `${c.duration_minutes} min` : "—"}</td>
                       <td>
                         <span className={
                           "status-pill " +

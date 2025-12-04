@@ -70,7 +70,20 @@ export default function UserDetailsModal({ open, onClose, loading, error, data, 
                 <div className="chips">
                   {roles.length > 0
                     ? roles.map((r) => (
-                        <span key={r} className="chip">{r}</span>
+                        <span 
+                          key={r} 
+                          className="chip"
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '999px',
+                            background: 'var(--color-primary)',
+                            color: 'white',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                          }}
+                        >
+                          {r}
+                        </span>
                       ))
                     : <span className="muted">—</span>
                   }

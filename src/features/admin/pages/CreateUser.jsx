@@ -196,10 +196,14 @@ export default function CreateUser() {
           marginBottom: 16,
         }}
       >
-        <h1 style={{ margin: 0 }}>Novo Usuário</h1>
+        <h1 style={{ margin: 0, color: "var(--color-text-primary)" }}>Novo Usuário</h1>
         <Link
           to="/admin/UsersList"
-          style={{ textDecoration: "none", color: "#2563eb" }}
+          style={{ 
+            textDecoration: "none", 
+            color: "var(--color-primary)",
+            fontWeight: 500 
+          }}
         >
           ← Voltar para lista
         </Link>
@@ -220,13 +224,14 @@ export default function CreateUser() {
             style={{
               padding: "10px 14px",
               borderRadius: 10,
-              border: "1px solid #e5e7eb",
-              background: role === tab.k ? "#2563eb" : "#fff",
-              color: role === tab.k ? "#fff" : "#111827",
+              border: `1px solid var(--color-border)`,
+              background: role === tab.k ? "var(--color-primary)" : "var(--color-bg-card)",
+              color: role === tab.k ? "#fff" : "var(--color-text-primary)",
               cursor: "pointer",
               minWidth: 110,
               textAlign: "center",
               fontWeight: 600,
+              transition: "all 0.2s ease",
             }}
           >
             {tab.label}
@@ -238,8 +243,8 @@ export default function CreateUser() {
       <form
         onSubmit={handleSubmit}
         style={{
-          background: "#fff",
-          border: "1px solid #e5e7eb",
+          background: "var(--color-bg-card)",
+          border: "1px solid var(--color-border)",
           borderRadius: 12,
           padding: 16,
           maxWidth: 600,
@@ -249,7 +254,7 @@ export default function CreateUser() {
       >
         {/* --- CAMPOS COMUNS (Email, Nome, Senha) --- */}
         <label style={{ display: "grid", gap: 6 }}>
-          <span>E-mail</span>
+          <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>E-mail</span>
           <input
             name="email"
             type="email"
@@ -261,7 +266,7 @@ export default function CreateUser() {
         </label>
         
         <label style={{ display: "grid", gap: 6 }}>
-          <span>Senha</span>
+          <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>Senha</span>
           <input
             name="password"
             type="password"
@@ -273,7 +278,7 @@ export default function CreateUser() {
         </label>
 
         <label style={{ display: "grid", gap: 6 }}>
-          <span>Nome completo</span>
+          <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>Nome completo</span>
           <input
             name="full_name"
             value={form.full_name}
@@ -286,7 +291,7 @@ export default function CreateUser() {
         {/* CAMPO TELEFONE FIXO (Apenas para Admin e Secretaria) */}
         {(role === 'admin' || role === 'secretaria') && (
             <label style={{ display: "grid", gap: 6 }}>
-            <span>Telefone fixo / clínica</span>
+            <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>Telefone fixo / clínica</span>
             <input
                 name="phone"
                 value={form.phone}
@@ -300,7 +305,9 @@ export default function CreateUser() {
         {/* CAMPO CELULAR (Apenas para Paciente e Médico) */}
         {(role === 'paciente' || role === 'medico') && (
             <label style={{ display: "grid", gap: 6 }}>
-            <span>Celular / WhatsApp {role === 'paciente' ? '(Obrigatório)' : '(Opcional para Médico)'}</span>
+            <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>
+              Celular / WhatsApp {role === 'paciente' ? '(Obrigatório)' : '(Opcional para Médico)'}
+            </span>
             <input
                 name="phone_mobile"
                 value={form.phone_mobile}
@@ -315,7 +322,7 @@ export default function CreateUser() {
         {/* CAMPO CPF (Apenas para Paciente e Médico) */}
         {(role === 'paciente' || role === 'medico') && (
             <label style={{ display: "grid", gap: 6 }}>
-            <span>CPF (Obrigatório, só números)</span>
+            <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>CPF (Obrigatório, só números)</span>
             <input
                 name="cpf"
                 value={form.cpf}
@@ -331,7 +338,7 @@ export default function CreateUser() {
         {role === 'medico' && (
           <>
             <label style={{ display: "grid", gap: 6 }}>
-              <span>CRM (Obrigatório)</span>
+              <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>CRM (Obrigatório)</span>
               <input
                 name="crm"
                 value={form.crm}
@@ -342,7 +349,7 @@ export default function CreateUser() {
               />
             </label>
             <label style={{ display: "grid", gap: 6 }}>
-              <span>UF do CRM (Obrigatório)</span>
+              <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>UF do CRM (Obrigatório)</span>
               <input
                 name="crm_uf"
                 value={form.crm_uf}
@@ -354,7 +361,7 @@ export default function CreateUser() {
               />
             </label>
             <label style={{ display: "grid", gap: 6 }}>
-              <span>Especialidade (Opcional)</span>
+              <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>Especialidade (Opcional)</span>
               <input
                 name="specialty"
                 value={form.specialty}
@@ -373,8 +380,9 @@ export default function CreateUser() {
               marginTop: 12,
               padding: 10,
               borderRadius: 8,
-              background: "#fee2e2",
-              color: "#991b1b",
+              background: "rgba(239, 68, 68, 0.1)",
+              color: "#dc2626",
+              border: "1px solid rgba(239, 68, 68, 0.2)",
             }}
           >
             {err}
@@ -387,8 +395,9 @@ export default function CreateUser() {
               marginTop: 12,
               padding: 10,
               borderRadius: 8,
-              background: "#ecfdf5",
-              color: "#065f46",
+              background: "rgba(34, 197, 94, 0.1)",
+              color: "#16a34a",
+              border: "1px solid rgba(34, 197, 94, 0.2)",
             }}
           >
             {ok}
@@ -397,7 +406,15 @@ export default function CreateUser() {
 
         {/* Botões */}
         <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-          <button type="submit" disabled={loading} style={primaryBtnStyle}>
+          <button 
+            type="submit" 
+            disabled={loading} 
+            style={{
+              ...primaryBtnStyle,
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
             {loading ? "Salvando..." : "Criar usuário"}
           </button>
           <Link to="/admin/UsersList" style={ghostBtnStyle}>
@@ -409,28 +426,38 @@ export default function CreateUser() {
   );
 }
 
-// Estilos
+// Estilos com variáveis CSS
 const inputStyle = {
   padding: "10px 12px",
   borderRadius: 8,
-  border: "1px solid #e5e7eb",
+  border: "1px solid var(--color-border)",
+  background: "var(--color-bg-card)",
+  color: "var(--color-text-primary)",
+  fontSize: "14px",
+  transition: "border-color 0.2s ease",
 };
 
 const primaryBtnStyle = {
   padding: "10px 14px",
   borderRadius: 10,
   border: 0,
-  background: "#2563eb",
+  background: "var(--color-primary)",
   color: "#fff",
   cursor: "pointer",
   fontWeight: 600,
+  transition: "all 0.2s ease",
 };
 
 const ghostBtnStyle = {
   padding: "10px 14px",
   borderRadius: 10,
-  border: "1px solid #e5e7eb",
-  color: "#111827",
+  border: "1px solid var(--color-border)",
+  background: "transparent",
+  color: "var(--color-text-primary)",
   textDecoration: "none",
   fontWeight: 500,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  transition: "all 0.2s ease",
 };
