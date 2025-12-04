@@ -53,7 +53,7 @@ function combinarDataEHora(date?: string, time?: string) {
 // IA (Gemini)
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
 const GEMINI_API_URL = GEMINI_API_KEY
-  ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`
+  ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`
   : "";
 
 // Componente Combobox adaptado para pacientes
@@ -276,14 +276,22 @@ Após a anamnese, adicione **Plano Sugerido** com possíveis próximos passos. I
 
     try {
       setIsSubmitting(true);
-      const res = await fetch(GEMINI_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ parts: [{ text: contentHtml }] }],
-        }),
-      });
+    const res = await fetch(GEMINI_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: `${systemPrompt}\n\n=== TRANSCRIÇÃO DA CONSULTA ===\n${plain}`,
+              },
+            ],
+          },
+        ],
+      }),
+    });
 
       if (!res.ok) throw new Error(`Gemini falhou: ${res.status}`);
       const data = await res.json();
