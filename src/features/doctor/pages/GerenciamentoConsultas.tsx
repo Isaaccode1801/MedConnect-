@@ -61,8 +61,8 @@ const CANDIDATE_SETS: string[][] = [
 
 function formatCPF(v: string | undefined | null): string {
   if (!v) return '—';
-  const only = String(v).replace(/\D/g, '').padStart(11, '0').slice(-11);
-  return only.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  const only = String(v).replace(/\\D/g, '').padStart(11, '0').slice(-11);
+  return only.replace(/(\\d{3})(\\d{3})(\\d{3})(\\d{2})/, '$1.$2.$3-$4');
 }
 
 function formatData(isoString: string): string {
@@ -122,6 +122,18 @@ export default function GerenciamentoConsultasPage() {
   const [formSlot, setFormSlot] = useState<number>(30);
   const [formType, setFormType] = useState<AppointmentType>('presencial');
   const [formActive, setFormActive] = useState<boolean>(true);
+
+  // ---------------------------
+  // Estados para Exceção de Agenda
+  // ---------------------------
+  const [showExcecaoModal, setShowExcecaoModal] = useState(false);
+  const [exDate, setExDate] = useState<string>('');
+  const [exStart, setExStart] = useState<string>('');
+  const [exEnd, setExEnd] = useState<string>('');
+  const [exReason, setExReason] = useState<string>('');
+  const [creatingException, setCreatingException] = useState(false);
+  const [exceptions, setExceptions] = useState<any[]>([]);
+  const [showToolbarMenu, setShowToolbarMenu] = useState(false);
 
   // modal de detalhes da consulta
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -335,6 +347,110 @@ export default function GerenciamentoConsultasPage() {
   };
 
   // -----------------------------
+  // Exceções: funções de API (mock)
+  // -----------------------------
+  async function fetchExceptionsForDoctor(dId?: string) {
+    if (!dId) return [];
+    try {
+      const params = new URLSearchParams();
+      params.set('doctor_id', dId);
+      const res = await fetch('https://mock.apidog.com/m1/1053378-0-default/rest/v1/doctor_exceptions?' + params.toString());
+      if (!res.ok) {
+        console.warn('Falha ao listar exceções:', res.status);
+        return [];
+      }
+      const data = await res.json();
+      if (!data) return [];
+      if (Array.isArray(data)) return data;
+      return [data];
+    } catch (err) {
+      console.error('Erro fetchExceptionsForDoctor', err);
+      return [];
+    }
+  }
+
+  const handleCreateException = async () => {
+  if (!exDate) {
+    alert("Data da exceção é obrigatória.");
+    return;
+  }
+  if (!exReason) {
+    alert("Motivo é obrigatório.");
+    return;
+  }
+
+  setCreatingException(true);
+
+  try {
+    const payload = {
+      doctor_id: doctorId || "123e4567-e89b-12d3-a456-426614174000",
+      date: exDate,
+      kind: "bloqueio",
+      start_time: exStart ? exStart : null,
+      end_time: exEnd ? exEnd : null,
+      reason: exReason,
+      created_by: "admin-uuid",
+    };
+
+    const res = await fetch(
+      "https://mock.apidog.com/m1/1053378-0-default/rest/v1/doctor_exceptions",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    // ERRO HTTP
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error("Erro ao criar exceção:", res.status, txt);
+      alert("Erro ao criar exceção: " + res.status);
+      return;
+    }
+
+    // A MOCK RETORNA VAZIO → EVITAR JSON.PARSE EM VAZIO
+    const responseText = await res.text();
+    let created = null;
+
+    if (responseText) {
+      try {
+        created = JSON.parse(responseText);
+      } catch (e) {
+        console.warn("Resposta NÃO é JSON válido:", responseText);
+      }
+    }
+
+    // Se veio algo, adiciona na lista
+    if (created) {
+      setExceptions((prev) => [created, ...prev]);
+    }
+
+    setExDate("");
+    setExStart("");
+    setExEnd("");
+    setExReason("");
+    setShowExcecaoModal(false);
+
+    alert("Exceção criada com sucesso.");
+  } catch (err) {
+    console.error("handleCreateException error", err);
+    alert("Erro ao criar exceção.");
+  } finally {
+    setCreatingException(false);
+  }
+};
+
+  useEffect(() => {
+    (async () => {
+      if (doctorId) {
+        const list = await fetchExceptionsForDoctor(doctorId);
+        setExceptions(list);
+      }
+    })();
+  }, [doctorId]);
+
+  // -----------------------------
   // Render
   // -----------------------------
   return (
@@ -359,16 +475,76 @@ export default function GerenciamentoConsultasPage() {
                 />
               </div>
 
-              <button
-                type="button"
-                className="page-btn"
-                style={{ marginLeft: '12px' }}
-                onClick={openCreateModal}
-                title="Criar disponibilidade"
-              >
-                <FaPlus style={{ marginRight: 6 }} />
-                Criar disponibilidade
-              </button>
+              {/* Dropdown: Criar disponibilidade / Criar exceção */}
+             {/* Dropdown: Criar disponibilidade / Criar exceção */}
+<div style={{ position: 'relative', marginLeft: '12px' }}>
+  <button
+    type="button"
+    className="page-btn"
+    onClick={() => setShowToolbarMenu(prev => !prev)}
+    title="Criar novo horário"
+  >
+    <FaPlus style={{ marginRight: 6 }} />
+    Criar novo horário ▾
+  </button>
+
+  {showToolbarMenu && (
+    <div
+      style={{
+        position: 'absolute',
+        right: 0,
+        marginTop: 8,
+        background: 'var(--color-bg-card)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 8,
+        boxShadow: 'var(--shadow-lg)',
+        zIndex: 1200,
+        minWidth: 220,
+        overflow: 'hidden'
+      }}
+    >
+      <button
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          width: '100%',
+          padding: '10px 12px',
+          border: 'none',
+          background: 'transparent',
+          cursor: 'pointer',
+          fontSize: 14
+        }}
+        onClick={() => {
+          setShowToolbarMenu(false);
+          openCreateModal(); // <-- MODAL DE DISPONIBILIDADE
+        }}
+      >
+        <FaPlus style={{ marginRight: 8 }} />
+        Nova disponibilidade
+      </button>
+
+      <button
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          width: '100%',
+          padding: '10px 12px',
+          border: 'none',
+          background: 'transparent',
+          cursor: 'pointer',
+          fontSize: 14
+        }}
+        onClick={() => {
+          setShowToolbarMenu(false);
+          setShowExcecaoModal(true); // <-- MODAL DE EXCEÇÃO
+        }}
+      >
+        <FaTimes style={{ marginRight: 8 }} />
+        Nova exceção
+      </button>
+    </div>
+  )}
+</div>
             </div>
           </div>
 
@@ -814,6 +990,137 @@ export default function GerenciamentoConsultasPage() {
           </div>
         </div>
       )}
+
+      {/* MODAL: Criar Exceção de Agenda */}
+      {showExcecaoModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="modal-overlay"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.45)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            zIndex: 1000,
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowExcecaoModal(false);
+          }}
+        >
+          <div
+            className="modal-card"
+            style={{
+              width: '100%',
+              maxWidth: 520,
+              background: 'var(--color-bg-card)',
+              color: 'var(--color-text-primary)',
+              borderRadius: 12,
+              boxShadow: 'var(--shadow-lg)',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--color-border)' }}>
+              <h2 style={{ margin: 0, fontSize: 18, color: 'var(--color-text-primary)' }}>Criar Exceção de Agenda</h2>
+              <small style={{ color: 'var(--color-text-muted)' }}>Médico: {doctorName}</small>
+            </div>
+
+            <div style={{ padding: '1rem 1.25rem' }}>
+              <div style={{ marginBottom: 12 }}>
+                <label className="text-sm block" style={{ color: 'var(--color-text-secondary)', marginBottom: 4 }}>Data</label>
+                <input
+                  type="date"
+                  value={exDate}
+                  onChange={(e) => setExDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg-card)',
+                    color: 'var(--color-text-primary)'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label className="text-sm block" style={{ color: 'var(--color-text-secondary)', marginBottom: 4 }}>Início (opcional)</label>
+                  <input
+                    type="time"
+                    value={exStart}
+                    onChange={(e) => setExStart(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--color-border)',
+                      background: 'var(--color-bg-card)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label className="text-sm block" style={{ color: 'var(--color-text-secondary)', marginBottom: 4 }}>Fim (opcional)</label>
+                  <input
+                    type="time"
+                    value={exEnd}
+                    onChange={(e) => setExEnd(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--color-border)',
+                      background: 'var(--color-bg-card)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm block" style={{ color: 'var(--color-text-secondary)', marginBottom: 4 }}>Motivo</label>
+                <input
+                  type="text"
+                  value={exReason}
+                  onChange={(e) => setExReason(e.target.value)}
+                  placeholder="Ex: Médico ausente, feriado..."
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg-card)',
+                    color: 'var(--color-text-primary)'
+                  }}
+                />
+              </div>
+
+              {exceptions && exceptions.length > 0 && (
+                <div style={{ marginTop: 12, padding: 8, borderRadius: 8, background: 'var(--color-bg-muted)', color: 'var(--color-text-secondary)' }}>
+                  <strong>Exceções recentes:</strong>
+                  <ul style={{ marginTop: 8 }}>
+                    {exceptions.slice(0,5).map((ex, idx) => (
+                      <li key={idx} style={{ fontSize: 13 }}>
+                        {ex.date} — {ex.kind} {ex.start_time ? `(${ex.start_time}–${ex.end_time || ''})` : ''} — {ex.reason || '—'}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <div style={{ padding: '0.85rem 1.25rem', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button type="button" className="page-btn btn-secondary" onClick={() => setShowExcecaoModal(false)} disabled={creatingException}>Cancelar</button>
+              <button type="button" className="page-btn btn-primary" onClick={handleCreateException} disabled={creatingException}>{creatingException ? 'Criando...' : 'Criar Exceção'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </>
   );
 }
