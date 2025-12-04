@@ -219,19 +219,23 @@ export default function SmartCalendar() {
       // 2.b - Disponibilidade semanal
       const { data: avail, error: availErr } = await supabase
         .from("doctor_availability")
-        .select("id, doctor_id, weekday, start_time, end_time, slot_minutes, appointment_type, active")
+        .select(
+          "id, doctor_id, weekday, start_time, end_time, slot_minutes, appointment_type, active"
+        )
         .eq("doctor_id", doctorId)
         .eq("active", true);
 
+      let grouped: Record<number, AvailabilityRecord[]> = {};
       if (availErr) {
         console.warn("[SmartCalendar] erro ao buscar disponibilidade:", availErr);
         setAvailability({});
       } else {
-        const grouped: Record<number, AvailabilityRecord[]> = {};
+        grouped = {};
         (avail || []).forEach((a: AvailabilityRecord) => {
           grouped[a.weekday] = grouped[a.weekday] || [];
           grouped[a.weekday].push(a);
         });
+        // Atualiza o estado com a disponibilidade atual, usada para pintar slots
         setAvailability(grouped);
       }
 
@@ -241,9 +245,11 @@ export default function SmartCalendar() {
 
         // tenta deduzir duração via disponibilidade daquele dia
         const wd = start.getDay();
-        const dayAvail = (availability && availability[wd]) || (avail || []).filter((x: any) => x.weekday === wd);
+        const dayAvail = grouped[wd] || [];
         const slotM =
-          (Array.isArray(dayAvail) && dayAvail[0] && (dayAvail[0].slot_minutes || DEFAULT_DURATION_MIN)) ||
+          (Array.isArray(dayAvail) &&
+            dayAvail[0] &&
+            (dayAvail[0].slot_minutes || DEFAULT_DURATION_MIN)) ||
           DEFAULT_DURATION_MIN;
 
         const end = new Date(start.getTime() + Number(slotM) * 60_000);
@@ -263,7 +269,7 @@ export default function SmartCalendar() {
     } finally {
       setLoading(false);
     }
-  }, [doctorId, fetchStart, fetchEnd, availability]);
+  }, [doctorId, fetchStart, fetchEnd]);
 
   useEffect(() => {
     fetchData();

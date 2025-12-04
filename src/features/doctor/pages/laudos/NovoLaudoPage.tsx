@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 // IMPORTE O COMBODOX
-import BasicCombobox from "@/components/ui/combobox";
+
 
 import "./NovoLaudoPage.css";
 
@@ -79,16 +79,22 @@ function PacienteCombobox({
     }));
   }, [pacientes]); // Recalcula apenas se a lista de pacientes mudar
 
+  const selectedValue = value || "";
+
   return (
-    <div className="combobox-container">
-      <BasicCombobox 
-        data={pacienteOptions}
-        onValueChange={onChange}
-        placeholder="Selecione um paciente..."
-        value={value}
-        disabled={disabled}
-      />
-    </div>
+    <select
+      className="paciente-combobox"
+      value={selectedValue}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+    >
+      <option value="">Selecione…</option>
+      {pacienteOptions.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
   );
 }
 
